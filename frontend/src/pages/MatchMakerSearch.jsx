@@ -66,7 +66,7 @@ const MatchMakerSearch = ({ user, apiClient }) => {
     if (selectedCity || !showCityDialog) {
       fetchProfessionals();
     }
-  }, [selectedCategory, selectedCity, minExperience, selectedExpertise, ipoExperience, verifiedOnly, sortBy, currentPage]);
+  }, [selectedCategory, selectedCity, minExperience, selectedExpertise, ipoExperience, verifiedOnly, sortBy, currentPage, showCityDialog]);
 
   const fetchInitialData = async () => {
     try {
