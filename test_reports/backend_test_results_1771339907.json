@@ -1,0 +1,125 @@
+{
+  "summary": {
+    "total_tests": 19,
+    "passed": 19,
+    "failed": 0,
+    "success_rate": 100.0,
+    "timestamp": "2026-02-17T14:51:47.163618"
+  },
+  "detailed_results": [
+    {
+      "test": "Root API endpoint",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:40.943610"
+    },
+    {
+      "test": "Health check endpoint",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:41.079176"
+    },
+    {
+      "test": "Auth/me without token",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:41.198172"
+    },
+    {
+      "test": "Projects without token",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:41.306259"
+    },
+    {
+      "test": "Get current user",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:41.783984"
+    },
+    {
+      "test": "Get projects (empty)",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:41.898162"
+    },
+    {
+      "test": "Create project",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:42.038530"
+    },
+    {
+      "test": "Get specific project",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:42.151227"
+    },
+    {
+      "test": "Update project",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:42.254291"
+    },
+    {
+      "test": "Get projects (with data)",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:42.486574"
+    },
+    {
+      "test": "Get project sections",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:42.599638"
+    },
+    {
+      "test": "Get specific section",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:42.745318"
+    },
+    {
+      "test": "Update section",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:42.850807"
+    },
+    {
+      "test": "Upload document",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:43.014986"
+    },
+    {
+      "test": "Get documents",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:43.140970"
+    },
+    {
+      "test": "Process OCR",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:46.280399"
+    },
+    {
+      "test": "Download document",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:46.420121"
+    },
+    {
+      "test": "Delete document",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:46.528730"
+    },
+    {
+      "test": "Logout",
+      "success": true,
+      "details": "",
+      "timestamp": "2026-02-17T14:51:46.645071"
+    }
+  ]
+}
