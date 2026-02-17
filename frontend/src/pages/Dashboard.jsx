@@ -120,7 +120,8 @@ const Dashboard = ({ user, apiClient }) => {
       icon: Users,
       color: "text-orange-600",
       bgColor: "bg-orange-50",
-      disabled: true
+      disabled: false,
+      path: "/matchmaker"
     },
     {
       id: "analytics",
