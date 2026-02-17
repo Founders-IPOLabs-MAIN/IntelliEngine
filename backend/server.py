@@ -315,7 +315,8 @@ async def create_project(project_data: ProjectCreate, user: User = Depends(get_c
     
     project_doc["created_at"] = now
     project_doc["updated_at"] = now
-    del project_doc["_id"] if "_id" in project_doc else None
+    if "_id" in project_doc:
+        del project_doc["_id"]
     
     return Project(**project_doc)
 
