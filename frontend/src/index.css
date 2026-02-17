@@ -1,9 +1,10 @@
-@import 'geist/dist/fonts/geist-sans/style.css';
-@import 'geist/dist/fonts/geist-mono/style.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Google Fonts - Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
   --background: 0 0% 100%;
