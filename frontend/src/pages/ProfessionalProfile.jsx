@@ -189,6 +189,18 @@ const ProfessionalProfile = ({ user, apiClient }) => {
       <Sidebar user={user} apiClient={apiClient} />
       
       <main className="flex-1 ml-64">
+        {/* AI Banner */}
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3">
+          <div className="flex items-center justify-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              <span className="font-medium">AI-Powered Match Making Engine</span>
+            </div>
+            <span className="text-white/60">|</span>
+            <span className="text-white/80">Verified professional from our intelligent matching system</span>
+          </div>
+        </div>
+        
         {/* Header */}
         <header className="bg-white border-b border-border px-8 py-4">
           <button
