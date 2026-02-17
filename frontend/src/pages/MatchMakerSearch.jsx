@@ -277,7 +277,7 @@ const MatchMakerSearch = ({ user, apiClient }) => {
               <Label className="text-sm font-medium text-black mb-3 block">Years of Experience</Label>
               <div className="space-y-2">
                 {[
-                  { value: "", label: "Any" },
+                  { value: "any", label: "Any" },
                   { value: "1", label: "1-5 years" },
                   { value: "5", label: "5-10 years" },
                   { value: "10", label: "10+ years" }
@@ -285,8 +285,8 @@ const MatchMakerSearch = ({ user, apiClient }) => {
                   <div key={option.value} className="flex items-center gap-2">
                     <Checkbox
                       id={`exp-${option.value}`}
-                      checked={minExperience === option.value}
-                      onCheckedChange={() => setMinExperience(option.value)}
+                      checked={minExperience === (option.value === "any" ? "" : option.value)}
+                      onCheckedChange={() => setMinExperience(option.value === "any" ? "" : option.value)}
                     />
                     <label htmlFor={`exp-${option.value}`} className="text-sm text-muted-foreground cursor-pointer">
                       {option.label}
@@ -303,7 +303,7 @@ const MatchMakerSearch = ({ user, apiClient }) => {
               <Label className="text-sm font-medium text-black mb-3 block">IPO Experience</Label>
               <div className="space-y-2">
                 {[
-                  { value: "", label: "Any" },
+                  { value: "any", label: "Any" },
                   { value: "5+", label: "Managed 5+ IPOs" },
                   { value: "sme", label: "SME IPO Specialist" },
                   { value: "mainboard", label: "Mainboard IPO Specialist" }
@@ -311,8 +311,8 @@ const MatchMakerSearch = ({ user, apiClient }) => {
                   <div key={option.value} className="flex items-center gap-2">
                     <Checkbox
                       id={`ipo-${option.value}`}
-                      checked={ipoExperience === option.value}
-                      onCheckedChange={() => setIpoExperience(option.value)}
+                      checked={ipoExperience === (option.value === "any" ? "" : option.value)}
+                      onCheckedChange={() => setIpoExperience(option.value === "any" ? "" : option.value)}
                     />
                     <label htmlFor={`ipo-${option.value}`} className="text-sm text-muted-foreground cursor-pointer">
                       {option.label}
