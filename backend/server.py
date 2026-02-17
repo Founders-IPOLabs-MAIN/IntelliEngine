@@ -622,6 +622,434 @@ async def process_ocr(document_id: str, ocr_request: OCRRequest, user: User = De
         )
         raise HTTPException(status_code=500, detail=f"OCR processing failed: {str(e)}")
 
+# ============ MATCH MAKER MODELS ============
+
+# Professional Categories for IPO Match Maker
+PROFESSIONAL_CATEGORIES = [
+    {"id": "ipo_consultants", "name": "IPO Consultants & SME's", "description": "Expert guidance for IPO journey and SME listings", "icon": "Briefcase"},
+    {"id": "merchant_bankers", "name": "SEBI-registered Merchant Bankers", "description": "Licensed merchant banking services for IPO management", "icon": "Building2"},
+    {"id": "cfo_finance", "name": "CFO & Finance Heads", "description": "Experienced financial leadership for IPO readiness", "icon": "TrendingUp"},
+    {"id": "chartered_accountants", "name": "Chartered Accountants (CA)", "description": "Audit, taxation, and financial reporting expertise", "icon": "Calculator"},
+    {"id": "company_secretaries", "name": "Company Secretaries (CS)", "description": "Corporate governance and compliance specialists", "icon": "FileCheck"},
+    {"id": "legal_tax", "name": "Legal & Tax Advisors", "description": "Legal structuring and tax planning for IPOs", "icon": "Scale"},
+    {"id": "peer_auditors", "name": "Peer Review Auditors", "description": "Independent audit review and quality assurance", "icon": "Search"},
+    {"id": "independent_directors", "name": "Independent Directors", "description": "Board-level expertise and corporate governance", "icon": "Users"},
+    {"id": "valuation_experts", "name": "Registered Valuation Experts", "description": "Professional business and asset valuation services", "icon": "PieChart"},
+    {"id": "rta", "name": "RTA (Registrar & Transfer Agents)", "description": "Share registry and transfer management services", "icon": "FileSpreadsheet"},
+    {"id": "bankers", "name": "Bankers", "description": "Banking services and escrow account management", "icon": "Landmark"}
+]
+
+EXPERTISE_TAGS = [
+    "SEBI Regulations", "Due Diligence", "Corporate Governance", "Taxation",
+    "Financial Reporting", "Risk Management", "Compliance", "Valuation",
+    "FinTech IPOs", "Manufacturing IPOs", "IT/Tech IPOs", "Healthcare IPOs",
+    "SME IPO", "Mainboard IPO", "Regulatory Compliance", "Investor Relations"
+]
+
+INDIAN_CITIES = [
+    "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Kolkata",
+    "Pune", "Ahmedabad", "Jaipur", "Lucknow", "Surat", "Chandigarh",
+    "Indore", "Nagpur", "Coimbatore", "Kochi", "Vadodara", "Gurgaon",
+    "Noida", "Thane", "Navi Mumbai", "Visakhapatnam", "Bhopal", "Patna"
+]
+
+class Professional(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    professional_id: str
+    user_id: Optional[str] = None
+    category_id: str
+    name: str
+    agency_name: Optional[str] = None
+    email: str
+    mobile: str
+    mobile_verified: bool = False
+    profile_picture: Optional[str] = None
+    locations: List[str] = []
+    years_experience: int = 0
+    professional_summary: Optional[str] = None
+    expertise_tags: List[str] = []
+    ipo_track_record: List[dict] = []
+    certifications: List[dict] = []
+    sebi_registration: Optional[str] = None
+    ca_cs_membership: Optional[str] = None
+    services: List[dict] = []
+    pricing_model: Optional[str] = None  # hourly/fixed/negotiable
+    hourly_rate: Optional[int] = None
+    clients: List[str] = []
+    ratings_count: int = 0
+    average_rating: float = 0.0
+    reviews: List[dict] = []
+    is_verified: bool = False
+    consent_display: bool = True
+    consent_marketing: bool = False
+    status: str = "active"  # active/inactive/pending
+    created_at: datetime
+    updated_at: datetime
+
+class ProfessionalCreate(BaseModel):
+    category_id: str
+    name: str
+    agency_name: Optional[str] = None
+    email: str
+    mobile: str
+    locations: List[str] = []
+    years_experience: int = 0
+    professional_summary: Optional[str] = None
+    expertise_tags: List[str] = []
+    sebi_registration: Optional[str] = None
+    ca_cs_membership: Optional[str] = None
+    services: List[dict] = []
+    pricing_model: Optional[str] = None
+    hourly_rate: Optional[int] = None
+    consent_display: bool = True
+    consent_marketing: bool = False
+
+class ProfessionalUpdate(BaseModel):
+    name: Optional[str] = None
+    agency_name: Optional[str] = None
+    locations: Optional[List[str]] = None
+    years_experience: Optional[int] = None
+    professional_summary: Optional[str] = None
+    expertise_tags: Optional[List[str]] = None
+    ipo_track_record: Optional[List[dict]] = None
+    certifications: Optional[List[dict]] = None
+    sebi_registration: Optional[str] = None
+    ca_cs_membership: Optional[str] = None
+    services: Optional[List[dict]] = None
+    pricing_model: Optional[str] = None
+    hourly_rate: Optional[int] = None
+    clients: Optional[List[str]] = None
+    consent_display: Optional[bool] = None
+    consent_marketing: Optional[bool] = None
+
+class ReviewCreate(BaseModel):
+    professional_id: str
+    rating: int  # 1-5
+    review_text: str
+    reviewer_name: Optional[str] = None
+
+class EnquiryCreate(BaseModel):
+    professional_id: str
+    subject: str
+    message: str
+    company_name: Optional[str] = None
+    contact_email: str
+    contact_phone: Optional[str] = None
+
+class ConsultationRequest(BaseModel):
+    professional_id: str
+    preferred_date: str
+    preferred_time: str
+    consultation_type: str = "video"  # video/audio/in-person
+    topic: str
+    notes: Optional[str] = None
+
+# ============ MATCH MAKER ENDPOINTS ============
+
+@api_router.get("/matchmaker/categories")
+async def get_professional_categories():
+    """Get all professional categories for IPO Match Maker"""
+    return {"categories": PROFESSIONAL_CATEGORIES}
+
+@api_router.get("/matchmaker/cities")
+async def get_cities():
+    """Get list of available cities"""
+    return {"cities": INDIAN_CITIES}
+
+@api_router.get("/matchmaker/expertise-tags")
+async def get_expertise_tags():
+    """Get list of expertise tags for filtering"""
+    return {"tags": EXPERTISE_TAGS}
+
+@api_router.get("/matchmaker/professionals")
+async def search_professionals(
+    category_id: Optional[str] = None,
+    city: Optional[str] = None,
+    min_experience: Optional[int] = None,
+    max_experience: Optional[int] = None,
+    expertise: Optional[str] = None,
+    ipo_experience: Optional[str] = None,  # "5+", "sme", "mainboard"
+    verified_only: bool = False,
+    sort_by: str = "rating",  # rating/experience/name
+    page: int = 1,
+    limit: int = 20
+):
+    """Search and filter professionals"""
+    query = {"status": "active", "consent_display": True}
+    
+    if category_id:
+        query["category_id"] = category_id
+    if city:
+        query["locations"] = {"$in": [city]}
+    if min_experience is not None:
+        query["years_experience"] = {"$gte": min_experience}
+    if max_experience is not None:
+        if "years_experience" in query:
+            query["years_experience"]["$lte"] = max_experience
+        else:
+            query["years_experience"] = {"$lte": max_experience}
+    if expertise:
+        query["expertise_tags"] = {"$in": expertise.split(",")}
+    if verified_only:
+        query["is_verified"] = True
+    
+    # IPO experience filter
+    if ipo_experience:
+        if ipo_experience == "5+":
+            query["$expr"] = {"$gte": [{"$size": "$ipo_track_record"}, 5]}
+        elif ipo_experience == "sme":
+            query["expertise_tags"] = {"$in": ["SME IPO"]}
+        elif ipo_experience == "mainboard":
+            query["expertise_tags"] = {"$in": ["Mainboard IPO"]}
+    
+    # Sorting
+    sort_field = "average_rating" if sort_by == "rating" else "years_experience" if sort_by == "experience" else "name"
+    sort_order = -1 if sort_by in ["rating", "experience"] else 1
+    
+    # Pagination
+    skip = (page - 1) * limit
+    
+    # Get professionals
+    professionals = await db.professionals.find(
+        query,
+        {"_id": 0}
+    ).sort(sort_field, sort_order).skip(skip).limit(limit).to_list(limit)
+    
+    # Get total count
+    total = await db.professionals.count_documents(query)
+    
+    # Convert datetime strings
+    for prof in professionals:
+        if isinstance(prof.get('created_at'), str):
+            prof['created_at'] = datetime.fromisoformat(prof['created_at'])
+        if isinstance(prof.get('updated_at'), str):
+            prof['updated_at'] = datetime.fromisoformat(prof['updated_at'])
+    
+    return {
+        "professionals": professionals,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit
+    }
+
+@api_router.get("/matchmaker/professionals/{professional_id}")
+async def get_professional(professional_id: str):
+    """Get a specific professional profile"""
+    professional = await db.professionals.find_one(
+        {"professional_id": professional_id, "status": "active"},
+        {"_id": 0}
+    )
+    
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional not found")
+    
+    if isinstance(professional.get('created_at'), str):
+        professional['created_at'] = datetime.fromisoformat(professional['created_at'])
+    if isinstance(professional.get('updated_at'), str):
+        professional['updated_at'] = datetime.fromisoformat(professional['updated_at'])
+    
+    # Log profile view for audit
+    await db.audit_logs.insert_one({
+        "log_id": f"log_{uuid.uuid4().hex[:12]}",
+        "action": "profile_view",
+        "professional_id": professional_id,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return professional
+
+@api_router.post("/matchmaker/professionals")
+async def create_professional(
+    prof_data: ProfessionalCreate,
+    user: User = Depends(get_current_user)
+):
+    """Register as a professional (service provider)"""
+    professional_id = f"prof_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc)
+    
+    prof_doc = {
+        "professional_id": professional_id,
+        "user_id": user.user_id,
+        "category_id": prof_data.category_id,
+        "name": prof_data.name,
+        "agency_name": prof_data.agency_name,
+        "email": prof_data.email,
+        "mobile": prof_data.mobile,
+        "mobile_verified": False,
+        "profile_picture": user.picture,
+        "locations": prof_data.locations,
+        "years_experience": prof_data.years_experience,
+        "professional_summary": prof_data.professional_summary,
+        "expertise_tags": prof_data.expertise_tags,
+        "ipo_track_record": [],
+        "certifications": [],
+        "sebi_registration": prof_data.sebi_registration,
+        "ca_cs_membership": prof_data.ca_cs_membership,
+        "services": prof_data.services,
+        "pricing_model": prof_data.pricing_model,
+        "hourly_rate": prof_data.hourly_rate,
+        "clients": [],
+        "ratings_count": 0,
+        "average_rating": 0.0,
+        "reviews": [],
+        "is_verified": False,
+        "consent_display": prof_data.consent_display,
+        "consent_marketing": prof_data.consent_marketing,
+        "status": "active",
+        "created_at": now.isoformat(),
+        "updated_at": now.isoformat()
+    }
+    
+    await db.professionals.insert_one(prof_doc)
+    
+    prof_doc["created_at"] = now
+    prof_doc["updated_at"] = now
+    if "_id" in prof_doc:
+        del prof_doc["_id"]
+    
+    return Professional(**prof_doc)
+
+@api_router.put("/matchmaker/professionals/{professional_id}")
+async def update_professional(
+    professional_id: str,
+    update_data: ProfessionalUpdate,
+    user: User = Depends(get_current_user)
+):
+    """Update professional profile"""
+    # Verify ownership
+    existing = await db.professionals.find_one(
+        {"professional_id": professional_id, "user_id": user.user_id},
+        {"_id": 0}
+    )
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+    
+    update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
+    update_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.professionals.update_one(
+        {"professional_id": professional_id},
+        {"$set": update_dict}
+    )
+    
+    return await get_professional(professional_id)
+
+@api_router.post("/matchmaker/professionals/{professional_id}/review")
+async def add_review(
+    professional_id: str,
+    review_data: ReviewCreate,
+    user: User = Depends(get_current_user)
+):
+    """Add a review for a professional"""
+    professional = await db.professionals.find_one(
+        {"professional_id": professional_id},
+        {"_id": 0}
+    )
+    
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional not found")
+    
+    review = {
+        "review_id": f"rev_{uuid.uuid4().hex[:12]}",
+        "user_id": user.user_id,
+        "reviewer_name": review_data.reviewer_name or user.name,
+        "rating": min(max(review_data.rating, 1), 5),
+        "review_text": review_data.review_text,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Update professional with new review
+    current_count = professional.get("ratings_count", 0)
+    current_avg = professional.get("average_rating", 0.0)
+    new_count = current_count + 1
+    new_avg = ((current_avg * current_count) + review["rating"]) / new_count
+    
+    await db.professionals.update_one(
+        {"professional_id": professional_id},
+        {
+            "$push": {"reviews": review},
+            "$set": {
+                "ratings_count": new_count,
+                "average_rating": round(new_avg, 1),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    return {"message": "Review added successfully", "review": review}
+
+@api_router.post("/matchmaker/enquiry")
+async def send_enquiry(
+    enquiry_data: EnquiryCreate,
+    user: User = Depends(get_current_user)
+):
+    """Send an enquiry to a professional"""
+    enquiry_id = f"enq_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc)
+    
+    enquiry_doc = {
+        "enquiry_id": enquiry_id,
+        "professional_id": enquiry_data.professional_id,
+        "user_id": user.user_id,
+        "subject": enquiry_data.subject,
+        "message": enquiry_data.message,
+        "company_name": enquiry_data.company_name,
+        "contact_email": enquiry_data.contact_email,
+        "contact_phone": enquiry_data.contact_phone,
+        "status": "pending",  # pending/responded/closed
+        "created_at": now.isoformat()
+    }
+    
+    await db.enquiries.insert_one(enquiry_doc)
+    
+    return {"message": "Enquiry sent successfully", "enquiry_id": enquiry_id}
+
+@api_router.post("/matchmaker/consultation")
+async def book_consultation(
+    consultation_data: ConsultationRequest,
+    user: User = Depends(get_current_user)
+):
+    """Book a consultation with a professional"""
+    consultation_id = f"cons_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc)
+    
+    consultation_doc = {
+        "consultation_id": consultation_id,
+        "professional_id": consultation_data.professional_id,
+        "user_id": user.user_id,
+        "preferred_date": consultation_data.preferred_date,
+        "preferred_time": consultation_data.preferred_time,
+        "consultation_type": consultation_data.consultation_type,
+        "topic": consultation_data.topic,
+        "notes": consultation_data.notes,
+        "status": "requested",  # requested/confirmed/completed/cancelled
+        "created_at": now.isoformat()
+    }
+    
+    await db.consultations.insert_one(consultation_doc)
+    
+    return {"message": "Consultation request submitted", "consultation_id": consultation_id}
+
+@api_router.get("/matchmaker/my-profile")
+async def get_my_professional_profile(user: User = Depends(get_current_user)):
+    """Get current user's professional profile if exists"""
+    profile = await db.professionals.find_one(
+        {"user_id": user.user_id},
+        {"_id": 0}
+    )
+    
+    if not profile:
+        return {"profile": None}
+    
+    if isinstance(profile.get('created_at'), str):
+        profile['created_at'] = datetime.fromisoformat(profile['created_at'])
+    if isinstance(profile.get('updated_at'), str):
+        profile['updated_at'] = datetime.fromisoformat(profile['updated_at'])
+    
+    return {"profile": profile}
+
 # ============ HEALTH CHECK ============
 
 @api_router.get("/")
