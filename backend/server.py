@@ -1050,6 +1050,201 @@ async def get_my_professional_profile(user: User = Depends(get_current_user)):
     
     return {"profile": profile}
 
+# ============ AI-POWERED MATCHING ============
+
+class AIMatchRequest(BaseModel):
+    company_name: str
+    sector: str
+    current_stage: str  # Pre-IPO/Assessment/Drafting
+    target_exchange: str  # SME/Mainboard
+    estimated_issue_size: Optional[str] = None
+    specific_needs: List[str] = []  # e.g., ["Need CA for audit", "Legal advisor for compliance"]
+    preferred_cities: List[str] = []
+    budget_range: Optional[str] = None
+    timeline: Optional[str] = None  # e.g., "6 months", "1 year"
+    additional_context: Optional[str] = None
+
+@api_router.post("/matchmaker/ai-recommend")
+async def get_ai_recommendations(
+    request: AIMatchRequest,
+    user: User = Depends(get_current_user)
+):
+    """AI-powered professional matching based on company IPO requirements"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    try:
+        # Fetch all active professionals
+        professionals = await db.professionals.find(
+            {"status": "active", "consent_display": True},
+            {"_id": 0}
+        ).to_list(100)
+        
+        if not professionals:
+            return {
+                "recommendations": [],
+                "ai_analysis": "No professionals available in the database.",
+                "match_summary": None
+            }
+        
+        # Prepare professional summaries for AI
+        prof_summaries = []
+        for i, prof in enumerate(professionals):
+            summary = f"""
+Professional {i+1}:
+- ID: {prof['professional_id']}
+- Name: {prof['name']}
+- Category: {prof['category_id']}
+- Agency: {prof.get('agency_name', 'Independent')}
+- Experience: {prof['years_experience']} years
+- Locations: {', '.join(prof.get('locations', []))}
+- Expertise: {', '.join(prof.get('expertise_tags', []))}
+- IPOs Managed: {len(prof.get('ipo_track_record', []))}
+- Rating: {prof.get('average_rating', 0)}/5 ({prof.get('ratings_count', 0)} reviews)
+- Verified: {'Yes' if prof.get('is_verified') else 'No'}
+- SEBI Registered: {prof.get('sebi_registration', 'N/A')}
+- CA/CS Membership: {prof.get('ca_cs_membership', 'N/A')}
+- Services: {', '.join([s.get('name', '') for s in prof.get('services', [])])}
+"""
+            prof_summaries.append(summary)
+        
+        # Prepare company requirements for AI
+        company_context = f"""
+COMPANY IPO REQUIREMENTS:
+- Company Name: {request.company_name}
+- Sector: {request.sector}
+- Current Stage: {request.current_stage}
+- Target Exchange: {request.target_exchange}
+- Estimated Issue Size: {request.estimated_issue_size or 'Not specified'}
+- Specific Needs: {', '.join(request.specific_needs) if request.specific_needs else 'General IPO assistance'}
+- Preferred Cities: {', '.join(request.preferred_cities) if request.preferred_cities else 'Pan India'}
+- Budget Range: {request.budget_range or 'Flexible'}
+- Timeline: {request.timeline or 'Not specified'}
+- Additional Context: {request.additional_context or 'None'}
+
+AVAILABLE PROFESSIONALS:
+{''.join(prof_summaries)}
+"""
+        
+        # Initialize AI chat
+        api_key = os.environ.get("EMERGENT_LLM_KEY")
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"ai_match_{uuid.uuid4().hex[:8]}",
+            system_message="""You are an expert IPO advisor AI assistant for IntelliEngine by IPO Labs. 
+Your task is to analyze company IPO requirements and recommend the most suitable professionals from the available pool.
+
+Consider these factors when matching:
+1. Relevant expertise and specialization
+2. Experience in the company's sector
+3. Track record with similar IPO types (SME vs Mainboard)
+4. Geographic availability
+5. Verified status and ratings
+6. Specific certifications (SEBI registration, CA/CS membership)
+
+Provide recommendations in JSON format with clear reasoning for each match."""
+        ).with_model("gemini", "gemini-2.5-flash")
+        
+        prompt = f"""{company_context}
+
+Based on the company's IPO requirements, analyze and recommend the TOP 5 most suitable professionals.
+
+Return your response in this exact JSON format:
+{{
+    "match_summary": "A brief 2-3 sentence summary of the company's needs and overall matching strategy",
+    "recommendations": [
+        {{
+            "professional_id": "prof_xxx",
+            "match_score": 95,
+            "match_reason": "Detailed explanation why this professional is recommended (2-3 sentences)",
+            "key_strengths": ["strength1", "strength2", "strength3"],
+            "recommended_for": "Specific service they should provide for this IPO"
+        }}
+    ],
+    "additional_advice": "Any additional advice for the company's IPO journey"
+}}
+
+Important: Only include professionals from the provided list. Match score should be 0-100 based on fit."""
+
+        response = await chat.send_message(UserMessage(text=prompt))
+        
+        # Parse AI response
+        import json
+        import re
+        
+        # Extract JSON from response
+        json_match = re.search(r'\{[\s\S]*\}', response)
+        if json_match:
+            ai_result = json.loads(json_match.group())
+        else:
+            ai_result = {
+                "match_summary": "Unable to parse AI recommendations. Showing top-rated professionals instead.",
+                "recommendations": [],
+                "additional_advice": "Please try again or contact support."
+            }
+        
+        # Enrich recommendations with full professional data
+        enriched_recommendations = []
+        for rec in ai_result.get("recommendations", []):
+            prof_id = rec.get("professional_id")
+            prof_data = next((p for p in professionals if p["professional_id"] == prof_id), None)
+            if prof_data:
+                if isinstance(prof_data.get('created_at'), str):
+                    prof_data['created_at'] = datetime.fromisoformat(prof_data['created_at'])
+                if isinstance(prof_data.get('updated_at'), str):
+                    prof_data['updated_at'] = datetime.fromisoformat(prof_data['updated_at'])
+                enriched_recommendations.append({
+                    **rec,
+                    "professional": prof_data
+                })
+        
+        # Log the AI matching request
+        await db.ai_match_logs.insert_one({
+            "log_id": f"aimatch_{uuid.uuid4().hex[:12]}",
+            "user_id": user.user_id,
+            "company_name": request.company_name,
+            "sector": request.sector,
+            "recommendations_count": len(enriched_recommendations),
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {
+            "match_summary": ai_result.get("match_summary", ""),
+            "recommendations": enriched_recommendations,
+            "additional_advice": ai_result.get("additional_advice", ""),
+            "ai_powered": True
+        }
+        
+    except Exception as e:
+        logger.error(f"AI matching failed: {e}")
+        # Fallback to top-rated professionals
+        fallback_profs = await db.professionals.find(
+            {"status": "active", "consent_display": True},
+            {"_id": 0}
+        ).sort("average_rating", -1).limit(5).to_list(5)
+        
+        for prof in fallback_profs:
+            if isinstance(prof.get('created_at'), str):
+                prof['created_at'] = datetime.fromisoformat(prof['created_at'])
+            if isinstance(prof.get('updated_at'), str):
+                prof['updated_at'] = datetime.fromisoformat(prof['updated_at'])
+        
+        return {
+            "match_summary": "AI analysis temporarily unavailable. Showing top-rated professionals.",
+            "recommendations": [
+                {
+                    "professional_id": p["professional_id"],
+                    "match_score": 80,
+                    "match_reason": "Top-rated professional in our network",
+                    "key_strengths": p.get("expertise_tags", [])[:3],
+                    "recommended_for": "General IPO Advisory",
+                    "professional": p
+                }
+                for p in fallback_profs
+            ],
+            "additional_advice": "Please try again later for personalized AI recommendations.",
+            "ai_powered": False
+        }
+
 # ============ HEALTH CHECK ============
 
 @api_router.get("/")
