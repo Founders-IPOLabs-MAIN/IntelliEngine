@@ -43,13 +43,31 @@ Build a complete IPO-readiness platform with:
 
 ### Phase 2 - Match Maker Module (Feb 17, 2026)
 1. **Match Maker Landing Page (Practo-style)**
+   - **AI-Powered Match Making Engine** branding
    - 11 professional categories with icons and descriptions
-   - Hero section with search bar
+   - Hero section with "Get AI Recommendations" CTA
    - Stats bar (500+ Experts, 11 Categories, 100+ Cities, 200+ IPOs)
    - "Register as Professional" CTA
-   - How It Works section
+   - How It Works section (AI-powered)
 
-2. **Professional Search & Discovery**
+2. **AI-Powered Matching System** ⭐ NEW
+   - AI recommendation dialog with comprehensive form:
+     - Company Name & Sector
+     - Current Stage (Pre-IPO/Assessment/Drafting/Filing)
+     - Target Exchange (SME/Mainboard)
+     - Estimated Issue Size & Timeline
+     - Specific Services Needed (multi-select tags)
+     - Preferred Cities (multi-select)
+     - Additional Context
+   - Gemini AI analysis via Emergent LLM key
+   - Returns:
+     - AI Analysis Summary with matching strategy
+     - Top 5 recommended professionals with match scores (0-100)
+     - Detailed match reasoning for each professional
+     - Key strengths and recommended services
+     - Additional AI advice
+
+3. **Professional Search & Discovery**
    - City selection dialog
    - Advanced filtering sidebar:
      - Category filter
