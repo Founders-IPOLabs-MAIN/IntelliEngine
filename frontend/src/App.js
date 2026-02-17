@@ -8,6 +8,10 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import DRHPBuilder from "@/pages/DRHPBuilder";
 import SectionEditor from "@/pages/SectionEditor";
+import MatchMaker from "@/pages/MatchMaker";
+import MatchMakerSearch from "@/pages/MatchMakerSearch";
+import ProfessionalProfile from "@/pages/ProfessionalProfile";
+import ProfessionalRegister from "@/pages/ProfessionalRegister";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
