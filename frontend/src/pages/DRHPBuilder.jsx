@@ -23,23 +23,90 @@ import {
   ArrowRight,
   ChevronRight,
   Loader2,
-  Upload
+  Upload,
+  Download
 } from "lucide-react";
 
-const SECTION_ICONS = {
-  "Cover Page": FileText,
-  "Definitions and Abbreviations": BookOpen,
-  "Risk Factors": AlertTriangle,
-  "Introduction and Summary": FileSearch,
-  "Capital Structure": Landmark,
-  "Objects of the Issue": Target,
-  "Basis for Issue Price": Calculator,
-  "Industry Overview": Factory,
-  "Business Overview": Building,
-  "Management & Promoter Group": Users,
-  "Financial Information": DollarSign,
-  "Legal and Regulatory Matters": Scale,
-  "Other Information/Disclosures": MoreHorizontal
+// Section metadata with icons and descriptions
+const SECTION_METADATA = {
+  "Cover Page": {
+    icon: FileText,
+    description: "Basic information about the issuer including company name, logo, contact details, lead managers, and registrar.",
+    color: "text-blue-600",
+    bgColor: "bg-blue-50"
+  },
+  "Definitions and Abbreviations": {
+    icon: BookOpen,
+    description: "List of technical terms and abbreviations used throughout the DRHP document for reference.",
+    color: "text-purple-600",
+    bgColor: "bg-purple-50"
+  },
+  "Risk Factors": {
+    icon: AlertTriangle,
+    description: "Comprehensive disclosure of internal, external, business, regulatory, legal, and financial risks.",
+    color: "text-red-600",
+    bgColor: "bg-red-50"
+  },
+  "Introduction and Summary": {
+    icon: FileSearch,
+    description: "Overview of the offer, type of issue (fresh/OFS), summary of business, industry, and key financial metrics.",
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50"
+  },
+  "Capital Structure": {
+    icon: Landmark,
+    description: "Details of authorized capital, paid-up capital, pre-IPO and post-IPO shareholding patterns.",
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50"
+  },
+  "Objects of the Issue": {
+    icon: Target,
+    description: "How the company intends to use funds raised - debt repayment, expansion, capital expenditure, working capital.",
+    color: "text-orange-600",
+    bgColor: "bg-orange-50"
+  },
+  "Basis for Issue Price": {
+    icon: Calculator,
+    description: "Qualitative and quantitative factors justifying the issue price, with peer comparison analysis.",
+    color: "text-cyan-600",
+    bgColor: "bg-cyan-50"
+  },
+  "Industry Overview": {
+    icon: Factory,
+    description: "Market size, growth trends, demand drivers, and competitive landscape of the sector.",
+    color: "text-teal-600",
+    bgColor: "bg-teal-50"
+  },
+  "Business Overview": {
+    icon: Building,
+    description: "Company's business model, operations, products/services, strengths, strategies, and key customers.",
+    color: "text-violet-600",
+    bgColor: "bg-violet-50"
+  },
+  "Management & Promoter Group": {
+    icon: Users,
+    description: "Information about directors, Key Managerial Personnel (KMPs), their experience, and promoter details.",
+    color: "text-pink-600",
+    bgColor: "bg-pink-50"
+  },
+  "Financial Information": {
+    icon: DollarSign,
+    description: "Restated audited financials (3-5 years) including Balance Sheet, P&L, Cash Flow, and MD&A.",
+    color: "text-green-600",
+    bgColor: "bg-green-50"
+  },
+  "Legal and Regulatory Matters": {
+    icon: Scale,
+    description: "Pending litigation, criminal proceedings, tax disputes, and regulatory actions disclosure.",
+    color: "text-amber-600",
+    bgColor: "bg-amber-50"
+  },
+  "Other Information/Disclosures": {
+    icon: MoreHorizontal,
+    description: "Material contracts, important documents, statutory approvals, and other mandatory disclosures.",
+    color: "text-slate-600",
+    bgColor: "bg-slate-50"
+  }
 };
 
 const DRHPBuilder = ({ user, apiClient }) => {
@@ -159,42 +226,69 @@ const DRHPBuilder = ({ user, apiClient }) => {
             </CardContent>
           </Card>
 
-          {/* Sections Grid */}
+          {/* Sub-Modules Grid */}
           <div>
-            <h3 className="text-lg font-semibold tracking-tight text-black mb-4">DRHP Sections</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h3 className="text-lg font-semibold tracking-tight text-black mb-2">DRHP Sub-Modules</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Click on any section to upload documents and edit content. Each module includes document upload and download capabilities.
+            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {sections.map((section, index) => {
-                const IconComponent = SECTION_ICONS[section.section_name] || FileText;
+                const metadata = SECTION_METADATA[section.section_name] || {
+                  icon: FileText,
+                  description: "Section content and documents",
+                  color: "text-gray-600",
+                  bgColor: "bg-gray-50"
+                };
+                const IconComponent = metadata.icon;
+                
                 return (
                   <Card
                     key={section.section_id}
-                    className="border border-border card-hover cursor-pointer"
+                    className="border border-border card-hover cursor-pointer group transition-all duration-200 hover:border-[#1DA1F2]/30 hover:shadow-md"
                     onClick={() => navigate(`/drhp-builder/${projectId}/section/${section.section_id}`)}
                     data-testid={`section-card-${index}`}
                   >
-                    <CardContent className="p-5">
+                    <CardContent className="p-6">
                       <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <IconComponent className="w-5 h-5 text-gray-600" />
+                        {/* Icon */}
+                        <div className={`w-12 h-12 ${metadata.bgColor} rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105`}>
+                          <IconComponent className={`w-6 h-6 ${metadata.color}`} />
                         </div>
+                        
+                        {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <h4 className="font-medium text-black truncate">
+                          {/* Header Row */}
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <h4 className="font-semibold text-black text-base leading-tight">
                               {section.section_name}
                             </h4>
                             {getStatusBadge(section.status)}
                           </div>
-                          <div className="flex items-center gap-4 mt-2">
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Upload className="w-3 h-3" />
-                              {section.documents?.length || 0} documents
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              Updated {new Date(section.updated_at).toLocaleDateString()}
-                            </span>
+                          
+                          {/* Description */}
+                          <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                            {metadata.description}
+                          </p>
+                          
+                          {/* Footer Row */}
+                          <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                            <div className="flex items-center gap-4">
+                              <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                <Upload className="w-3.5 h-3.5" />
+                                {section.documents?.length || 0} docs
+                              </span>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                <Download className="w-3.5 h-3.5" />
+                                Download
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-[#1DA1F2] opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-xs font-medium">Open</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </div>
                           </div>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                       </div>
                     </CardContent>
                   </Card>
@@ -202,6 +296,27 @@ const DRHPBuilder = ({ user, apiClient }) => {
               })}
             </div>
           </div>
+
+          {/* Legend */}
+          <Card className="border border-border bg-gray-50/50">
+            <CardContent className="p-4">
+              <div className="flex flex-wrap items-center gap-6 text-sm">
+                <span className="font-medium text-black">Status Legend:</span>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Draft</Badge>
+                  <span className="text-muted-foreground">Initial content</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Review</Badge>
+                  <span className="text-muted-foreground">Under review</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Final</Badge>
+                  <span className="text-muted-foreground">Approved</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
