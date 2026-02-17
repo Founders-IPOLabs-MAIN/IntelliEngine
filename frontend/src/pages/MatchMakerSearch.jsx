@@ -199,6 +199,27 @@ const MatchMakerSearch = ({ user, apiClient }) => {
       </Dialog>
       
       <main className="flex-1 ml-64">
+        {/* AI Banner */}
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3">
+          <div className="flex items-center justify-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              <span className="font-medium">AI-Powered Match Making Engine</span>
+            </div>
+            <span className="text-white/60">|</span>
+            <span className="text-white/80">Intelligent matching based on expertise, track record & sector fit</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/20 gap-1"
+              onClick={() => navigate("/matchmaker")}
+            >
+              <Brain className="w-4 h-4" />
+              Get AI Recommendations
+            </Button>
+          </div>
+        </div>
+        
         {/* Header */}
         <header className="sticky top-0 z-10 bg-white border-b border-border px-6 py-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
