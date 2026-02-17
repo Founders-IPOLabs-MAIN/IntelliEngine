@@ -57,25 +57,33 @@ Build a complete IPO-readiness platform with:
    - Create new project dialog
 
 3. **DRHP Builder**
-   - All 13 SEBI-compliant sections:
-     - Cover Page
-     - Definitions and Abbreviations
-     - Risk Factors
-     - Introduction and Summary
-     - Capital Structure
-     - Objects of the Issue
-     - Basis for Issue Price
-     - Industry Overview
-     - Business Overview
-     - Management & Promoter Group
-     - Financial Information
-     - Legal and Regulatory Matters
-     - Other Information/Disclosures
+   - All 13 SEBI-compliant sections with descriptions:
+     - Cover Page: Basic issuer info, company name, logo, contacts, lead managers, registrar
+     - Definitions and Abbreviations: Technical terms used throughout DRHP
+     - Risk Factors: Internal, external, business, regulatory, legal, financial risks
+     - Introduction and Summary: Offer overview, issue type, business & industry summary
+     - Capital Structure: Authorized/paid-up capital, pre/post-IPO shareholding
+     - Objects of the Issue: Fund utilization - debt, capex, working capital
+     - Basis for Issue Price: Qualitative/quantitative factors, peer comparison
+     - Industry Overview: Market size, growth trends, competitive landscape
+     - Business Overview: Business model, operations, products, strategies
+     - Management & Promoter Group: Directors, KMPs, promoter details
+     - Financial Information: Restated financials, balance sheet, P&L, cash flow
+     - Legal and Regulatory Matters: Litigation, tax disputes, regulatory actions
+     - Other Information/Disclosures: Material contracts, approvals, disclosures
    - Progress tracking per project
    - Status badges (Draft/Review/Final)
+   - Document upload and download capabilities per section
 
-4. **Section Editor**
-   - Content text area for section editing
+4. **Section Editor (Task 4 - Enhanced)**
+   - **Structured Form Fields** specific to each section type:
+     - Cover Page: Company name, logo URL, addresses, contacts, lead managers, registrar
+     - Risk Factors: 6 risk categories (internal, external, business, regulatory, legal, financial)
+     - Capital Structure: Authorized capital, paid-up capital, shareholding patterns
+     - Objects of Issue: Fund utilization breakdown with amounts
+     - Financial Info: Revenue trends, profit trends, key ratios, MD&A
+     - And more for all 13 sections
+   - **Tabs UI**: Structured Form tab + Notes & OCR tab
    - Document upload via drag & drop or click
    - Document list with file info
    - OCR processing trigger
