@@ -1,0 +1,1172 @@
+{
+  "timestamp": "2026-02-17T16:55:01.000936",
+  "base_url": "https://fullstack-docs-2.preview.emergentagent.com",
+  "total_tests": 8,
+  "passed_tests": 8,
+  "failed_tests": 0,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test_name": "Health Check",
+      "method": "GET",
+      "endpoint": "health",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 67,
+      "response_data": {
+        "status": "healthy",
+        "timestamp": "2026-02-17T16:54:47.407454+00:00"
+      }
+    },
+    {
+      "test_name": "Get Categories",
+      "method": "GET",
+      "endpoint": "matchmaker/categories",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 1558,
+      "response_data": {
+        "categories": [
+          {
+            "id": "ipo_consultants",
+            "name": "IPO Consultants & SME's",
+            "description": "Expert guidance for IPO journey and SME listings",
+            "icon": "Briefcase"
+          },
+          {
+            "id": "merchant_bankers",
+            "name": "SEBI-registered Merchant Bankers",
+            "description": "Licensed merchant banking services for IPO management",
+            "icon": "Building2"
+          },
+          {
+            "id": "cfo_finance",
+            "name": "CFO & Finance Heads",
+            "description": "Experienced financial leadership for IPO readiness",
+            "icon": "TrendingUp"
+          },
+          {
+            "id": "chartered_accountants",
+            "name": "Chartered Accountants (CA)",
+            "description": "Audit, taxation, and financial reporting expertise",
+            "icon": "Calculator"
+          },
+          {
+            "id": "company_secretaries",
+            "name": "Company Secretaries (CS)",
+            "description": "Corporate governance and compliance specialists",
+            "icon": "FileCheck"
+          },
+          {
+            "id": "legal_tax",
+            "name": "Legal & Tax Advisors",
+            "description": "Legal structuring and tax planning for IPOs",
+            "icon": "Scale"
+          },
+          {
+            "id": "peer_auditors",
+            "name": "Peer Review Auditors",
+            "description": "Independent audit review and quality assurance",
+            "icon": "Search"
+          },
+          {
+            "id": "independent_directors",
+            "name": "Independent Directors",
+            "description": "Board-level expertise and corporate governance",
+            "icon": "Users"
+          },
+          {
+            "id": "valuation_experts",
+            "name": "Registered Valuation Experts",
+            "description": "Professional business and asset valuation services",
+            "icon": "PieChart"
+          },
+          {
+            "id": "rta",
+            "name": "RTA (Registrar & Transfer Agents)",
+            "description": "Share registry and transfer management services",
+            "icon": "FileSpreadsheet"
+          },
+          {
+            "id": "bankers",
+            "name": "Bankers",
+            "description": "Banking services and escrow account management",
+            "icon": "Landmark"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Get Cities",
+      "method": "GET",
+      "endpoint": "matchmaker/cities",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 255,
+      "response_data": {
+        "cities": [
+          "Mumbai",
+          "Delhi",
+          "Bangalore",
+          "Hyderabad",
+          "Chennai",
+          "Kolkata",
+          "Pune",
+          "Ahmedabad",
+          "Jaipur",
+          "Lucknow",
+          "Surat",
+          "Chandigarh",
+          "Indore",
+          "Nagpur",
+          "Coimbatore",
+          "Kochi",
+          "Vadodara",
+          "Gurgaon",
+          "Noida",
+          "Thane",
+          "Navi Mumbai",
+          "Visakhapatnam",
+          "Bhopal",
+          "Patna"
+        ]
+      }
+    },
+    {
+      "test_name": "Get Expertise Tags",
+      "method": "GET",
+      "endpoint": "matchmaker/expertise-tags",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 284,
+      "response_data": {
+        "tags": [
+          "SEBI Regulations",
+          "Due Diligence",
+          "Corporate Governance",
+          "Taxation",
+          "Financial Reporting",
+          "Risk Management",
+          "Compliance",
+          "Valuation",
+          "FinTech IPOs",
+          "Manufacturing IPOs",
+          "IT/Tech IPOs",
+          "Healthcare IPOs",
+          "SME IPO",
+          "Mainboard IPO",
+          "Regulatory Compliance",
+          "Investor Relations"
+        ]
+      }
+    },
+    {
+      "test_name": "Search Professionals",
+      "method": "GET",
+      "endpoint": "matchmaker/professionals",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 5257,
+      "response_data": {
+        "professionals": [
+          {
+            "professional_id": "prof_demo_003",
+            "user_id": null,
+            "category_id": "merchant_bankers",
+            "name": "Vikram Kapoor",
+            "agency_name": "Capital First Securities",
+            "email": "vikram@capitalfirst.com",
+            "mobile": "+91 98111 22334",
+            "mobile_verified": true,
+            "profile_picture": null,
+            "locations": [
+              "Mumbai",
+              "Delhi",
+              "Chennai",
+              "Kolkata"
+            ],
+            "years_experience": 20,
+            "professional_summary": "SEBI registered Category I Merchant Banker with extensive experience in managing IPOs across sectors.",
+            "expertise_tags": [
+              "Mainboard IPO",
+              "SEBI Regulations",
+              "Investor Relations",
+              "Valuation"
+            ],
+            "ipo_track_record": [
+              {
+                "company_name": "PharmaCare Ltd",
+                "year": "2023",
+                "issue_size": "1200",
+                "role": "BRLM"
+              },
+              {
+                "company_name": "AutoParts India",
+                "year": "2022",
+                "issue_size": "600",
+                "role": "BRLM"
+              },
+              {
+                "company_name": "RetailMart",
+                "year": "2022",
+                "issue_size": "400",
+                "role": "BRLM"
+              }
+            ],
+            "certifications": [],
+            "sebi_registration": "INM000098765",
+            "ca_cs_membership": null,
+            "services": [
+              {
+                "name": "IPO Management",
+                "price": "Project Based"
+              },
+              {
+                "name": "Book Building",
+                "price": "Project Based"
+              }
+            ],
+            "pricing_model": "negotiable",
+            "hourly_rate": null,
+            "clients": [
+              "PharmaCare",
+              "AutoParts",
+              "RetailMart",
+              "TechGiant"
+            ],
+            "ratings_count": 25,
+            "average_rating": 4.9,
+            "reviews": [
+              {
+                "review_id": "rev_002",
+                "reviewer_name": "Sanjay Gupta",
+                "rating": 5,
+                "review_text": "Best merchant banker we have worked with. Seamless IPO execution.",
+                "created_at": "2026-02-17T16:28:25.363Z"
+              }
+            ],
+            "is_verified": true,
+            "consent_display": true,
+            "consent_marketing": true,
+            "status": "active",
+            "created_at": "2026-02-17T16:28:25.363000+00:00",
+            "updated_at": "2026-02-17T16:28:25.363000+00:00"
+          },
+          {
+            "professional_id": "prof_demo_001",
+            "user_id": null,
+            "category_id": "ipo_consultants",
+            "name": "Rajesh Sharma",
+            "agency_name": "IPO Advisory Partners LLP",
+            "email": "rajesh@ipoadvisory.com",
+            "mobile": "+91 98765 43210",
+            "mobile_verified": true,
+            "profile_picture": null,
+            "locations": [
+              "Mumbai",
+              "Delhi",
+              "Bangalore"
+            ],
+            "years_experience": 15,
+            "professional_summary": "Expert IPO consultant with 15+ years of experience managing SME and Mainboard IPOs. Specialized in technology and manufacturing sectors.",
+            "expertise_tags": [
+              "SME IPO",
+              "Mainboard IPO",
+              "SEBI Regulations",
+              "Due Diligence"
+            ],
+            "ipo_track_record": [
+              {
+                "company_name": "TechVision Ltd",
+                "year": "2023",
+                "issue_size": "500",
+                "role": "Lead Consultant"
+              },
+              {
+                "company_name": "GreenEnergy Corp",
+                "year": "2022",
+                "issue_size": "800",
+                "role": "IPO Advisor"
+              }
+            ],
+            "certifications": [],
+            "sebi_registration": "INM000012345",
+            "ca_cs_membership": null,
+            "services": [
+              {
+                "name": "IPO Readiness Assessment",
+                "price": "\u20b92,00,000"
+              },
+              {
+                "name": "DRHP Drafting Support",
+                "price": "\u20b95,00,000"
+              }
+            ],
+            "pricing_model": "fixed",
+            "hourly_rate": null,
+            "clients": [
+              "TechVision",
+              "GreenEnergy",
+              "FinServe"
+            ],
+            "ratings_count": 12,
+            "average_rating": 4.8,
+            "reviews": [
+              {
+                "review_id": "rev_001",
+                "reviewer_name": "Amit Patel",
+                "rating": 5,
+                "review_text": "Excellent guidance throughout our IPO journey. Highly recommended!",
+                "created_at": "2026-02-17T16:28:25.363Z"
+              }
+            ],
+            "is_verified": true,
+            "consent_display": true,
+            "consent_marketing": true,
+            "status": "active",
+            "created_at": "2026-02-17T16:28:25.363000+00:00",
+            "updated_at": "2026-02-17T16:28:25.363000+00:00"
+          },
+          {
+            "professional_id": "prof_demo_002",
+            "user_id": null,
+            "category_id": "chartered_accountants",
+            "name": "Priya Mehta",
+            "agency_name": "Mehta & Associates",
+            "email": "priya@mehtaca.com",
+            "mobile": "+91 99887 76655",
+            "mobile_verified": true,
+            "profile_picture": null,
+            "locations": [
+              "Mumbai",
+              "Pune"
+            ],
+            "years_experience": 12,
+            "professional_summary": "Chartered Accountant specializing in IPO audits and financial due diligence. Expertise in restated financials preparation.",
+            "expertise_tags": [
+              "Financial Reporting",
+              "Taxation",
+              "Due Diligence",
+              "Compliance"
+            ],
+            "ipo_track_record": [
+              {
+                "company_name": "DataSoft Solutions",
+                "year": "2023",
+                "issue_size": "350",
+                "role": "Statutory Auditor"
+              }
+            ],
+            "certifications": [],
+            "sebi_registration": null,
+            "ca_cs_membership": "ICAI-123456",
+            "services": [
+              {
+                "name": "IPO Audit",
+                "price": "\u20b98,00,000"
+              },
+              {
+                "name": "Financial Due Diligence",
+                "price": "\u20b93,00,000"
+              }
+            ],
+            "pricing_model": "fixed",
+            "hourly_rate": null,
+            "clients": [
+              "DataSoft",
+              "CloudTech"
+            ],
+            "ratings_count": 8,
+            "average_rating": 4.6,
+            "reviews": [],
+            "is_verified": true,
+            "consent_display": true,
+            "consent_marketing": false,
+            "status": "active",
+            "created_at": "2026-02-17T16:28:25.363000+00:00",
+            "updated_at": "2026-02-17T16:28:25.363000+00:00"
+          },
+          {
+            "professional_id": "prof_demo_004",
+            "user_id": null,
+            "category_id": "legal_tax",
+            "name": "Ananya Reddy",
+            "agency_name": "Reddy Legal Partners",
+            "email": "ananya@reddylegal.com",
+            "mobile": "+91 87654 32100",
+            "mobile_verified": true,
+            "profile_picture": null,
+            "locations": [
+              "Hyderabad",
+              "Bangalore",
+              "Chennai"
+            ],
+            "years_experience": 10,
+            "professional_summary": "Corporate lawyer specializing in IPO legal structuring, regulatory compliance, and securities law.",
+            "expertise_tags": [
+              "SEBI Regulations",
+              "Corporate Governance",
+              "Compliance",
+              "Regulatory Compliance"
+            ],
+            "ipo_track_record": [],
+            "certifications": [],
+            "sebi_registration": null,
+            "ca_cs_membership": null,
+            "services": [
+              {
+                "name": "Legal Due Diligence",
+                "price": "\u20b94,00,000"
+              },
+              {
+                "name": "IPO Legal Advisory",
+                "price": "\u20b96,00,000"
+              }
+            ],
+            "pricing_model": "hourly",
+            "hourly_rate": 15000,
+            "clients": [
+              "InfoTech",
+              "BioMed"
+            ],
+            "ratings_count": 6,
+            "average_rating": 4.5,
+            "reviews": [],
+            "is_verified": true,
+            "consent_display": true,
+            "consent_marketing": false,
+            "status": "active",
+            "created_at": "2026-02-17T16:28:25.363000+00:00",
+            "updated_at": "2026-02-17T16:28:25.363000+00:00"
+          }
+        ],
+        "total": 4,
+        "page": 1,
+        "limit": 20,
+        "pages": 1
+      }
+    },
+    {
+      "test_name": "AI Recommendations",
+      "method": "POST",
+      "endpoint": "matchmaker/ai-recommend",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 8819,
+      "response_data": {
+        "match_summary": "TechCorp Solutions, a first-time tech startup targeting an SME IPO, requires expert assistance for IPO readiness assessment and DRHP drafting. The strategy focuses on matching professionals with relevant expertise in SME IPOs, regulatory compliance, financial due diligence, and legal advisory, prioritizing those available in Mumbai or Bangalore.",
+        "recommendations": [
+          {
+            "professional_id": "prof_demo_001",
+            "match_score": 98,
+            "match_reason": "Rajesh Sharma is an ideal primary consultant, directly aligning with TechCorp's specific needs for IPO Readiness Assessment and DRHP Drafting Support. His extensive experience with SME IPOs, high rating, SEBI registration, and availability in both Mumbai and Bangalore make him a perfect fit for this initial assessment stage.",
+            "key_strengths": [
+              "SME IPO expertise",
+              "DRHP Drafting Support",
+              "IPO Readiness Assessment",
+              "SEBI Registered",
+              "Preferred locations coverage"
+            ],
+            "recommended_for": "Primary IPO Consultant, IPO Readiness Assessment, DRHP Drafting Support",
+            "professional": {
+              "professional_id": "prof_demo_001",
+              "user_id": null,
+              "category_id": "ipo_consultants",
+              "name": "Rajesh Sharma",
+              "agency_name": "IPO Advisory Partners LLP",
+              "email": "rajesh@ipoadvisory.com",
+              "mobile": "+91 98765 43210",
+              "mobile_verified": true,
+              "profile_picture": null,
+              "locations": [
+                "Mumbai",
+                "Delhi",
+                "Bangalore"
+              ],
+              "years_experience": 15,
+              "professional_summary": "Expert IPO consultant with 15+ years of experience managing SME and Mainboard IPOs. Specialized in technology and manufacturing sectors.",
+              "expertise_tags": [
+                "SME IPO",
+                "Mainboard IPO",
+                "SEBI Regulations",
+                "Due Diligence"
+              ],
+              "ipo_track_record": [
+                {
+                  "company_name": "TechVision Ltd",
+                  "year": "2023",
+                  "issue_size": "500",
+                  "role": "Lead Consultant"
+                },
+                {
+                  "company_name": "GreenEnergy Corp",
+                  "year": "2022",
+                  "issue_size": "800",
+                  "role": "IPO Advisor"
+                }
+              ],
+              "certifications": [],
+              "sebi_registration": "INM000012345",
+              "ca_cs_membership": null,
+              "services": [
+                {
+                  "name": "IPO Readiness Assessment",
+                  "price": "\u20b92,00,000"
+                },
+                {
+                  "name": "DRHP Drafting Support",
+                  "price": "\u20b95,00,000"
+                }
+              ],
+              "pricing_model": "fixed",
+              "hourly_rate": null,
+              "clients": [
+                "TechVision",
+                "GreenEnergy",
+                "FinServe"
+              ],
+              "ratings_count": 12,
+              "average_rating": 4.8,
+              "reviews": [
+                {
+                  "review_id": "rev_001",
+                  "reviewer_name": "Amit Patel",
+                  "rating": 5,
+                  "review_text": "Excellent guidance throughout our IPO journey. Highly recommended!",
+                  "created_at": "2026-02-17T16:28:25.363Z"
+                }
+              ],
+              "is_verified": true,
+              "consent_display": true,
+              "consent_marketing": true,
+              "status": "active",
+              "created_at": "2026-02-17T16:28:25.363000+00:00",
+              "updated_at": "2026-02-17T16:28:25.363000+00:00"
+            }
+          },
+          {
+            "professional_id": "prof_demo_002",
+            "match_score": 90,
+            "match_reason": "Priya Mehta, a Chartered Accountant, is crucial for TechCorp's IPO journey. Her expertise in Financial Reporting, Due Diligence, and IPO Audit is essential for the financial aspects that feed into the DRHP and overall readiness, ensuring financial integrity and compliance. Her presence in Mumbai is also beneficial.",
+            "key_strengths": [
+              "Financial Reporting",
+              "Due Diligence",
+              "IPO Audit",
+              "CA Membership",
+              "Mumbai location"
+            ],
+            "recommended_for": "Financial Due Diligence, IPO Audit, Financial Compliance Advisory",
+            "professional": {
+              "professional_id": "prof_demo_002",
+              "user_id": null,
+              "category_id": "chartered_accountants",
+              "name": "Priya Mehta",
+              "agency_name": "Mehta & Associates",
+              "email": "priya@mehtaca.com",
+              "mobile": "+91 99887 76655",
+              "mobile_verified": true,
+              "profile_picture": null,
+              "locations": [
+                "Mumbai",
+                "Pune"
+              ],
+              "years_experience": 12,
+              "professional_summary": "Chartered Accountant specializing in IPO audits and financial due diligence. Expertise in restated financials preparation.",
+              "expertise_tags": [
+                "Financial Reporting",
+                "Taxation",
+                "Due Diligence",
+                "Compliance"
+              ],
+              "ipo_track_record": [
+                {
+                  "company_name": "DataSoft Solutions",
+                  "year": "2023",
+                  "issue_size": "350",
+                  "role": "Statutory Auditor"
+                }
+              ],
+              "certifications": [],
+              "sebi_registration": null,
+              "ca_cs_membership": "ICAI-123456",
+              "services": [
+                {
+                  "name": "IPO Audit",
+                  "price": "\u20b98,00,000"
+                },
+                {
+                  "name": "Financial Due Diligence",
+                  "price": "\u20b93,00,000"
+                }
+              ],
+              "pricing_model": "fixed",
+              "hourly_rate": null,
+              "clients": [
+                "DataSoft",
+                "CloudTech"
+              ],
+              "ratings_count": 8,
+              "average_rating": 4.6,
+              "reviews": [],
+              "is_verified": true,
+              "consent_display": true,
+              "consent_marketing": false,
+              "status": "active",
+              "created_at": "2026-02-17T16:28:25.363000+00:00",
+              "updated_at": "2026-02-17T16:28:25.363000+00:00"
+            }
+          },
+          {
+            "professional_id": "prof_demo_004",
+            "match_score": 85,
+            "match_reason": "Ananya Reddy's legal expertise in SEBI Regulations, Corporate Governance, and Regulatory Compliance is vital for TechCorp's DRHP drafting and ensuring legal readiness for the IPO. While she has not managed previous IPOs, her specialized knowledge in compliance and corporate law is indispensable for a first-time tech startup. Her Bangalore location is a significant advantage.",
+            "key_strengths": [
+              "SEBI Regulations expertise",
+              "Corporate Governance",
+              "Legal Due Diligence",
+              "Regulatory Compliance",
+              "Bangalore location"
+            ],
+            "recommended_for": "Legal Due Diligence, IPO Legal Advisory, Corporate Governance Structuring",
+            "professional": {
+              "professional_id": "prof_demo_004",
+              "user_id": null,
+              "category_id": "legal_tax",
+              "name": "Ananya Reddy",
+              "agency_name": "Reddy Legal Partners",
+              "email": "ananya@reddylegal.com",
+              "mobile": "+91 87654 32100",
+              "mobile_verified": true,
+              "profile_picture": null,
+              "locations": [
+                "Hyderabad",
+                "Bangalore",
+                "Chennai"
+              ],
+              "years_experience": 10,
+              "professional_summary": "Corporate lawyer specializing in IPO legal structuring, regulatory compliance, and securities law.",
+              "expertise_tags": [
+                "SEBI Regulations",
+                "Corporate Governance",
+                "Compliance",
+                "Regulatory Compliance"
+              ],
+              "ipo_track_record": [],
+              "certifications": [],
+              "sebi_registration": null,
+              "ca_cs_membership": null,
+              "services": [
+                {
+                  "name": "Legal Due Diligence",
+                  "price": "\u20b94,00,000"
+                },
+                {
+                  "name": "IPO Legal Advisory",
+                  "price": "\u20b96,00,000"
+                }
+              ],
+              "pricing_model": "hourly",
+              "hourly_rate": 15000,
+              "clients": [
+                "InfoTech",
+                "BioMed"
+              ],
+              "ratings_count": 6,
+              "average_rating": 4.5,
+              "reviews": [],
+              "is_verified": true,
+              "consent_display": true,
+              "consent_marketing": false,
+              "status": "active",
+              "created_at": "2026-02-17T16:28:25.363000+00:00",
+              "updated_at": "2026-02-17T16:28:25.363000+00:00"
+            }
+          },
+          {
+            "professional_id": "prof_demo_003",
+            "match_score": 70,
+            "match_reason": "While Vikram Kapoor's primary expertise lies in Mainboard IPOs and his services are geared towards later stages like IPO Management and Book Building, a merchant banker is an eventual necessity for any IPO. His extensive experience and SEBI registration make him a strong candidate for future engagement once TechCorp progresses beyond the initial readiness and DRHP drafting phases. His Mumbai location is also an advantage.",
+            "key_strengths": [
+              "Extensive experience (20 years)",
+              "SEBI Registered Merchant Banker",
+              "High Rating",
+              "IPO Management expertise",
+              "Mumbai location"
+            ],
+            "recommended_for": "Initial Valuation Guidance, Future IPO Management, and Book Building (post-DRHP submission)",
+            "professional": {
+              "professional_id": "prof_demo_003",
+              "user_id": null,
+              "category_id": "merchant_bankers",
+              "name": "Vikram Kapoor",
+              "agency_name": "Capital First Securities",
+              "email": "vikram@capitalfirst.com",
+              "mobile": "+91 98111 22334",
+              "mobile_verified": true,
+              "profile_picture": null,
+              "locations": [
+                "Mumbai",
+                "Delhi",
+                "Chennai",
+                "Kolkata"
+              ],
+              "years_experience": 20,
+              "professional_summary": "SEBI registered Category I Merchant Banker with extensive experience in managing IPOs across sectors.",
+              "expertise_tags": [
+                "Mainboard IPO",
+                "SEBI Regulations",
+                "Investor Relations",
+                "Valuation"
+              ],
+              "ipo_track_record": [
+                {
+                  "company_name": "PharmaCare Ltd",
+                  "year": "2023",
+                  "issue_size": "1200",
+                  "role": "BRLM"
+                },
+                {
+                  "company_name": "AutoParts India",
+                  "year": "2022",
+                  "issue_size": "600",
+                  "role": "BRLM"
+                },
+                {
+                  "company_name": "RetailMart",
+                  "year": "2022",
+                  "issue_size": "400",
+                  "role": "BRLM"
+                }
+              ],
+              "certifications": [],
+              "sebi_registration": "INM000098765",
+              "ca_cs_membership": null,
+              "services": [
+                {
+                  "name": "IPO Management",
+                  "price": "Project Based"
+                },
+                {
+                  "name": "Book Building",
+                  "price": "Project Based"
+                }
+              ],
+              "pricing_model": "negotiable",
+              "hourly_rate": null,
+              "clients": [
+                "PharmaCare",
+                "AutoParts",
+                "RetailMart",
+                "TechGiant"
+              ],
+              "ratings_count": 25,
+              "average_rating": 4.9,
+              "reviews": [
+                {
+                  "review_id": "rev_002",
+                  "reviewer_name": "Sanjay Gupta",
+                  "rating": 5,
+                  "review_text": "Best merchant banker we have worked with. Seamless IPO execution.",
+                  "created_at": "2026-02-17T16:28:25.363Z"
+                }
+              ],
+              "is_verified": true,
+              "consent_display": true,
+              "consent_marketing": true,
+              "status": "active",
+              "created_at": "2026-02-17T16:28:25.363000+00:00",
+              "updated_at": "2026-02-17T16:28:25.363000+00:00"
+            }
+          }
+        ],
+        "additional_advice": "TechCorp Solutions should prioritize establishing a core team including an IPO consultant (for readiness and DRHP), a Chartered Accountant (for financial aspects), and a Legal Advisor (for compliance). While a merchant banker is crucial, their primary engagement for management and book-building typically begins after the DRHP is substantially drafted. Given the 'first-time IPO for a tech startup' context, securing comprehensive guidance from professionals experienced with SME IPOs is paramount.",
+        "ai_powered": true
+      }
+    },
+    {
+      "test_name": "Search Professionals",
+      "method": "GET",
+      "endpoint": "matchmaker/professionals",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 5257,
+      "response_data": {
+        "professionals": [
+          {
+            "professional_id": "prof_demo_003",
+            "user_id": null,
+            "category_id": "merchant_bankers",
+            "name": "Vikram Kapoor",
+            "agency_name": "Capital First Securities",
+            "email": "vikram@capitalfirst.com",
+            "mobile": "+91 98111 22334",
+            "mobile_verified": true,
+            "profile_picture": null,
+            "locations": [
+              "Mumbai",
+              "Delhi",
+              "Chennai",
+              "Kolkata"
+            ],
+            "years_experience": 20,
+            "professional_summary": "SEBI registered Category I Merchant Banker with extensive experience in managing IPOs across sectors.",
+            "expertise_tags": [
+              "Mainboard IPO",
+              "SEBI Regulations",
+              "Investor Relations",
+              "Valuation"
+            ],
+            "ipo_track_record": [
+              {
+                "company_name": "PharmaCare Ltd",
+                "year": "2023",
+                "issue_size": "1200",
+                "role": "BRLM"
+              },
+              {
+                "company_name": "AutoParts India",
+                "year": "2022",
+                "issue_size": "600",
+                "role": "BRLM"
+              },
+              {
+                "company_name": "RetailMart",
+                "year": "2022",
+                "issue_size": "400",
+                "role": "BRLM"
+              }
+            ],
+            "certifications": [],
+            "sebi_registration": "INM000098765",
+            "ca_cs_membership": null,
+            "services": [
+              {
+                "name": "IPO Management",
+                "price": "Project Based"
+              },
+              {
+                "name": "Book Building",
+                "price": "Project Based"
+              }
+            ],
+            "pricing_model": "negotiable",
+            "hourly_rate": null,
+            "clients": [
+              "PharmaCare",
+              "AutoParts",
+              "RetailMart",
+              "TechGiant"
+            ],
+            "ratings_count": 25,
+            "average_rating": 4.9,
+            "reviews": [
+              {
+                "review_id": "rev_002",
+                "reviewer_name": "Sanjay Gupta",
+                "rating": 5,
+                "review_text": "Best merchant banker we have worked with. Seamless IPO execution.",
+                "created_at": "2026-02-17T16:28:25.363Z"
+              }
+            ],
+            "is_verified": true,
+            "consent_display": true,
+            "consent_marketing": true,
+            "status": "active",
+            "created_at": "2026-02-17T16:28:25.363000+00:00",
+            "updated_at": "2026-02-17T16:28:25.363000+00:00"
+          },
+          {
+            "professional_id": "prof_demo_001",
+            "user_id": null,
+            "category_id": "ipo_consultants",
+            "name": "Rajesh Sharma",
+            "agency_name": "IPO Advisory Partners LLP",
+            "email": "rajesh@ipoadvisory.com",
+            "mobile": "+91 98765 43210",
+            "mobile_verified": true,
+            "profile_picture": null,
+            "locations": [
+              "Mumbai",
+              "Delhi",
+              "Bangalore"
+            ],
+            "years_experience": 15,
+            "professional_summary": "Expert IPO consultant with 15+ years of experience managing SME and Mainboard IPOs. Specialized in technology and manufacturing sectors.",
+            "expertise_tags": [
+              "SME IPO",
+              "Mainboard IPO",
+              "SEBI Regulations",
+              "Due Diligence"
+            ],
+            "ipo_track_record": [
+              {
+                "company_name": "TechVision Ltd",
+                "year": "2023",
+                "issue_size": "500",
+                "role": "Lead Consultant"
+              },
+              {
+                "company_name": "GreenEnergy Corp",
+                "year": "2022",
+                "issue_size": "800",
+                "role": "IPO Advisor"
+              }
+            ],
+            "certifications": [],
+            "sebi_registration": "INM000012345",
+            "ca_cs_membership": null,
+            "services": [
+              {
+                "name": "IPO Readiness Assessment",
+                "price": "\u20b92,00,000"
+              },
+              {
+                "name": "DRHP Drafting Support",
+                "price": "\u20b95,00,000"
+              }
+            ],
+            "pricing_model": "fixed",
+            "hourly_rate": null,
+            "clients": [
+              "TechVision",
+              "GreenEnergy",
+              "FinServe"
+            ],
+            "ratings_count": 12,
+            "average_rating": 4.8,
+            "reviews": [
+              {
+                "review_id": "rev_001",
+                "reviewer_name": "Amit Patel",
+                "rating": 5,
+                "review_text": "Excellent guidance throughout our IPO journey. Highly recommended!",
+                "created_at": "2026-02-17T16:28:25.363Z"
+              }
+            ],
+            "is_verified": true,
+            "consent_display": true,
+            "consent_marketing": true,
+            "status": "active",
+            "created_at": "2026-02-17T16:28:25.363000+00:00",
+            "updated_at": "2026-02-17T16:28:25.363000+00:00"
+          },
+          {
+            "professional_id": "prof_demo_002",
+            "user_id": null,
+            "category_id": "chartered_accountants",
+            "name": "Priya Mehta",
+            "agency_name": "Mehta & Associates",
+            "email": "priya@mehtaca.com",
+            "mobile": "+91 99887 76655",
+            "mobile_verified": true,
+            "profile_picture": null,
+            "locations": [
+              "Mumbai",
+              "Pune"
+            ],
+            "years_experience": 12,
+            "professional_summary": "Chartered Accountant specializing in IPO audits and financial due diligence. Expertise in restated financials preparation.",
+            "expertise_tags": [
+              "Financial Reporting",
+              "Taxation",
+              "Due Diligence",
+              "Compliance"
+            ],
+            "ipo_track_record": [
+              {
+                "company_name": "DataSoft Solutions",
+                "year": "2023",
+                "issue_size": "350",
+                "role": "Statutory Auditor"
+              }
+            ],
+            "certifications": [],
+            "sebi_registration": null,
+            "ca_cs_membership": "ICAI-123456",
+            "services": [
+              {
+                "name": "IPO Audit",
+                "price": "\u20b98,00,000"
+              },
+              {
+                "name": "Financial Due Diligence",
+                "price": "\u20b93,00,000"
+              }
+            ],
+            "pricing_model": "fixed",
+            "hourly_rate": null,
+            "clients": [
+              "DataSoft",
+              "CloudTech"
+            ],
+            "ratings_count": 8,
+            "average_rating": 4.6,
+            "reviews": [],
+            "is_verified": true,
+            "consent_display": true,
+            "consent_marketing": false,
+            "status": "active",
+            "created_at": "2026-02-17T16:28:25.363000+00:00",
+            "updated_at": "2026-02-17T16:28:25.363000+00:00"
+          },
+          {
+            "professional_id": "prof_demo_004",
+            "user_id": null,
+            "category_id": "legal_tax",
+            "name": "Ananya Reddy",
+            "agency_name": "Reddy Legal Partners",
+            "email": "ananya@reddylegal.com",
+            "mobile": "+91 87654 32100",
+            "mobile_verified": true,
+            "profile_picture": null,
+            "locations": [
+              "Hyderabad",
+              "Bangalore",
+              "Chennai"
+            ],
+            "years_experience": 10,
+            "professional_summary": "Corporate lawyer specializing in IPO legal structuring, regulatory compliance, and securities law.",
+            "expertise_tags": [
+              "SEBI Regulations",
+              "Corporate Governance",
+              "Compliance",
+              "Regulatory Compliance"
+            ],
+            "ipo_track_record": [],
+            "certifications": [],
+            "sebi_registration": null,
+            "ca_cs_membership": null,
+            "services": [
+              {
+                "name": "Legal Due Diligence",
+                "price": "\u20b94,00,000"
+              },
+              {
+                "name": "IPO Legal Advisory",
+                "price": "\u20b96,00,000"
+              }
+            ],
+            "pricing_model": "hourly",
+            "hourly_rate": 15000,
+            "clients": [
+              "InfoTech",
+              "BioMed"
+            ],
+            "ratings_count": 6,
+            "average_rating": 4.5,
+            "reviews": [],
+            "is_verified": true,
+            "consent_display": true,
+            "consent_marketing": false,
+            "status": "active",
+            "created_at": "2026-02-17T16:28:25.363000+00:00",
+            "updated_at": "2026-02-17T16:28:25.363000+00:00"
+          }
+        ],
+        "total": 4,
+        "page": 1,
+        "limit": 20,
+        "pages": 1
+      }
+    },
+    {
+      "test_name": "Get Professional Profile",
+      "method": "GET",
+      "endpoint": "matchmaker/professionals/prof_demo_003",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_size": 1525,
+      "response_data": {
+        "professional_id": "prof_demo_003",
+        "user_id": null,
+        "category_id": "merchant_bankers",
+        "name": "Vikram Kapoor",
+        "agency_name": "Capital First Securities",
+        "email": "vikram@capitalfirst.com",
+        "mobile": "+91 98111 22334",
+        "mobile_verified": true,
+        "profile_picture": null,
+        "locations": [
+          "Mumbai",
+          "Delhi",
+          "Chennai",
+          "Kolkata"
+        ],
+        "years_experience": 20,
+        "professional_summary": "SEBI registered Category I Merchant Banker with extensive experience in managing IPOs across sectors.",
+        "expertise_tags": [
+          "Mainboard IPO",
+          "SEBI Regulations",
+          "Investor Relations",
+          "Valuation"
+        ],
+        "ipo_track_record": [
+          {
+            "company_name": "PharmaCare Ltd",
+            "year": "2023",
+            "issue_size": "1200",
+            "role": "BRLM"
+          },
+          {
+            "company_name": "AutoParts India",
+            "year": "2022",
+            "issue_size": "600",
+            "role": "BRLM"
+          },
+          {
+            "company_name": "RetailMart",
+            "year": "2022",
+            "issue_size": "400",
+            "role": "BRLM"
+          }
+        ],
+        "certifications": [],
+        "sebi_registration": "INM000098765",
+        "ca_cs_membership": null,
+        "services": [
+          {
+            "name": "IPO Management",
+            "price": "Project Based"
+          },
+          {
+            "name": "Book Building",
+            "price": "Project Based"
+          }
+        ],
+        "pricing_model": "negotiable",
+        "hourly_rate": null,
+        "clients": [
+          "PharmaCare",
+          "AutoParts",
+          "RetailMart",
+          "TechGiant"
+        ],
+        "ratings_count": 25,
+        "average_rating": 4.9,
+        "reviews": [
+          {
+            "review_id": "rev_002",
+            "reviewer_name": "Sanjay Gupta",
+            "rating": 5,
+            "review_text": "Best merchant banker we have worked with. Seamless IPO execution.",
+            "created_at": "2026-02-17T16:28:25.363Z"
+          }
+        ],
+        "is_verified": true,
+        "consent_display": true,
+        "consent_marketing": true,
+        "status": "active",
+        "created_at": "2026-02-17T16:28:25.363000+00:00",
+        "updated_at": "2026-02-17T16:28:25.363000+00:00"
+      }
+    }
+  ]
+}
