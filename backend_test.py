@@ -214,7 +214,7 @@ class AIMatchMakerTester:
                 "failed_tests": self.tests_run - self.tests_passed,
                 "success_rate": (self.tests_passed/self.tests_run*100) if self.tests_run > 0 else 0,
                 "test_results": self.test_results
-            }, indent=2)
+            }, f, indent=2)
         
         print(f"   Detailed results saved to: {results_file}")
         
