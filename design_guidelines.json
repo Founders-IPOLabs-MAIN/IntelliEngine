@@ -1,0 +1,133 @@
+{
+  "project_name": "IntelliEngine",
+  "design_philosophy": {
+    "persona": "E1 - The Anti-AI Designer",
+    "core_principles": [
+      "Fusion over Imitation: Mix Finance precision with Swiss Art clarity.",
+      "Content is King: Data density must be legible, not overwhelming.",
+      "Negative Space: Use whitespace to guide the eye in high-density layouts.",
+      "Contrast: Stark Black/White for structure, Twitter Blue for action."
+    ],
+    "anti_patterns": [
+      "No generic full-screen gradients.",
+      "No 'Inter everywhere' without customization (use tight tracking).",
+      "No center-aligned text for data-heavy sections.",
+      "No low-contrast gray text for critical data."
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "primary": "Geist, Inter, sans-serif",
+      "mono": "Geist Mono, JetBrains Mono, monospace"
+    },
+    "installation_instructions": "Add 'Geist' font via 'npm install geist' or use Google Fonts for 'Inter' with 'font-feature-settings: \"ss01\", \"ss02\"' to mimic the square tech look.",
+    "styles": {
+      "headings": "font-sans font-semibold tracking-tight text-foreground",
+      "body": "font-sans text-base text-muted-foreground leading-relaxed",
+      "data": "font-mono text-sm tracking-wide text-foreground",
+      "labels": "text-xs font-medium uppercase tracking-wider text-muted-foreground"
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": "#FFFFFF",
+      "foreground": "#000000",
+      "primary": "#1DA1F2",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#F3F4F6",
+      "secondary_foreground": "#111827",
+      "muted": "#F9FAFB",
+      "muted_foreground": "#6B7280",
+      "accent": "#F3F4F6",
+      "accent_foreground": "#111827",
+      "border": "#E5E7EB",
+      "input": "#E5E7EB",
+      "ring": "#1DA1F2"
+    },
+    "usage_rules": [
+      "Background must be Minimalist White (#FFFFFF).",
+      "Primary Actions (Buttons, Links, Active States) use Twitter Blue (#1DA1F2).",
+      "Typography and Borders use Deep Black (#000000) or very dark gray for high contrast.",
+      "Avoid gradients for backgrounds; use solid colors or subtle noise textures."
+    ]
+  },
+  "layout": {
+    "grid_system": "Bento Grid (Mode B: High Density)",
+    "spacing": "Tailwind Scale: p-4, p-6, p-8. Use generous padding inside containers.",
+    "container_style": "Clean card-based layout with subtle borders (1px solid #E5E7EB). No heavy shadows.",
+    "sidebar": {
+      "width": "w-64",
+      "style": "Fixed, border-r border-border bg-background",
+      "navigation": "Vertical list with Lucide icons. Active state: bg-secondary text-primary border-r-2 border-primary."
+    }
+  },
+  "components": {
+    "buttons": {
+      "style": "Sharp or slightly rounded (rounded-md). Solid primary color for CTAs. Outline for secondary actions.",
+      "hover": "Opacity 90% or slight lift. No massive color shifts."
+    },
+    "cards": {
+      "style": "Flat, white background, 1px border. Minimal shadow (shadow-sm).",
+      "header": "Border-b border-border p-4",
+      "content": "p-4 or p-6"
+    },
+    "inputs": {
+      "style": "Flat, 1px border. Focus ring: 2px solid Twitter Blue (#1DA1F2).",
+      "radius": "rounded-md"
+    },
+    "tables": {
+      "style": "High-density. Row height: h-10 or h-12. Header: bg-muted/50 text-xs uppercase.",
+      "borders": "border-b border-border"
+    },
+    "breadcrumbs": {
+      "style": "Text-sm text-muted-foreground. Separator: '/'. Active item: text-foreground font-medium."
+    }
+  },
+  "pages": {
+    "login": {
+      "layout": "Split screen or Centered Card on Minimalist Background.",
+      "elements": [
+        "Logo (IntelliEngine)",
+        "Google OAuth Button (Social Login)",
+        "Email/Password Form",
+        "Subtle abstract 3D shape or clean office image in background/side panel."
+      ]
+    },
+    "dashboard": {
+      "layout": "Sidebar + Main Content Area.",
+      "header": "Welcome Message + Breadcrumbs + User Profile.",
+      "modules": [
+        "Free IPO Assessment (Card)",
+        "DRHP Builder (Card - Main Focus)",
+        "IPO Funding (Card)",
+        "IPO Match Maker (Card)",
+        "Market & DRHP Analytics (Card)"
+      ]
+    },
+    "drhp_builder": {
+      "layout": "Sidebar (13 Sub-modules) + Main Editor Area.",
+      "sub_modules": [
+        "Cover Page", "Definitions", "Risk Factors", "Introduction", "Capital Structure",
+        "Objects", "Basis for Issue Price", "Industry Overview", "Business Overview",
+        "Management", "Financial Info", "Legal Matters", "Other Disclosures"
+      ],
+      "features": "Document Upload (Drag & Drop), OCR Status, Version Control List."
+    }
+  },
+  "assets": {
+    "logo_placeholder": "IntelliEngine (Text-based, font-weight: 700, tracking-tighter)",
+    "images": {
+      "login_background": "https://images.unsplash.com/photo-1692889783742-7d99b124c402?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwd2hpdGUlMjBhYnN0cmFjdCUyMGdlb21ldHJpYyUyMDNkJTIwc2hhcGVzfGVufDB8fHx8MTc3MTMzOTE4OHww&ixlib=rb-4.1.0&q=85",
+      "office_abstract": "https://images.unsplash.com/photo-1764229119403-f15e5715517d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjb3Jwb3JhdGUlMjBvZmZpY2UlMjBza3lzY3JhcGVyJTIwbWluaW1hbGlzdHxlbnwwfHx8fDE3NzEzMzkxOTN8MA&ixlib=rb-4.1.0&q=85"
+    },
+    "icons": "Lucide React (already installed)"
+  },
+  "universal_guidelines": [
+    "Use 'sonner' for toasts.",
+    "Use 'recharts' for analytics charts.",
+    "Ensure all interactive elements have 'data-testid'.",
+    "Do not use 'transition: all'. Use specific transitions.",
+    "Maintain high contrast for accessibility (WCAG AA).",
+    "Use 'Geist' or 'Inter' with tight tracking for that 'Engineering-focused' look."
+  ]
+}
