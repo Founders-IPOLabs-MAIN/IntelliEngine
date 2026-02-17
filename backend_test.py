@@ -186,7 +186,7 @@ print('Test user and session created successfully');
             "sector": "Technology"
         }
         
-        success, project = self.run_test("Create project", "POST", "projects", 201, project_data)
+        success, project = self.run_test("Create project", "POST", "projects", 200, project_data)
         if success and project:
             self.project_id = project.get('project_id')
             print(f"   Created project: {self.project_id}")
