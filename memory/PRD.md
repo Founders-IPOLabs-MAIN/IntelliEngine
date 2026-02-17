@@ -41,6 +41,52 @@ Build a complete IPO-readiness platform with:
 - **Authentication:** Emergent-managed Google OAuth
 - **OCR:** Gemini 2.5 Flash via Emergent LLM Key
 
+### Phase 2 - Match Maker Module (Feb 17, 2026)
+1. **Match Maker Landing Page (Practo-style)**
+   - 11 professional categories with icons and descriptions
+   - Hero section with search bar
+   - Stats bar (500+ Experts, 11 Categories, 100+ Cities, 200+ IPOs)
+   - "Register as Professional" CTA
+   - How It Works section
+
+2. **Professional Search & Discovery**
+   - City selection dialog
+   - Advanced filtering sidebar:
+     - Category filter
+     - Years of Experience (1-5, 5-10, 10+)
+     - IPO Experience (5+ IPOs, SME Specialist, Mainboard Specialist)
+     - Subject Matter Expertise tags
+     - Verified Only filter
+   - Profile cards with name, agency, rating, expertise, experience, locations
+   - Action buttons: View Profile, Book Call, Send Enquiry
+   - Pagination support
+
+3. **Professional Profile Page**
+   - Detailed profile header with photo, rating, verification badge
+   - Services Offered with pricing
+   - IPO Track Record
+   - Contact Information
+   - Certifications (SEBI, CA/CS memberships)
+   - Reviews section with Write Review functionality
+   - Book Consultation dialog (video/audio/in-person)
+   - Send Enquiry dialog
+
+4. **Professional Registration (3-step wizard)**
+   - Step 1: Basic Info (category, name, agency, email, mobile)
+   - Step 2: Professional Details (locations, experience, summary, expertise tags, certifications)
+   - Step 3: Services & Consent (DPDP Act 2023 compliance)
+
+5. **Backend APIs**
+   - GET /api/matchmaker/categories - 11 professional categories
+   - GET /api/matchmaker/cities - 24 Indian cities
+   - GET /api/matchmaker/expertise-tags - 16 expertise tags
+   - GET /api/matchmaker/professionals - Search with filters
+   - POST /api/matchmaker/professionals - Register as professional
+   - PUT /api/matchmaker/professionals/:id - Update profile
+   - POST /api/matchmaker/enquiry - Send enquiry
+   - POST /api/matchmaker/consultation - Book consultation
+   - POST /api/matchmaker/professionals/:id/review - Add review
+
 ## What's Been Implemented ✅
 
 ### Phase 1 MVP (Feb 17, 2026)
