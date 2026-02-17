@@ -29,7 +29,9 @@ import {
   Clock,
   Users,
   Briefcase,
-  ChevronRight
+  ChevronRight,
+  Sparkles,
+  Brain
 } from "lucide-react";
 
 const MatchMakerSearch = ({ user, apiClient }) => {
