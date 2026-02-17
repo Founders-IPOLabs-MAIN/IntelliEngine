@@ -160,6 +160,38 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/matchmaker"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <MatchMaker user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/matchmaker/search"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <MatchMakerSearch user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/matchmaker/profile/:professionalId"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <ProfessionalProfile user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/matchmaker/register"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <ProfessionalRegister user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
       <Route path="/" element={<Navigate to="/dashboard" />} />
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
