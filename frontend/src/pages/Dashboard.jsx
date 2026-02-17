@@ -246,7 +246,14 @@ const Dashboard = ({ user, apiClient }) => {
                 <Card
                   key={module.id}
                   className={`border border-border card-hover cursor-pointer animate-fade-in stagger-${index + 1} ${module.disabled ? 'opacity-60' : ''}`}
-                  onClick={() => !module.disabled && module.id === 'drhp' && projects.length > 0 && navigate(`/drhp-builder/${projects[0].project_id}`)}
+                  onClick={() => {
+                    if (module.disabled) return;
+                    if (module.path) {
+                      navigate(module.path);
+                    } else if (module.id === 'drhp' && projects.length > 0) {
+                      navigate(`/drhp-builder/${projects[0].project_id}`);
+                    }
+                  }}
                   data-testid={`module-${module.id}`}
                 >
                   <CardContent className="p-6">
