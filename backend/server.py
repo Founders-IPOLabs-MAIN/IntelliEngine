@@ -471,7 +471,8 @@ async def upload_document(
             {"$push": {"documents": document_id}}
         )
     
-    del doc_record["_id"] if "_id" in doc_record else None
+    if "_id" in doc_record:
+        del doc_record["_id"]
     doc_record["created_at"] = now
     
     return Document(**doc_record)
