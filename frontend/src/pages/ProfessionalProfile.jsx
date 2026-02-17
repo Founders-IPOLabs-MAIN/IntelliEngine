@@ -31,7 +31,9 @@ import {
   DollarSign,
   Loader2,
   ChevronRight,
-  Send
+  Send,
+  Sparkles,
+  Brain
 } from "lucide-react";
 
 const ProfessionalProfile = ({ user, apiClient }) => {
