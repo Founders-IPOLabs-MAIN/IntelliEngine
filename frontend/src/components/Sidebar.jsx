@@ -46,7 +46,7 @@ const Sidebar = ({ user, apiClient }) => {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: null, disabled: true },
     { id: "drhp", label: "DRHP Builder", icon: FileText, path: null },
-    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: null, disabled: true },
+    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding" },
     { id: "matchmaker", label: "Match Maker", icon: Users, path: "/matchmaker" },
     { id: "analytics", label: "Analytics", icon: BarChart3, path: null, disabled: true },
   ];
