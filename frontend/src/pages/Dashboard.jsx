@@ -108,11 +108,12 @@ const Dashboard = ({ user, apiClient }) => {
     {
       id: "funding",
       title: "IPO Funding",
-      description: "Pre-IPO capital orchestration platform",
+      description: "Human + AI powered capital orchestration platform",
       icon: TrendingUp,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      disabled: true
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
+      disabled: false,
+      path: "/funding"
     },
     {
       id: "matchmaker",
