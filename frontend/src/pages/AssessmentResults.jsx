@@ -45,7 +45,21 @@ const AssessmentResults = ({ user, apiClient }) => {
   const fetchAssessment = async () => {
     try {
       const response = await apiClient.get(`/assessment/${assessmentId}`);
-      setData(response.data);
+      // Transform API response to match expected structure
+      // API returns: { results: { pe_valuation, dcf_valuation, ... } }
+      // Component expects: { calculators: { pe_valuation, dcf_valuation, ... } }
+      const apiData = response.data;
+      const transformedData = {
+        ...apiData,
+        calculators: apiData.results?.pe_valuation ? apiData.results : apiData.calculators,
+        eligibility: apiData.results?.eligibility || apiData.eligibility,
+        readiness: apiData.results?.readiness || apiData.readiness,
+        valuation_summary: apiData.results?.valuation_summary || apiData.valuation_summary || {
+          average_valuation: 0,
+          suggested_price_band: { low: 0, high: 0 }
+        }
+      };
+      setData(transformedData);
     } catch (error) {
       console.error("Failed to fetch assessment:", error);
       toast.error("Assessment not found");
