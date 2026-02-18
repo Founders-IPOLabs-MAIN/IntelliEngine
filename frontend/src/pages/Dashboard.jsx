@@ -362,7 +362,35 @@ const Dashboard = ({ user, apiClient }) => {
               </div>
             )}
           </div>
+
+          {/* Legal Links Section */}
+          <Card className="border border-border bg-gray-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-center gap-8">
+                <Link
+                  to="/legal-disclaimer"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-[#1DA1F2] transition-colors font-medium"
+                  data-testid="dashboard-legal-disclaimer"
+                >
+                  <Scale className="w-4 h-4" />
+                  Legal Disclaimer
+                </Link>
+                <div className="w-px h-4 bg-border" />
+                <Link
+                  to="/terms-of-use"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-[#1DA1F2] transition-colors font-medium"
+                  data-testid="dashboard-terms-of-use"
+                >
+                  <FileText className="w-4 h-4" />
+                  Terms of Use
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Footer */}
+        <Footer />
       </main>
     </div>
   );
