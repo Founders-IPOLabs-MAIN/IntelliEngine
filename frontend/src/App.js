@@ -12,6 +12,8 @@ import MatchMaker from "@/pages/MatchMaker";
 import MatchMakerSearch from "@/pages/MatchMakerSearch";
 import ProfessionalProfile from "@/pages/ProfessionalProfile";
 import ProfessionalRegister from "@/pages/ProfessionalRegister";
+import LegalDisclaimer from "@/pages/LegalDisclaimer";
+import TermsOfUse from "@/pages/TermsOfUse";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
