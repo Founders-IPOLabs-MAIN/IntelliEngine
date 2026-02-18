@@ -51,8 +51,9 @@ const Sidebar = ({ user, apiClient }) => {
     { id: "analytics", label: "Analytics", icon: BarChart3, path: null, disabled: true },
   ];
 
-  const isActive = (path) => {
+  const isActive = (path, itemId) => {
     if (!path) return false;
+    if (itemId === 'funding' && location.pathname.startsWith('/funding')) return true;
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
@@ -82,7 +83,7 @@ const Sidebar = ({ user, apiClient }) => {
             onClick={() => item.path && !item.disabled && navigate(item.path)}
             disabled={item.disabled}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left
-              ${isActive(item.path) || (item.id === 'drhp' && location.pathname.includes('drhp-builder'))
+              ${isActive(item.path, item.id) || (item.id === 'drhp' && location.pathname.includes('drhp-builder'))
                 ? "bg-[#1DA1F2]/10 text-[#1DA1F2] border-r-2 border-[#1DA1F2]"
                 : item.disabled
                   ? "text-gray-400 cursor-not-allowed"
