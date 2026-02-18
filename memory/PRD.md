@@ -6,6 +6,7 @@
 **Platform Type:** Cloud-hosted & secure IPO-readiness platform  
 **Target Market:** Indian market  
 **Date Started:** Feb 17, 2026
+**Last Updated:** Feb 18, 2026
 
 ## Original Problem Statement
 Build a complete IPO-readiness platform with:
@@ -14,12 +15,15 @@ Build a complete IPO-readiness platform with:
 - DRHP Builder module with 13 sub-modules
 - Document upload/download with OCR scanning
 - Version controlled, collaborative platform
+- Match Maker module for connecting with IPO professionals
+- Legal and Disclaimer module for compliance
 
 ## User Personas
 1. **CFOs** - Need to manage IPO documentation and financial reporting
 2. **Company Secretaries** - Handle compliance and regulatory matters
 3. **Investment Bankers** - Track IPO progress and due diligence
 4. **Founders/Promoters** - Monitor overall IPO readiness
+5. **IPO Professionals** - CAs, CSs, CFOs, Legal experts registering on the platform
 
 ## Core Requirements (Static)
 - [x] User authentication with Google OAuth
@@ -29,10 +33,13 @@ Build a complete IPO-readiness platform with:
 - [x] DRHP Builder with 13 sections
 - [x] Document upload to GridFS
 - [x] Document download
-- [x] OCR processing with AI (Gemini)
+- [x] OCR processing with AI (GPT-5.2 Vision)
 - [x] Section content editing
 - [x] Status tracking (Draft/Review/Final)
 - [x] Progress tracking
+- [x] Match Maker module with AI recommendations
+- [x] Legal Disclaimer and Terms of Use pages
+- [x] Click-wrap agreement for professional registration
 
 ## Tech Stack
 - **Frontend:** React 19, Tailwind CSS, ShadCN UI, Lucide Icons
@@ -40,6 +47,36 @@ Build a complete IPO-readiness platform with:
 - **Database:** MongoDB with GridFS
 - **Authentication:** Emergent-managed Google OAuth
 - **OCR:** Gemini 2.5 Flash via Emergent LLM Key
+
+### Phase 3 - Legal and Disclaimer Module (Feb 18, 2026) ✅
+1. **Legal Disclaimer Page** (`/legal-disclaimer`)
+   - General Nature of the Platform section
+   - No Investment or Financial Advice section
+   - Professional Matchmaking section
+   - AI & Technology Limitations section
+   - Privacy & Data Security section
+
+2. **Terms of Use Page** (`/terms-of-use`)
+   - Representation of Professional Standing section
+   - Strict Prohibition of Illegal Solicitation section
+   - Integrity of AI-Human Interaction section
+   - Confidentiality & Data Protection section
+   - Indemnity & Limitation of Liability section
+
+3. **Global Footer Component**
+   - Appears on all protected/authenticated pages
+   - Links to Legal Disclaimer and Terms of Use
+   - IntelliEngine branding with copyright
+
+4. **Dashboard Legal Links**
+   - Dedicated legal links section with icons
+   - Links to Legal Disclaimer and Terms of Use
+
+5. **Click-Wrap Agreement**
+   - Added to Professional Registration Step 3
+   - Mandatory checkbox for Terms of Use acceptance
+   - Links open in new tabs
+   - Submit button disabled until terms accepted
 
 ### Phase 2 - Match Maker Module (Feb 17, 2026)
 1. **Match Maker Landing Page (Practo-style)**
@@ -287,11 +324,13 @@ Build a complete IPO-readiness platform with:
 
 ## Testing Status
 - ✅ Backend API tests passed (100%)
-- ✅ Frontend integration tests passed (95%)
+- ✅ Frontend integration tests passed (100%)
 - ✅ Authentication flow tested
 - ✅ CRUD operations tested
 - ✅ Document upload/download tested
 - ✅ OCR processing tested
+- ✅ Match Maker module tested
+- ✅ Legal and Disclaimer module tested (iteration_5.json - 20/20 tests passed)
 
 ## Next Tasks
 1. Add rich text editor for DRHP sections
@@ -299,3 +338,10 @@ Build a complete IPO-readiness platform with:
 3. Add document preview
 4. Build PDF export functionality
 5. Implement email/password auth
+
+## Completed in Latest Session (Feb 18, 2026)
+- ✅ Legal Disclaimer page created (`/legal-disclaimer`)
+- ✅ Terms of Use page created (`/terms-of-use`)
+- ✅ Global footer added to all protected routes via ProtectedRoute component
+- ✅ Click-wrap agreement added to Professional Registration (Step 3)
+- ✅ All legal module tests passed (100%)
