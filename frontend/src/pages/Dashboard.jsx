@@ -94,7 +94,8 @@ const Dashboard = ({ user, apiClient }) => {
       icon: CheckCircle2,
       color: "text-green-600",
       bgColor: "bg-green-50",
-      disabled: true
+      disabled: false,
+      path: "/assessment"
     },
     {
       id: "drhp",
