@@ -78,6 +78,47 @@ Build a complete IPO-readiness platform with:
    - Links open in new tabs
    - Submit button disabled until terms accepted
 
+### Phase 4 - IPO Funding Module (Feb 18, 2026) ✅
+1. **Funding Landing Page** (`/funding`)
+   - Disclaimer popup on first visit (DPDP Act 2023 compliant)
+   - 4 pillar cards: Pre-IPO Funding, Post-IPO Funding, Our Funding Partners, Funding Eligibility Quiz
+   - "Human + AI Powered Funding Engine" branding
+   - Stats bar and How It Works section
+
+2. **Pre-IPO Funding Page** (`/funding/pre-ipo`)
+   - 6 funding options: Angel & Seed, VC, PE, Bridge Financing, Mezzanine, Pre-IPO Placement
+   - Interactive cards with jargon-free explanations
+   - AI Funding Fitment Calculator (3-question quick assessment)
+   - Expert Consultation booking with MOCKED calendar
+
+3. **Post-IPO Funding Page** (`/funding/post-ipo`)
+   - 5 funding options: FPO, Rights Issue, QIP, Preferential Allotment, NCDs
+   - Same interaction pattern as Pre-IPO
+   - AI Fitment and Expert Consultation features
+
+4. **Funding Partners Directory** (`/funding/partners`)
+   - 4 tabs: Investment Banks, HNI Networks, Sovereign Wealth Funds, Banks
+   - Real Indian partners data (Kotak Mahindra Capital, ICICI Securities, SBI, Indian Angel Network, ADIA, GIC, etc.)
+   - External links to partner websites
+
+5. **AI-Powered Eligibility Quiz** (`/funding/quiz`)
+   - Multi-step wizard (max 6 questions)
+   - Adapts for Pre-IPO vs Post-IPO funding
+   - 3-tier scoring: High Readiness (80-100), Potentially Ready (50-79), Early Stage (<50)
+   - AI Profile Summary generation using GPT-5.2
+   - Action buttons based on tier (VIP booking, standard call, toolkit download)
+
+6. **Backend APIs**
+   - GET /api/funding/pre-ipo-options - 6 Pre-IPO funding options
+   - GET /api/funding/post-ipo-options - 5 Post-IPO funding options
+   - GET /api/funding/partners - All partner categories
+   - GET /api/funding/quiz-questions - Quiz questions by funding type
+   - POST /api/funding/quiz-evaluate - AI-powered quiz evaluation
+   - POST /api/funding/ai-fitment - Quick 3-question AI assessment
+   - POST /api/funding/book-consultation - Expert consultation booking
+   - POST /api/funding/disclaimer-consent - Record user consent
+   - GET /api/funding/available-slots - MOCKED calendar slots
+
 ### Phase 2 - Match Maker Module (Feb 17, 2026)
 1. **Match Maker Landing Page (Practo-style)**
    - **AI-Powered Match Making Engine** branding
