@@ -44,7 +44,7 @@ const Sidebar = ({ user, apiClient }) => {
 
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-    { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: null, disabled: true },
+    { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: "/assessment" },
     { id: "drhp", label: "DRHP Builder", icon: FileText, path: null },
     { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding" },
     { id: "matchmaker", label: "Match Maker", icon: Users, path: "/matchmaker" },
