@@ -19,6 +19,9 @@ import PreIPOFunding from "@/pages/PreIPOFunding";
 import PostIPOFunding from "@/pages/PostIPOFunding";
 import FundingPartners from "@/pages/FundingPartners";
 import FundingQuiz from "@/pages/FundingQuiz";
+import Assessment from "@/pages/Assessment";
+import AssessmentWizard from "@/pages/AssessmentWizard";
+import AssessmentResults from "@/pages/AssessmentResults";
 
 // Components
 import Footer from "@/components/Footer";
