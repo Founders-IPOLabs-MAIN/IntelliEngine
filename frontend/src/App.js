@@ -14,6 +14,11 @@ import ProfessionalProfile from "@/pages/ProfessionalProfile";
 import ProfessionalRegister from "@/pages/ProfessionalRegister";
 import LegalDisclaimer from "@/pages/LegalDisclaimer";
 import TermsOfUse from "@/pages/TermsOfUse";
+import Funding from "@/pages/Funding";
+import PreIPOFunding from "@/pages/PreIPOFunding";
+import PostIPOFunding from "@/pages/PostIPOFunding";
+import FundingPartners from "@/pages/FundingPartners";
+import FundingQuiz from "@/pages/FundingQuiz";
 
 // Components
 import Footer from "@/components/Footer";
