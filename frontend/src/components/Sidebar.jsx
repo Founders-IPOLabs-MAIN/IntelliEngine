@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -14,7 +14,8 @@ import {
   LogOut,
   Settings,
   ChevronDown,
-  Loader2
+  Loader2,
+  Scale
 } from "lucide-react";
 import {
   DropdownMenu,
