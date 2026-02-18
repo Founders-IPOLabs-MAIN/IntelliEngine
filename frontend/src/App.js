@@ -225,6 +225,46 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/funding"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <Funding user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/funding/pre-ipo"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <PreIPOFunding user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/funding/post-ipo"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <PostIPOFunding user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/funding/partners"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <FundingPartners user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/funding/quiz"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <FundingQuiz user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
       <Route path="/" element={<Navigate to="/dashboard" />} />
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
