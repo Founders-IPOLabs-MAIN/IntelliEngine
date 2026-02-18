@@ -15,6 +15,9 @@ import ProfessionalRegister from "@/pages/ProfessionalRegister";
 import LegalDisclaimer from "@/pages/LegalDisclaimer";
 import TermsOfUse from "@/pages/TermsOfUse";
 
+// Components
+import Footer from "@/components/Footer";
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
@@ -78,7 +81,7 @@ const AuthCallback = () => {
 };
 
 // Protected Route Component
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, showFooter = true }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -122,8 +125,15 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" />;
   }
 
-  // Pass user and apiClient to children
-  return children({ user, apiClient });
+  // Pass user and apiClient to children, with global footer
+  return (
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1">
+        {children({ user, apiClient })}
+      </div>
+      {showFooter && <Footer />}
+    </div>
+  );
 };
 
 // App Router Component

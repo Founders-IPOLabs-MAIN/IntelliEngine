@@ -55,7 +55,8 @@ const ProfessionalRegister = ({ user, apiClient }) => {
     pricing_model: "",
     hourly_rate: "",
     consent_display: true,
-    consent_marketing: false
+    consent_marketing: false,
+    terms_accepted: false
   });
   
   const [newService, setNewService] = useState({ name: "", price: "" });
@@ -513,6 +514,53 @@ const ProfessionalRegister = ({ user, apiClient }) => {
                     You can deactivate or delete your profile at any time. Personal data will be removed after a 30-day cool-off period as per DPDP Act 2023.
                   </p>
                 </div>
+
+                <Separator />
+
+                {/* Click-Wrap Agreement */}
+                <div className="space-y-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <h4 className="font-semibold text-black flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-amber-600" />
+                    Terms of Use Agreement
+                  </h4>
+                  
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="terms_accepted"
+                      checked={formData.terms_accepted}
+                      onCheckedChange={(v) => handleFieldChange("terms_accepted", v)}
+                      data-testid="terms-checkbox"
+                    />
+                    <div>
+                      <label htmlFor="terms_accepted" className="font-medium text-black cursor-pointer">
+                        I agree to the Terms of Use *
+                      </label>
+                      <p className="text-sm text-muted-foreground">
+                        By checking this box, I confirm that I have read and agree to the{" "}
+                        <a
+                          href="/terms-of-use"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#1DA1F2] hover:underline font-medium"
+                          data-testid="terms-link"
+                        >
+                          Terms of Use
+                        </a>{" "}
+                        and{" "}
+                        <a
+                          href="/legal-disclaimer"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#1DA1F2] hover:underline font-medium"
+                          data-testid="legal-disclaimer-link"
+                        >
+                          Legal Disclaimer
+                        </a>{" "}
+                        of IntelliEngine by IPO Labs.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -545,7 +593,7 @@ const ProfessionalRegister = ({ user, apiClient }) => {
             ) : (
               <Button
                 onClick={handleSubmit}
-                disabled={submitting || !formData.consent_display}
+                disabled={submitting || !formData.consent_display || !formData.terms_accepted}
                 className="bg-[#1DA1F2] hover:bg-[#1a8cd8]"
                 data-testid="submit-registration-btn"
               >
