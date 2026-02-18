@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import Sidebar from "@/components/Sidebar";
+import Footer from "@/components/Footer";
 import {
   Building2,
   FileText,
@@ -20,7 +21,8 @@ import {
   ArrowRight,
   Clock,
   CheckCircle2,
-  Loader2
+  Loader2,
+  Scale
 } from "lucide-react";
 
 const SECTORS = [
