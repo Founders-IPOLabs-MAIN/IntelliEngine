@@ -49,12 +49,30 @@ const AssessmentResults = ({ user, apiClient }) => {
       // API returns: { results: { pe_valuation, dcf_valuation, ... } }
       // Component expects: { calculators: { pe_valuation, dcf_valuation, ... } }
       const apiData = response.data;
+      const results = apiData.results || {};
+      const calculators = results.pe_valuation ? results : apiData.calculators;
+      
+      // Calculate valuation_summary from calculator data if not present
+      let valuation_summary = apiData.valuation_summary;
+      if (!valuation_summary && calculators) {
+        const peVal = calculators.pe_valuation?.valuation || 0;
+        const dcfVal = calculators.dcf_valuation?.valuation || 0;
+        const avgValuation = (peVal + dcfVal) / 2;
+        valuation_summary = {
+          average_valuation: avgValuation,
+          suggested_price_band: {
+            low: avgValuation * 0.85,
+            high: avgValuation * 0.90
+          }
+        };
+      }
+      
       const transformedData = {
         ...apiData,
-        calculators: apiData.results?.pe_valuation ? apiData.results : apiData.calculators,
-        eligibility: apiData.results?.eligibility || apiData.eligibility,
-        readiness: apiData.results?.readiness || apiData.readiness,
-        valuation_summary: apiData.results?.valuation_summary || apiData.valuation_summary || {
+        calculators: calculators,
+        eligibility: results.eligibility || apiData.eligibility,
+        readiness: results.readiness || apiData.readiness,
+        valuation_summary: valuation_summary || {
           average_valuation: 0,
           suggested_price_band: { low: 0, high: 0 }
         }
