@@ -268,6 +268,30 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/assessment"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <Assessment user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/assessment/start"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <AssessmentWizard user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/assessment/results/:assessmentId"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <AssessmentResults user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
       <Route path="/" element={<Navigate to="/dashboard" />} />
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
