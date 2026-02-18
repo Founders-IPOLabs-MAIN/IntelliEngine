@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import Sidebar from "@/components/Sidebar";
-import Footer from "@/components/Footer";
 import {
   Building2,
   FileText,
@@ -388,9 +387,6 @@ const Dashboard = ({ user, apiClient }) => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Footer */}
-        <Footer />
       </main>
     </div>
   );
