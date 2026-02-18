@@ -194,6 +194,22 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/legal-disclaimer"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <LegalDisclaimer user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/terms-of-use"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <TermsOfUse user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
       <Route path="/" element={<Navigate to="/dashboard" />} />
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
