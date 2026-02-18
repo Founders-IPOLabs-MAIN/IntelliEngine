@@ -119,6 +119,39 @@ Build a complete IPO-readiness platform with:
    - POST /api/funding/disclaimer-consent - Record user consent
    - GET /api/funding/available-slots - MOCKED calendar slots
 
+### Phase 5 - IPO Assessment Module (Feb 18, 2026) ✅
+1. **Assessment Landing Page** (`/assessment`)
+   - Features overview: 4 calculators, SEBI eligibility, AI analysis, Readiness score
+   - How It Works section with 4 steps
+   - Calculator previews with descriptions
+   - SEBI Mainboard vs SME criteria overview
+
+2. **Assessment Wizard** (`/assessment/start`)
+   - 5-step multi-step form with progress bar
+   - Step 1: Company Info (Type, Target Board, Reporting Unit)
+   - Step 2: P&L Data (3 years: PAT, EBITDA, Revenue with tabs)
+   - Step 3: Balance Sheet (Debt, Cash, NTA 3yrs, Net Worth 3yrs, D&A, CapEx, WC Change)
+   - Step 4: Projections (Growth Rate, WACC, Terminal Growth)
+   - Step 5: Market Data (Industry P/E, Peer P/E, Issue Type, Dilution %)
+
+3. **Assessment Results Page** (`/assessment/results/:id`)
+   - Readiness Score with visual circular indicator (0-100)
+   - 3-tier status: Ready (75+), Requires 1-2 Years Planning (50-74), Not Eligible (<50)
+   - Valuation Summary: Average valuation, Suggested price band, Issue size
+   - 4 Calculator Cards:
+     - P/E Valuation: PAT × Industry P/E Multiple
+     - DCF Valuation: 5-year FCF projections + Gordon Growth terminal value
+     - FCFE: PAT + D&A - CapEx - ΔWC
+     - Issue Size: Valuation × Dilution %
+   - SEBI Eligibility Check with pass/fail for each criterion
+   - AI-Powered Gap Analysis using GPT-5.2 (restricted to website services)
+   - CTA buttons to Match Maker, DRHP Builder, and Funding modules
+
+4. **Backend APIs**
+   - POST /api/assessment/calculate - Run all 4 calculators + AI analysis
+   - GET /api/assessment/history - User's assessment history
+   - GET /api/assessment/{id} - Specific assessment details
+
 ### Phase 2 - Match Maker Module (Feb 17, 2026)
 1. **Match Maker Landing Page (Practo-style)**
    - **AI-Powered Match Making Engine** branding
