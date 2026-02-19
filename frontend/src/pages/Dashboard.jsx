@@ -322,7 +322,7 @@ const Dashboard = ({ user, apiClient }) => {
                   <Card
                     key={project.project_id}
                     className="border border-border card-hover cursor-pointer"
-                    onClick={() => navigate(`/drhp-builder/${project.project_id}`)}
+                    onClick={() => navigate(`/project/${project.project_id}/command-center`)}
                     data-testid={`project-card-${project.project_id}`}
                   >
                     <CardHeader className="pb-3">
