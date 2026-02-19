@@ -168,6 +168,14 @@ const AppRouter = () => {
         }
       />
       <Route
+        path="/project/:projectId/command-center"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <CommandCenter user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/drhp-builder/:projectId"
         element={
           <ProtectedRoute>
