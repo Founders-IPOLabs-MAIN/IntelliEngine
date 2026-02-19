@@ -175,18 +175,8 @@ const Funding = ({ user, apiClient }) => {
           <div className="max-w-6xl mx-auto px-8 py-6">
             <div className="flex items-center justify-center gap-12">
               <div className="text-center">
-                <p className="text-3xl font-bold text-black">₹500 Cr+</p>
-                <p className="text-sm text-muted-foreground">Funding Facilitated</p>
-              </div>
-              <div className="w-px h-12 bg-border" />
-              <div className="text-center">
                 <p className="text-3xl font-bold text-black">50+</p>
                 <p className="text-sm text-muted-foreground">Funding Partners</p>
-              </div>
-              <div className="w-px h-12 bg-border" />
-              <div className="text-center">
-                <p className="text-3xl font-bold text-black">200+</p>
-                <p className="text-sm text-muted-foreground">Companies Assisted</p>
               </div>
               <div className="w-px h-12 bg-border" />
               <div className="text-center">
