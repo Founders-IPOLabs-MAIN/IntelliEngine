@@ -22,6 +22,8 @@ import FundingQuiz from "@/pages/FundingQuiz";
 import Assessment from "@/pages/Assessment";
 import AssessmentWizard from "@/pages/AssessmentWizard";
 import AssessmentResults from "@/pages/AssessmentResults";
+import AdminCenter from "@/pages/AdminCenter";
+import AccountDetails from "@/pages/AccountDetails";
 
 // Components
 import Footer from "@/components/Footer";
