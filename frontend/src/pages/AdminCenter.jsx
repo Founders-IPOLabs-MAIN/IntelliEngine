@@ -438,12 +438,12 @@ const AdminCenter = ({ user, apiClient }) => {
                       <CardDescription>Track all user actions across the platform</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Select value={logFilter.action} onValueChange={(v) => setLogFilter({...logFilter, action: v})}>
+                      <Select value={logFilter.action || "all"} onValueChange={(v) => setLogFilter({...logFilter, action: v === "all" ? "" : v})}>
                         <SelectTrigger className="w-36">
                           <SelectValue placeholder="All Actions" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Actions</SelectItem>
+                          <SelectItem value="all">All Actions</SelectItem>
                           <SelectItem value="login">Login</SelectItem>
                           <SelectItem value="view">View</SelectItem>
                           <SelectItem value="create">Create</SelectItem>
@@ -452,12 +452,12 @@ const AdminCenter = ({ user, apiClient }) => {
                           <SelectItem value="download">Download</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Select value={logFilter.module} onValueChange={(v) => setLogFilter({...logFilter, module: v})}>
+                      <Select value={logFilter.module || "all"} onValueChange={(v) => setLogFilter({...logFilter, module: v === "all" ? "" : v})}>
                         <SelectTrigger className="w-36">
                           <SelectValue placeholder="All Modules" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Modules</SelectItem>
+                          <SelectItem value="all">All Modules</SelectItem>
                           <SelectItem value="dashboard">Dashboard</SelectItem>
                           <SelectItem value="assessment">Assessment</SelectItem>
                           <SelectItem value="drhp_builder">DRHP Builder</SelectItem>
