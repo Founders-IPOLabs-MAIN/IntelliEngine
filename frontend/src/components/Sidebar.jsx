@@ -15,7 +15,9 @@ import {
   Settings,
   ChevronDown,
   Loader2,
-  Scale
+  Scale,
+  Shield,
+  User
 } from "lucide-react";
 import {
   DropdownMenu,
