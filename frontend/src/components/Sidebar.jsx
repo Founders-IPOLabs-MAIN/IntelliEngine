@@ -85,7 +85,12 @@ const Sidebar = ({ user, apiClient }) => {
         {navItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => item.path && !item.disabled && navigate(item.path)}
+            type="button"
+            onClick={() => {
+              if (item.path && !item.disabled) {
+                navigate(item.path);
+              }
+            }}
             disabled={item.disabled}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left
               ${isActive(item.path, item.id) || (item.id === 'drhp' && location.pathname.includes('drhp-builder'))
