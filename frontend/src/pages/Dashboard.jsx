@@ -68,8 +68,8 @@ const Dashboard = ({ user, apiClient }) => {
       setProjects([...projects, response.data]);
       setCreateDialogOpen(false);
       setNewProject({ company_name: "", sector: "" });
-      // Navigate to the new project
-      navigate(`/drhp-builder/${response.data.project_id}`);
+      // Navigate to the Command Center for the new project
+      navigate(`/project/${response.data.project_id}/command-center`);
     } catch (error) {
       console.error("Failed to create project:", error);
     } finally {
