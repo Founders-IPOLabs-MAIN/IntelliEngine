@@ -254,7 +254,7 @@ const Dashboard = ({ user, apiClient }) => {
                     if (module.path) {
                       navigate(module.path);
                     } else if (module.id === 'drhp' && projects.length > 0) {
-                      navigate(`/drhp-builder/${projects[0].project_id}`);
+                      navigate(`/project/${projects[0].project_id}/command-center`);
                     }
                   }}
                   data-testid={`module-${module.id}`}
