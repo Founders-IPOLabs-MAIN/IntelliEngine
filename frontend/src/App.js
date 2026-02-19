@@ -8,6 +8,7 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import DRHPBuilder from "@/pages/DRHPBuilder";
 import SectionEditor from "@/pages/SectionEditor";
+import CommandCenter from "@/pages/CommandCenter";
 import MatchMaker from "@/pages/MatchMaker";
 import MatchMakerSearch from "@/pages/MatchMakerSearch";
 import ProfessionalProfile from "@/pages/ProfessionalProfile";
