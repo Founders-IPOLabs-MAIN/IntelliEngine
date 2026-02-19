@@ -58,6 +58,7 @@ const Sidebar = ({ user, apiClient }) => {
     if (!path) return false;
     if (itemId === 'funding' && location.pathname.startsWith('/funding')) return true;
     if (itemId === 'assessment' && location.pathname.startsWith('/assessment')) return true;
+    if (itemId === 'admin' && location.pathname.startsWith('/admin')) return true;
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
