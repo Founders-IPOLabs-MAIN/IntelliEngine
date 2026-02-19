@@ -3063,6 +3063,253 @@ async def download_invoice(
         "invoice_url": f"/api/account/billing/invoice/{transaction_id}/pdf"
     }
 
+# ============ COMMAND CENTER DASHBOARD ============
+
+class ScheduleMeetingRequest(BaseModel):
+    topic: str
+    date: str
+    time: str
+    attendees: List[str] = []
+
+class AIDelayExplanationRequest(BaseModel):
+    section_name: str
+    delay_days: int
+    status: str
+
+@api_router.get("/projects/{project_id}/command-center")
+async def get_command_center_data(
+    project_id: str,
+    user: User = Depends(get_current_user)
+):
+    """Get all command center dashboard data for a project"""
+    # Verify project exists and user has access
+    project = await db.projects.find_one({"project_id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Get sections data
+    sections = await db.drhp_sections.find({"project_id": project_id}, {"_id": 0}).to_list(20)
+    
+    # Calculate KPIs
+    total_sections = len(sections)
+    final_sections = sum(1 for s in sections if s.get("status") == "Final")
+    review_sections = sum(1 for s in sections if s.get("status") == "Review")
+    draft_sections = sum(1 for s in sections if s.get("status") == "Draft")
+    
+    readiness_score = int((final_sections / total_sections * 100)) if total_sections > 0 else 0
+    
+    # Calculate delays (sections past their deadline)
+    today = datetime.now(timezone.utc)
+    target_date = datetime(2026, 12, 31, tzinfo=timezone.utc)
+    days_to_filing = max(0, (target_date - today).days)
+    
+    # Get delayed sections (mock: sections in Draft for more than 30 days)
+    delayed_sections = []
+    for section in sections:
+        if section.get("status") == "Draft":
+            created = section.get("created_at")
+            if created:
+                try:
+                    created_date = datetime.fromisoformat(created.replace('Z', '+00:00'))
+                    days_old = (today - created_date).days
+                    if days_old > 30:
+                        delayed_sections.append({
+                            "section_name": section.get("section_name"),
+                            "days_delayed": days_old - 30,
+                            "status": section.get("status")
+                        })
+                except:
+                    pass
+    
+    # Get team members (mock data + real users from project)
+    team_members = [
+        {"id": "mb1", "name": "Rajesh Mehta", "role": "Merchant Banker", "status": "online", "avatar": None, "email": "rajesh@merchantbank.com"},
+        {"id": "ca1", "name": "CA Priya Sharma", "role": "Chartered Accountant", "status": "online", "avatar": None, "email": "priya.ca@audit.com"},
+        {"id": "cs1", "name": "CS Amit Kumar", "role": "Company Secretary", "status": "offline", "avatar": None, "email": "amit.cs@legal.com"},
+        {"id": "lc1", "name": "Adv. Neha Gupta", "role": "Legal Counsel", "status": "away", "avatar": None, "email": "neha@legalfirm.com"},
+        {"id": "an1", "name": "Vikram Singh", "role": "Financial Analyst", "status": "online", "avatar": None, "email": "vikram@analysis.com"},
+    ]
+    
+    # Active intermediaries (those online)
+    active_intermediaries = [m for m in team_members if m["status"] == "online"]
+    
+    # Get version history (from audit logs)
+    version_history = await db.audit_logs.find(
+        {"module": "drhp_builder", "resource_id": project_id},
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(5).to_list(5)
+    
+    # If no version history, create mock data
+    if not version_history:
+        version_history = [
+            {"log_id": "vh1", "action_type": "save", "details": "Financials_v2.1 - Saved by CA Sharma", "timestamp": (today - timedelta(hours=2)).isoformat(), "user_name": "CA Priya Sharma"},
+            {"log_id": "vh2", "action_type": "save", "details": "Risk_Factors_v3.0 - Reviewed by Legal", "timestamp": (today - timedelta(hours=5)).isoformat(), "user_name": "Adv. Neha Gupta"},
+            {"log_id": "vh3", "action_type": "update", "details": "Cover_Page_v1.5 - Updated company info", "timestamp": (today - timedelta(days=1)).isoformat(), "user_name": "Rajesh Mehta"},
+            {"log_id": "vh4", "action_type": "save", "details": "Industry_Overview_v2.0 - Market data added", "timestamp": (today - timedelta(days=1, hours=3)).isoformat(), "user_name": "Vikram Singh"},
+            {"log_id": "vh5", "action_type": "review", "details": "Capital_Structure_v1.2 - Pending review", "timestamp": (today - timedelta(days=2)).isoformat(), "user_name": "CS Amit Kumar"},
+        ]
+    
+    # Get audit trail
+    audit_trail = await db.audit_logs.find(
+        {"$or": [{"resource_id": project_id}, {"module": "drhp_builder"}]},
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(20).to_list(20)
+    
+    # If no audit trail, create mock data
+    if not audit_trail:
+        audit_trail = [
+            {"log_id": "at1", "action_type": "view", "module": "risk_factors", "details": "Merchant Banker viewed Risk Factors", "timestamp": (today - timedelta(minutes=15)).isoformat(), "user_name": "Rajesh Mehta"},
+            {"log_id": "at2", "action_type": "edit", "module": "financials", "details": "Updated FY2025 revenue figures", "timestamp": (today - timedelta(hours=1)).isoformat(), "user_name": "CA Priya Sharma"},
+            {"log_id": "at3", "action_type": "upload", "module": "legal", "details": "Uploaded litigation documents", "timestamp": (today - timedelta(hours=3)).isoformat(), "user_name": "Adv. Neha Gupta"},
+            {"log_id": "at4", "action_type": "comment", "module": "capital_structure", "details": "Added review comment on shareholding", "timestamp": (today - timedelta(hours=5)).isoformat(), "user_name": "CS Amit Kumar"},
+            {"log_id": "at5", "action_type": "approve", "module": "cover_page", "details": "Approved final version", "timestamp": (today - timedelta(days=1)).isoformat(), "user_name": "Rajesh Mehta"},
+        ]
+    
+    # Upcoming meetings (mock data)
+    upcoming_meetings = [
+        {"id": "m1", "topic": "DRHP Review Call", "date": (today + timedelta(days=2)).strftime("%Y-%m-%d"), "time": "10:00 AM", "attendees": ["Rajesh Mehta", "CA Priya Sharma"]},
+        {"id": "m2", "topic": "Legal Due Diligence", "date": (today + timedelta(days=5)).strftime("%Y-%m-%d"), "time": "2:30 PM", "attendees": ["Adv. Neha Gupta", "CS Amit Kumar"]},
+    ]
+    
+    # Upcoming deadlines (mock data based on sections)
+    upcoming_deadlines = [
+        {"id": "d1", "task": "Financial Statements Sign-off", "due_date": (today + timedelta(days=7)).strftime("%Y-%m-%d"), "section": "Financial Information", "priority": "high"},
+        {"id": "d2", "task": "Risk Factors Final Review", "due_date": (today + timedelta(days=10)).strftime("%Y-%m-%d"), "section": "Risk Factors", "priority": "medium"},
+        {"id": "d3", "task": "Legal Opinion Submission", "due_date": (today + timedelta(days=14)).strftime("%Y-%m-%d"), "section": "Legal and Regulatory Matters", "priority": "high"},
+    ]
+    
+    # Compliance status
+    sebi_requirements = 13  # Total SEBI required sections
+    completed_requirements = final_sections + review_sections
+    gap_count = sebi_requirements - completed_requirements
+    
+    return {
+        "project": {
+            "project_id": project.get("project_id"),
+            "company_name": project.get("company_name"),
+            "sector": project.get("sector"),
+            "target_filing_date": "2026-12-31"
+        },
+        "kpi_ribbon": {
+            "readiness_score": readiness_score,
+            "days_to_filing": days_to_filing,
+            "active_intermediaries": active_intermediaries,
+            "critical_delays": len(delayed_sections),
+            "delayed_sections": delayed_sections,
+            "upcoming_meetings": upcoming_meetings,
+            "upcoming_deadlines": upcoming_deadlines
+        },
+        "sections": sections,
+        "section_stats": {
+            "total": total_sections,
+            "final": final_sections,
+            "review": review_sections,
+            "draft": draft_sections
+        },
+        "compliance": {
+            "overall_progress": int((completed_requirements / sebi_requirements) * 100),
+            "gap_count": gap_count,
+            "delayed_modules": delayed_sections
+        },
+        "version_history": version_history,
+        "audit_trail": audit_trail,
+        "team_members": team_members
+    }
+
+@api_router.post("/projects/{project_id}/schedule-meeting")
+async def schedule_meeting(
+    project_id: str,
+    meeting: ScheduleMeetingRequest,
+    user: User = Depends(get_current_user)
+):
+    """Schedule a meeting for the project team (MOCKED)"""
+    # Generate mock Google Meet link
+    meet_code = uuid.uuid4().hex[:10]
+    meet_link = f"https://meet.google.com/{meet_code[:3]}-{meet_code[3:7]}-{meet_code[7:]}"
+    
+    meeting_doc = {
+        "meeting_id": f"meet_{uuid.uuid4().hex[:12]}",
+        "project_id": project_id,
+        "topic": meeting.topic,
+        "date": meeting.date,
+        "time": meeting.time,
+        "attendees": meeting.attendees,
+        "created_by": user.user_id,
+        "meet_link": meet_link,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.meetings.insert_one(meeting_doc)
+    
+    await log_audit_action(user.user_id, "create", "meetings", f"Scheduled meeting: {meeting.topic}")
+    
+    return {
+        "message": "Meeting scheduled successfully",
+        "meeting_id": meeting_doc["meeting_id"],
+        "meet_link": meet_link,
+        "note": "MOCKED - Google Meet link is a placeholder"
+    }
+
+@api_router.get("/projects/{project_id}/meetings")
+async def get_project_meetings(
+    project_id: str,
+    user: User = Depends(get_current_user)
+):
+    """Get all meetings for a project"""
+    meetings = await db.meetings.find(
+        {"project_id": project_id},
+        {"_id": 0}
+    ).sort("date", 1).to_list(50)
+    
+    return {"meetings": meetings}
+
+@api_router.post("/projects/{project_id}/ai-delay-explanation")
+async def get_ai_delay_explanation(
+    project_id: str,
+    request: AIDelayExplanationRequest,
+    user: User = Depends(get_current_user)
+):
+    """Generate AI explanation for a section delay using GPT-5.2"""
+    from emergentintegrations.llm.chat import chat, LlmModel
+    
+    prompt = f"""You are an IPO readiness assistant for IntelliEngine platform. Generate a brief, professional explanation for why a DRHP section might be delayed.
+
+Section: {request.section_name}
+Days Delayed: {request.delay_days} days
+Current Status: {request.status}
+
+Provide a concise 1-2 sentence explanation of likely reasons for the delay and what actions might be needed. Be specific to Indian IPO/SEBI context.
+Keep the response under 100 words."""
+
+    try:
+        response = await chat(
+            model=LlmModel.GPT_5_2,
+            user_prompt=prompt,
+            memory=[]
+        )
+        return {
+            "explanation": response.response,
+            "section": request.section_name,
+            "generated_at": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"AI delay explanation error: {e}")
+        # Fallback explanations
+        fallback_explanations = {
+            "Financial Information": "Pending peer review audit for FY 2025. The statutory auditor's sign-off is required before finalization.",
+            "Risk Factors": "Legal team reviewing additional regulatory risks. Waiting for updated compliance assessment.",
+            "Legal and Regulatory Matters": "Ongoing litigation status update pending from external counsel. Expected resolution in 2 weeks.",
+            "Capital Structure": "Share capital reconciliation in progress. ESOP pool adjustments being finalized.",
+            "Cover Page": "Lead manager details and pricing band pending final confirmation.",
+            "default": f"Section requires additional review and inputs from relevant stakeholders. {request.delay_days} days overdue."
+        }
+        return {
+            "explanation": fallback_explanations.get(request.section_name, fallback_explanations["default"]),
+            "section": request.section_name,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "note": "Fallback explanation used"
+        }
+
 # ============ HEALTH CHECK ============
 
 @api_router.get("/")
