@@ -2382,6 +2382,680 @@ async def get_assessment_detail(
     
     return assessment
 
+# ============ ADMIN CENTER MODULE ============
+
+# Default Roles and Permissions
+DEFAULT_ROLES = {
+    "super_admin": {
+        "name": "Super Admin",
+        "description": "Full access to all features and admin controls",
+        "max_users": 3,
+        "level": 100,
+        "permissions": {
+            "dashboard": ["read", "write", "delete"],
+            "assessment": ["read", "write", "delete"],
+            "drhp_builder": ["read", "write", "delete"],
+            "funding": ["read", "write", "delete"],
+            "matchmaker": ["read", "write", "delete"],
+            "analytics": ["read", "write", "delete"],
+            "admin_center": ["read", "write", "delete"],
+            "user_management": ["read", "write", "delete"]
+        }
+    },
+    "admin": {
+        "name": "Admin",
+        "description": "Manage users and most platform features",
+        "max_users": None,
+        "level": 80,
+        "permissions": {
+            "dashboard": ["read", "write"],
+            "assessment": ["read", "write"],
+            "drhp_builder": ["read", "write"],
+            "funding": ["read", "write"],
+            "matchmaker": ["read", "write"],
+            "analytics": ["read", "write"],
+            "admin_center": ["read"],
+            "user_management": ["read", "write"]
+        }
+    },
+    "editor": {
+        "name": "Editor",
+        "description": "Create and edit content across modules",
+        "max_users": None,
+        "level": 50,
+        "permissions": {
+            "dashboard": ["read"],
+            "assessment": ["read", "write"],
+            "drhp_builder": ["read", "write"],
+            "funding": ["read"],
+            "matchmaker": ["read"],
+            "analytics": ["read"],
+            "admin_center": [],
+            "user_management": []
+        }
+    },
+    "viewer": {
+        "name": "Viewer",
+        "description": "View-only access to platform content",
+        "max_users": None,
+        "level": 10,
+        "permissions": {
+            "dashboard": ["read"],
+            "assessment": ["read"],
+            "drhp_builder": ["read"],
+            "funding": ["read"],
+            "matchmaker": ["read"],
+            "analytics": ["read"],
+            "admin_center": [],
+            "user_management": []
+        }
+    }
+}
+
+PLATFORM_FEATURES = [
+    {"id": "dashboard", "name": "Dashboard", "description": "Main dashboard and overview"},
+    {"id": "assessment", "name": "IPO Assessment", "description": "IPO readiness assessment tool"},
+    {"id": "drhp_builder", "name": "DRHP Builder", "description": "Draft Red Herring Prospectus builder"},
+    {"id": "funding", "name": "IPO Funding", "description": "Funding options and partners"},
+    {"id": "matchmaker", "name": "Match Maker", "description": "Professional matching service"},
+    {"id": "analytics", "name": "Analytics", "description": "Market and DRHP analytics"},
+    {"id": "admin_center", "name": "Admin Center", "description": "Role and user management"},
+    {"id": "user_management", "name": "User Management", "description": "Manage team members"}
+]
+
+# Admin Center Models
+class RoleCreate(BaseModel):
+    role_id: str
+    name: str
+    description: str
+    permissions: dict
+
+class UserRoleAssignment(BaseModel):
+    user_email: str
+    role_id: str
+
+class AuditLogEntry(BaseModel):
+    action_type: str  # login, logout, view, create, update, delete, download
+    module: str
+    details: Optional[str] = None
+    resource_id: Optional[str] = None
+
+# Helper to check admin access
+async def require_admin(user: User = Depends(get_current_user)):
+    """Require admin or super_admin role"""
+    if user.role not in ["admin", "super_admin", "Admin", "Super Admin"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+async def require_super_admin(user: User = Depends(get_current_user)):
+    """Require super_admin role"""
+    if user.role not in ["super_admin", "Super Admin"]:
+        raise HTTPException(status_code=403, detail="Super Admin access required")
+    return user
+
+# Log audit action helper
+async def log_audit_action(user_id: str, action_type: str, module: str, details: str = None, resource_id: str = None):
+    """Log an audit action"""
+    audit_entry = {
+        "log_id": f"audit_{uuid.uuid4().hex[:12]}",
+        "user_id": user_id,
+        "action_type": action_type,
+        "module": module,
+        "details": details,
+        "resource_id": resource_id,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "ip_address": None  # Would capture in production
+    }
+    await db.audit_logs.insert_one(audit_entry)
+
+@api_router.get("/admin/roles")
+async def get_all_roles(user: User = Depends(require_admin)):
+    """Get all available roles with their permissions"""
+    # Get custom roles from DB
+    custom_roles = await db.custom_roles.find({}, {"_id": 0}).to_list(100)
+    
+    # Combine default and custom roles
+    all_roles = []
+    for role_id, role_data in DEFAULT_ROLES.items():
+        all_roles.append({
+            "role_id": role_id,
+            "is_default": True,
+            **role_data
+        })
+    
+    for custom_role in custom_roles:
+        all_roles.append({**custom_role, "is_default": False})
+    
+    return {"roles": all_roles}
+
+@api_router.get("/admin/features")
+async def get_platform_features(user: User = Depends(require_admin)):
+    """Get all platform features for permission matrix"""
+    return {"features": PLATFORM_FEATURES}
+
+@api_router.get("/admin/permission-matrix")
+async def get_permission_matrix(user: User = Depends(require_admin)):
+    """Get full permission matrix (roles vs features)"""
+    roles_response = await get_all_roles(user)
+    roles = roles_response["roles"]
+    
+    matrix = []
+    for feature in PLATFORM_FEATURES:
+        row = {"feature": feature}
+        for role in roles:
+            permissions = role.get("permissions", {}).get(feature["id"], [])
+            row[role["role_id"]] = permissions
+        matrix.append(row)
+    
+    return {
+        "matrix": matrix,
+        "roles": [{"role_id": r["role_id"], "name": r["name"]} for r in roles],
+        "features": PLATFORM_FEATURES
+    }
+
+@api_router.post("/admin/roles")
+async def create_custom_role(
+    role_data: RoleCreate,
+    user: User = Depends(require_super_admin)
+):
+    """Create a new custom role"""
+    # Check if role_id already exists
+    existing = await db.custom_roles.find_one({"role_id": role_data.role_id})
+    if existing or role_data.role_id in DEFAULT_ROLES:
+        raise HTTPException(status_code=400, detail="Role ID already exists")
+    
+    role_doc = {
+        "role_id": role_data.role_id,
+        "name": role_data.name,
+        "description": role_data.description,
+        "permissions": role_data.permissions,
+        "max_users": None,
+        "level": 30,  # Custom roles have medium level
+        "created_by": user.user_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.custom_roles.insert_one(role_doc)
+    await log_audit_action(user.user_id, "create", "admin_center", f"Created role: {role_data.name}", role_data.role_id)
+    
+    return {"message": "Role created successfully", "role_id": role_data.role_id}
+
+@api_router.put("/admin/roles/{role_id}")
+async def update_role_permissions(
+    role_id: str,
+    permissions: dict,
+    user: User = Depends(require_super_admin)
+):
+    """Update permissions for a role"""
+    if role_id in DEFAULT_ROLES:
+        raise HTTPException(status_code=400, detail="Cannot modify default roles")
+    
+    result = await db.custom_roles.update_one(
+        {"role_id": role_id},
+        {"$set": {"permissions": permissions, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    await log_audit_action(user.user_id, "update", "admin_center", f"Updated role permissions: {role_id}", role_id)
+    
+    return {"message": "Role updated successfully"}
+
+@api_router.delete("/admin/roles/{role_id}")
+async def delete_custom_role(
+    role_id: str,
+    user: User = Depends(require_super_admin)
+):
+    """Delete a custom role"""
+    if role_id in DEFAULT_ROLES:
+        raise HTTPException(status_code=400, detail="Cannot delete default roles")
+    
+    result = await db.custom_roles.delete_one({"role_id": role_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    # Reset users with this role to 'viewer'
+    await db.users.update_many({"role": role_id}, {"$set": {"role": "viewer"}})
+    
+    await log_audit_action(user.user_id, "delete", "admin_center", f"Deleted role: {role_id}", role_id)
+    
+    return {"message": "Role deleted successfully"}
+
+@api_router.get("/admin/users")
+async def get_all_users(user: User = Depends(require_admin)):
+    """Get all users with their roles"""
+    users = await db.users.find({}, {"_id": 0}).to_list(500)
+    
+    # Add role details
+    for u in users:
+        role_id = u.get("role", "viewer").lower().replace(" ", "_")
+        if role_id in DEFAULT_ROLES:
+            u["role_details"] = DEFAULT_ROLES[role_id]
+        else:
+            custom_role = await db.custom_roles.find_one({"role_id": role_id}, {"_id": 0})
+            u["role_details"] = custom_role if custom_role else DEFAULT_ROLES["viewer"]
+    
+    return {"users": users}
+
+@api_router.post("/admin/users/assign-role")
+async def assign_user_role(
+    assignment: UserRoleAssignment,
+    user: User = Depends(require_admin)
+):
+    """Assign a role to a user"""
+    # Find user by email
+    target_user = await db.users.find_one({"email": assignment.user_email})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Validate role exists
+    role_id = assignment.role_id.lower().replace(" ", "_")
+    if role_id not in DEFAULT_ROLES:
+        custom_role = await db.custom_roles.find_one({"role_id": role_id})
+        if not custom_role:
+            raise HTTPException(status_code=404, detail="Role not found")
+    
+    # Check super_admin limit
+    if role_id == "super_admin":
+        super_admin_count = await db.users.count_documents({"role": "super_admin"})
+        if super_admin_count >= 3:
+            raise HTTPException(status_code=400, detail="Maximum of 3 Super Admins allowed")
+        # Only super admin can assign super admin role
+        if user.role.lower().replace(" ", "_") != "super_admin":
+            raise HTTPException(status_code=403, detail="Only Super Admin can assign Super Admin role")
+    
+    # Update user role
+    await db.users.update_one(
+        {"email": assignment.user_email},
+        {"$set": {"role": role_id, "role_updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    await log_audit_action(
+        user.user_id, "update", "user_management",
+        f"Assigned role '{role_id}' to user: {assignment.user_email}",
+        target_user.get("user_id")
+    )
+    
+    return {"message": f"Role '{role_id}' assigned to {assignment.user_email}"}
+
+@api_router.get("/admin/audit-logs")
+async def get_audit_logs(
+    user: User = Depends(require_admin),
+    limit: int = 100,
+    offset: int = 0,
+    action_type: Optional[str] = None,
+    module: Optional[str] = None,
+    user_id: Optional[str] = None
+):
+    """Get audit logs with filtering"""
+    query = {}
+    if action_type:
+        query["action_type"] = action_type
+    if module:
+        query["module"] = module
+    if user_id:
+        query["user_id"] = user_id
+    
+    logs = await db.audit_logs.find(query, {"_id": 0}).sort("timestamp", -1).skip(offset).limit(limit).to_list(limit)
+    total = await db.audit_logs.count_documents(query)
+    
+    # Enrich with user names
+    for log in logs:
+        log_user = await db.users.find_one({"user_id": log["user_id"]}, {"name": 1, "email": 1, "_id": 0})
+        if log_user:
+            log["user_name"] = log_user.get("name", "Unknown")
+            log["user_email"] = log_user.get("email", "Unknown")
+    
+    return {"logs": logs, "total": total, "limit": limit, "offset": offset}
+
+@api_router.post("/admin/audit-logs")
+async def create_audit_log(
+    entry: AuditLogEntry,
+    user: User = Depends(get_current_user)
+):
+    """Create an audit log entry (for frontend tracking)"""
+    await log_audit_action(user.user_id, entry.action_type, entry.module, entry.details, entry.resource_id)
+    return {"message": "Audit log created"}
+
+# ============ ACCOUNT DETAILS MODULE ============
+
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    company_name: Optional[str] = None
+    designation: Optional[str] = None
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+# Subscription Plans (MOCKED - Razorpay placeholders)
+SUBSCRIPTION_PLANS = [
+    {
+        "plan_id": "free",
+        "name": "Free",
+        "price": 0,
+        "currency": "INR",
+        "billing_cycle": "monthly",
+        "features": ["IPO Assessment", "Basic DRHP Templates", "Match Maker Access"],
+        "limits": {"projects": 1, "users": 1, "storage_gb": 1}
+    },
+    {
+        "plan_id": "starter",
+        "name": "Starter",
+        "price": 9999,
+        "currency": "INR",
+        "billing_cycle": "monthly",
+        "features": ["Everything in Free", "Full DRHP Builder", "Funding Module", "5 Team Members"],
+        "limits": {"projects": 3, "users": 5, "storage_gb": 10},
+        "razorpay_plan_id": "plan_PLACEHOLDER_STARTER"  # Razorpay placeholder
+    },
+    {
+        "plan_id": "professional",
+        "name": "Professional",
+        "price": 24999,
+        "currency": "INR",
+        "billing_cycle": "monthly",
+        "features": ["Everything in Starter", "Analytics Module", "Priority Support", "Unlimited Projects"],
+        "limits": {"projects": -1, "users": 20, "storage_gb": 50},
+        "razorpay_plan_id": "plan_PLACEHOLDER_PROFESSIONAL"  # Razorpay placeholder
+    },
+    {
+        "plan_id": "enterprise",
+        "name": "Enterprise",
+        "price": 99999,
+        "currency": "INR",
+        "billing_cycle": "monthly",
+        "features": ["Everything in Professional", "Dedicated Account Manager", "Custom Integrations", "SLA"],
+        "limits": {"projects": -1, "users": -1, "storage_gb": -1},
+        "razorpay_plan_id": "plan_PLACEHOLDER_ENTERPRISE"  # Razorpay placeholder
+    }
+]
+
+@api_router.get("/account/profile")
+async def get_user_profile(user: User = Depends(get_current_user)):
+    """Get current user's profile"""
+    user_doc = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get role details
+    role_id = user_doc.get("role", "viewer").lower().replace(" ", "_")
+    if role_id in DEFAULT_ROLES:
+        user_doc["role_details"] = DEFAULT_ROLES[role_id]
+    
+    # Get subscription info
+    subscription = await db.subscriptions.find_one({"user_id": user.user_id}, {"_id": 0})
+    if subscription:
+        user_doc["subscription"] = subscription
+    else:
+        user_doc["subscription"] = {
+            "plan_id": "free",
+            "status": "active",
+            "started_at": user_doc.get("created_at")
+        }
+    
+    return user_doc
+
+@api_router.put("/account/profile")
+async def update_user_profile(
+    profile: ProfileUpdate,
+    user: User = Depends(get_current_user)
+):
+    """Update user profile information"""
+    update_data = {k: v for k, v in profile.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {"$set": update_data}
+    )
+    
+    await log_audit_action(user.user_id, "update", "account", "Updated profile information")
+    
+    return {"message": "Profile updated successfully"}
+
+@api_router.post("/account/profile-picture")
+async def upload_profile_picture(
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user)
+):
+    """Upload profile picture to GridFS"""
+    # Validate file type
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files are allowed")
+    
+    # Max file size: 5MB
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File size must be less than 5MB")
+    
+    # Delete existing profile picture if exists
+    existing_user = await db.users.find_one({"user_id": user.user_id})
+    if existing_user and existing_user.get("profile_picture_id"):
+        try:
+            await fs_bucket.delete(ObjectId(existing_user["profile_picture_id"]))
+        except:
+            pass
+    
+    # Upload to GridFS
+    file_id = await fs_bucket.upload_from_stream(
+        f"profile_{user.user_id}_{file.filename}",
+        io.BytesIO(content),
+        metadata={
+            "user_id": user.user_id,
+            "content_type": file.content_type,
+            "type": "profile_picture"
+        }
+    )
+    
+    # Update user record
+    picture_url = f"/api/account/profile-picture/{str(file_id)}"
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {"$set": {
+            "picture": picture_url,
+            "profile_picture_id": str(file_id),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    await log_audit_action(user.user_id, "update", "account", "Updated profile picture")
+    
+    return {"message": "Profile picture uploaded", "picture_url": picture_url}
+
+@api_router.get("/account/profile-picture/{file_id}")
+async def get_profile_picture(file_id: str):
+    """Get profile picture from GridFS"""
+    try:
+        grid_out = await fs_bucket.open_download_stream(ObjectId(file_id))
+        content = await grid_out.read()
+        content_type = grid_out.metadata.get("content_type", "image/jpeg") if grid_out.metadata else "image/jpeg"
+        
+        return Response(
+            content=content,
+            media_type=content_type,
+            headers={"Cache-Control": "max-age=86400"}
+        )
+    except Exception as e:
+        logger.error(f"Failed to get profile picture: {e}")
+        raise HTTPException(status_code=404, detail="Profile picture not found")
+
+@api_router.post("/account/change-password")
+async def change_password(
+    password_data: PasswordChange,
+    user: User = Depends(get_current_user)
+):
+    """Change user password (for future email/password auth)"""
+    # This is a placeholder for when email/password auth is implemented
+    # Currently using Google OAuth, so password change is not applicable
+    
+    # In future implementation:
+    # 1. Verify current password
+    # 2. Hash new password
+    # 3. Update in database
+    # 4. Invalidate existing sessions
+    
+    await log_audit_action(user.user_id, "update", "account", "Password change attempted (OAuth user)")
+    
+    return {
+        "message": "Password change is not available for OAuth users. Your account is secured via Google authentication.",
+        "auth_type": "google_oauth"
+    }
+
+@api_router.get("/account/subscription")
+async def get_subscription(user: User = Depends(get_current_user)):
+    """Get current subscription details"""
+    subscription = await db.subscriptions.find_one({"user_id": user.user_id}, {"_id": 0})
+    
+    if not subscription:
+        # Return free plan by default
+        subscription = {
+            "plan_id": "free",
+            "plan_name": "Free",
+            "status": "active",
+            "started_at": user.created_at.isoformat() if hasattr(user.created_at, 'isoformat') else str(user.created_at)
+        }
+    
+    # Get plan details
+    plan = next((p for p in SUBSCRIPTION_PLANS if p["plan_id"] == subscription["plan_id"]), SUBSCRIPTION_PLANS[0])
+    subscription["plan_details"] = plan
+    
+    return subscription
+
+@api_router.get("/account/subscription/plans")
+async def get_available_plans():
+    """Get all available subscription plans"""
+    return {"plans": SUBSCRIPTION_PLANS}
+
+@api_router.post("/account/subscription/upgrade")
+async def upgrade_subscription(
+    plan_id: str,
+    user: User = Depends(get_current_user)
+):
+    """Initiate subscription upgrade (MOCKED - Razorpay placeholder)"""
+    # Validate plan
+    plan = next((p for p in SUBSCRIPTION_PLANS if p["plan_id"] == plan_id), None)
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    
+    if plan_id == "free":
+        raise HTTPException(status_code=400, detail="Cannot upgrade to free plan")
+    
+    # MOCKED: In real implementation, this would:
+    # 1. Create Razorpay subscription
+    # 2. Return payment link
+    # 3. Handle webhook for payment confirmation
+    
+    # Placeholder response
+    subscription_id = f"sub_{uuid.uuid4().hex[:12]}"
+    
+    # Store pending subscription
+    await db.subscriptions.update_one(
+        {"user_id": user.user_id},
+        {"$set": {
+            "user_id": user.user_id,
+            "plan_id": plan_id,
+            "plan_name": plan["name"],
+            "status": "pending",  # Would be 'active' after payment
+            "amount": plan["price"],
+            "currency": plan["currency"],
+            "billing_cycle": plan["billing_cycle"],
+            "razorpay_subscription_id": subscription_id,  # Placeholder
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    
+    await log_audit_action(user.user_id, "create", "billing", f"Initiated upgrade to {plan['name']} plan")
+    
+    # MOCKED: Return placeholder payment info
+    return {
+        "message": "Subscription upgrade initiated",
+        "subscription_id": subscription_id,
+        "plan": plan,
+        "payment_info": {
+            "gateway": "razorpay",
+            "status": "MOCKED - Payment gateway not integrated",
+            "note": "In production, this would return a Razorpay payment link"
+        }
+    }
+
+@api_router.post("/account/subscription/cancel")
+async def cancel_subscription(user: User = Depends(get_current_user)):
+    """Cancel current subscription (MOCKED)"""
+    subscription = await db.subscriptions.find_one({"user_id": user.user_id})
+    
+    if not subscription or subscription.get("plan_id") == "free":
+        raise HTTPException(status_code=400, detail="No active paid subscription to cancel")
+    
+    # MOCKED: In real implementation, would cancel via Razorpay API
+    await db.subscriptions.update_one(
+        {"user_id": user.user_id},
+        {"$set": {
+            "status": "cancelled",
+            "cancelled_at": datetime.now(timezone.utc).isoformat(),
+            "ends_at": datetime.now(timezone.utc).isoformat()  # Would be end of billing period
+        }}
+    )
+    
+    await log_audit_action(user.user_id, "update", "billing", "Cancelled subscription")
+    
+    return {
+        "message": "Subscription cancelled",
+        "note": "MOCKED - In production, subscription would end at current billing period"
+    }
+
+@api_router.get("/account/billing/transactions")
+async def get_transaction_history(
+    user: User = Depends(get_current_user),
+    limit: int = 20
+):
+    """Get billing transaction history (MOCKED)"""
+    transactions = await db.transactions.find(
+        {"user_id": user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    # If no transactions, return mock data for demo
+    if not transactions:
+        transactions = [
+            {
+                "transaction_id": "txn_demo_001",
+                "type": "subscription",
+                "description": "Free Plan - No charge",
+                "amount": 0,
+                "currency": "INR",
+                "status": "completed",
+                "created_at": user.created_at.isoformat() if hasattr(user.created_at, 'isoformat') else str(user.created_at)
+            }
+        ]
+    
+    return {"transactions": transactions, "note": "MOCKED - Razorpay integration placeholder"}
+
+@api_router.get("/account/billing/invoice/{transaction_id}")
+async def download_invoice(
+    transaction_id: str,
+    user: User = Depends(get_current_user)
+):
+    """Download invoice for a transaction (MOCKED)"""
+    # MOCKED: In real implementation, would generate PDF invoice
+    await log_audit_action(user.user_id, "download", "billing", f"Downloaded invoice: {transaction_id}")
+    
+    return {
+        "message": "Invoice download",
+        "transaction_id": transaction_id,
+        "note": "MOCKED - In production, this would return a PDF invoice",
+        "invoice_url": f"/api/account/billing/invoice/{transaction_id}/pdf"
+    }
+
 # ============ HEALTH CHECK ============
 
 @api_router.get("/")
