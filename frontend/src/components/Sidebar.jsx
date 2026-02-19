@@ -52,6 +52,7 @@ const Sidebar = ({ user, apiClient }) => {
     { id: "matchmaker", label: "Match Maker", icon: Users, path: "/matchmaker" },
     { id: "analytics", label: "Analytics", icon: BarChart3, path: null, disabled: true },
     { id: "admin", label: "Admin Center", icon: Shield, path: "/admin" },
+    { id: "account", label: "Account Details", icon: User, path: "/account" },
   ];
 
   const isActive = (path, itemId) => {
