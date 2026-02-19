@@ -66,8 +66,8 @@ const Sidebar = ({ user, apiClient }) => {
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-border flex flex-col z-20" data-testid="sidebar">
       {/* Logo */}
       <div className="p-6 border-b border-border">
-        <button
-          onClick={() => navigate("/dashboard")}
+        <Link
+          to="/dashboard"
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
           <div className="w-10 h-10 bg-[#1DA1F2] rounded-xl flex items-center justify-center">
@@ -77,37 +77,49 @@ const Sidebar = ({ user, apiClient }) => {
             <span className="text-lg font-bold tracking-tighter text-black block">IntelliEngine</span>
             <span className="text-xs text-muted-foreground">by IPO Labs</span>
           </div>
-        </button>
+        </Link>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => {
-              if (item.path && !item.disabled) {
-                navigate(item.path);
-              }
-            }}
-            disabled={item.disabled}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left
-              ${isActive(item.path, item.id) || (item.id === 'drhp' && location.pathname.includes('drhp-builder'))
-                ? "bg-[#1DA1F2]/10 text-[#1DA1F2] border-r-2 border-[#1DA1F2]"
-                : item.disabled
+        {navItems.map((item) => {
+          if (item.path && !item.disabled) {
+            return (
+              <Link
+                key={item.id}
+                to={item.path}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left
+                  ${isActive(item.path, item.id) || (item.id === 'drhp' && location.pathname.includes('drhp-builder'))
+                    ? "bg-[#1DA1F2]/10 text-[#1DA1F2] border-r-2 border-[#1DA1F2]"
+                    : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                data-testid={`nav-${item.id}`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="flex-1">{item.label}</span>
+              </Link>
+            );
+          }
+          return (
+            <button
+              key={item.id}
+              type="button"
+              disabled={item.disabled}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left
+                ${item.disabled
                   ? "text-gray-400 cursor-not-allowed"
                   : "text-gray-700 hover:bg-gray-100"
-              }`}
-            data-testid={`nav-${item.id}`}
-          >
-            <item.icon className="w-5 h-5" />
-            <span className="flex-1">{item.label}</span>
-            {item.disabled && (
-              <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">Soon</span>
-            )}
-          </button>
-        ))}
+                }`}
+              data-testid={`nav-${item.id}`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="flex-1">{item.label}</span>
+              {item.disabled && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">Soon</span>
+              )}
+            </button>
+          );
+        })}
       </nav>
 
       <Separator />
@@ -131,21 +143,17 @@ const Sidebar = ({ user, apiClient }) => {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem 
-              className="cursor-pointer" 
-              onSelect={() => navigate("/account")}
-              data-testid="account-settings-link"
-            >
-              <User className="w-4 h-4 mr-2" />
-              Account Details
+            <DropdownMenuItem asChild>
+              <Link to="/account" className="flex items-center cursor-pointer" data-testid="account-settings-link">
+                <User className="w-4 h-4 mr-2" />
+                Account Details
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem 
-              className="cursor-pointer" 
-              onSelect={() => navigate("/admin")}
-              data-testid="admin-center-dropdown-link"
-            >
-              <Shield className="w-4 h-4 mr-2" />
-              Admin Center
+            <DropdownMenuItem asChild>
+              <Link to="/admin" className="flex items-center cursor-pointer" data-testid="admin-center-dropdown-link">
+                <Shield className="w-4 h-4 mr-2" />
+                Admin Center
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
