@@ -2703,10 +2703,17 @@ async def get_audit_logs(
     
     # Enrich with user names
     for log in logs:
-        log_user = await db.users.find_one({"user_id": log["user_id"]}, {"name": 1, "email": 1, "_id": 0})
-        if log_user:
-            log["user_name"] = log_user.get("name", "Unknown")
-            log["user_email"] = log_user.get("email", "Unknown")
+        if "user_id" in log and log["user_id"]:
+            log_user = await db.users.find_one({"user_id": log["user_id"]}, {"name": 1, "email": 1, "_id": 0})
+            if log_user:
+                log["user_name"] = log_user.get("name", "Unknown")
+                log["user_email"] = log_user.get("email", "Unknown")
+            else:
+                log["user_name"] = "Unknown"
+                log["user_email"] = "Unknown"
+        else:
+            log["user_name"] = "System"
+            log["user_email"] = "system@ipolabs.com"
     
     return {"logs": logs, "total": total, "limit": limit, "offset": offset}
 
