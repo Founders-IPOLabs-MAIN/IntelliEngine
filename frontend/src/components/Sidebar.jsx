@@ -126,9 +126,13 @@ const Sidebar = ({ user, apiClient }) => {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem className="cursor-pointer">
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
+            <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/account")}>
+              <User className="w-4 h-4 mr-2" />
+              Account Details
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/admin")}>
+              <Shield className="w-4 h-4 mr-2" />
+              Admin Center
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
