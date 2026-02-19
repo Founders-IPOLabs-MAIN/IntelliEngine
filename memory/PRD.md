@@ -443,6 +443,19 @@ Build a complete IPO-readiness platform with:
 - ✅ IPO Assessment module tested (iteration_7.json - 32/32 tests passed)
 - ✅ Admin Center & Account Details tested (iteration_8.json - 40/40 tests passed)
 
+## Bug Fixes
+
+### Feb 19, 2026 - Navigation Bug Fix
+**Issue:** Admin Center and Account Settings navigation links not working after clicking.
+**Root Cause:** In `/app/frontend/src/components/Sidebar.jsx`:
+  1. `DropdownMenuItem` components were using `onClick` instead of `onSelect` (Radix UI's preferred handler)
+  2. Navigation buttons were missing explicit `type="button"` attribute
+**Fix Applied:**
+  - Changed `onClick` to `onSelect` for all `DropdownMenuItem` components (Account Details, Admin Center, Logout)
+  - Added `type="button"` to all sidebar navigation buttons
+  - Made onClick handler more explicit with proper conditional check
+**Files Modified:** `/app/frontend/src/components/Sidebar.jsx`
+
 ## Next Tasks
 1. Implement Market & DRHP Analytics module
 2. Add rich text editor for DRHP sections
