@@ -152,6 +152,40 @@ Build a complete IPO-readiness platform with:
    - GET /api/assessment/history - User's assessment history
    - GET /api/assessment/{id} - Specific assessment details
 
+### Phase 6 - Admin Center & Account Details (Feb 18, 2026) ✅
+1. **Admin Center** (`/admin`)
+   - **Roles Tab**: 4 default roles (Super Admin max 3, Admin, Editor, Viewer) with descriptions
+   - **Permissions Tab**: Permission matrix (8 features × 4 roles) with R/W/D indicators
+   - **Users Tab**: User list with role badges, search, and role assignment
+   - **Audit Log Tab**: Action history with filters (action type, module)
+   - **Assign Role Dialog**: Email-based user search and role assignment
+
+2. **Account Details** (`/account`)
+   - **Profile Tab**: Edit name, phone, address, company name, designation
+   - **Profile Picture**: Upload with GridFS storage (max 5MB), camera icon button
+   - **Security Tab**: Google OAuth status, password change disabled for OAuth users
+   - **Billing Tab** (MOCKED with Razorpay placeholders):
+     - Current plan display (Free, Starter, Professional, Enterprise)
+     - Upgrade/Cancel subscription buttons
+     - Transaction history with invoice download
+     - MOCKED notice about Razorpay integration
+
+3. **Backend APIs**
+   - GET /api/admin/roles - All roles with permissions
+   - GET /api/admin/features - 8 platform features
+   - GET /api/admin/permission-matrix - Full permission matrix
+   - GET /api/admin/users - User list with role details
+   - POST /api/admin/users/assign-role - Assign role to user
+   - GET /api/admin/audit-logs - Audit logs with filters
+   - GET /api/account/profile - User profile
+   - PUT /api/account/profile - Update profile
+   - POST /api/account/profile-picture - Upload picture (GridFS)
+   - GET /api/account/subscription - Current subscription
+   - GET /api/account/subscription/plans - Available plans
+   - POST /api/account/subscription/upgrade - MOCKED upgrade
+   - POST /api/account/subscription/cancel - MOCKED cancel
+   - GET /api/account/billing/transactions - MOCKED transactions
+
 ### Phase 2 - Match Maker Module (Feb 17, 2026)
 1. **Match Maker Landing Page (Practo-style)**
    - **AI-Powered Match Making Engine** branding
