@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,8 @@ const SECTORS = [
 
 const Dashboard = ({ user, apiClient }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const projectsSectionRef = useRef(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -47,6 +49,15 @@ const Dashboard = ({ user, apiClient }) => {
   useEffect(() => {
     fetchProjects();
   }, []);
+
+  // Scroll to projects section if hash is #projects
+  useEffect(() => {
+    if (location.hash === '#projects' && projectsSectionRef.current && !loading) {
+      setTimeout(() => {
+        projectsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [location.hash, loading]);
 
   const fetchProjects = async () => {
     try {
