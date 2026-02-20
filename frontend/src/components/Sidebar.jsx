@@ -61,6 +61,7 @@ const Sidebar = ({ user, apiClient }) => {
     if (itemId === 'assessment' && location.pathname.startsWith('/assessment')) return true;
     if (itemId === 'admin' && location.pathname.startsWith('/admin')) return true;
     if (itemId === 'account' && location.pathname.startsWith('/account')) return true;
+    if (itemId === 'drhp' && (location.pathname.includes('drhp-builder') || location.pathname.includes('command-center'))) return true;
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
