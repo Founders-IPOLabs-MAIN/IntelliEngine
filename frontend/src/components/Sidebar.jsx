@@ -29,7 +29,6 @@ const Sidebar = ({ user, apiClient }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [loggingOut, setLoggingOut] = useState(false);
-  const [loadingDRHP, setLoadingDRHP] = useState(false);
 
   const handleLogout = async () => {
     setLoggingOut(true);
