@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 import {
   Building2,
   LayoutDashboard,
@@ -12,10 +12,8 @@ import {
   Users,
   BarChart3,
   LogOut,
-  Settings,
   ChevronDown,
   Loader2,
-  Scale,
   Shield,
   User
 } from "lucide-react";
@@ -31,6 +29,7 @@ const Sidebar = ({ user, apiClient }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [loadingDRHP, setLoadingDRHP] = useState(false);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -44,26 +43,59 @@ const Sidebar = ({ user, apiClient }) => {
     }
   };
 
+  const handleDRHPClick = async () => {
+    setLoadingDRHP(true);
+    try {
+      const response = await apiClient.get("/projects");
+      const projects = response.data;
+      if (projects && projects.length > 0) {
+        // Navigate to the first project's Command Center
+        navigate(`/project/${projects[0].project_id}/command-center`);
+      } else {
+        // No projects exist, go to dashboard to create one
+        toast.info("Create an IPO project first to access DRHP Builder");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Failed to fetch projects:", error);
+      navigate("/dashboard");
+    } finally {
+      setLoadingDRHP(false);
+    }
+  };
+
+  const isActive = (itemId) => {
+    const path = location.pathname;
+    switch (itemId) {
+      case 'dashboard':
+        return path === '/dashboard';
+      case 'assessment':
+        return path.startsWith('/assessment');
+      case 'drhp':
+        return path.includes('drhp-builder') || path.includes('command-center');
+      case 'funding':
+        return path.startsWith('/funding');
+      case 'matchmaker':
+        return path.startsWith('/matchmaker');
+      case 'admin':
+        return path.startsWith('/admin');
+      case 'account':
+        return path.startsWith('/account');
+      default:
+        return false;
+    }
+  };
+
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: "/assessment" },
-    { id: "drhp", label: "DRHP Builder", icon: FileText, path: "/dashboard", hint: "Select a project" },
+    { id: "drhp", label: "DRHP Builder", icon: FileText, path: null, onClick: handleDRHPClick },
     { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding" },
     { id: "matchmaker", label: "Match Maker", icon: Users, path: "/matchmaker" },
     { id: "analytics", label: "Analytics", icon: BarChart3, path: null, disabled: true },
     { id: "admin", label: "Admin Center", icon: Shield, path: "/admin" },
     { id: "account", label: "Account Details", icon: User, path: "/account" },
   ];
-
-  const isActive = (path, itemId) => {
-    if (!path) return false;
-    if (itemId === 'funding' && location.pathname.startsWith('/funding')) return true;
-    if (itemId === 'assessment' && location.pathname.startsWith('/assessment')) return true;
-    if (itemId === 'admin' && location.pathname.startsWith('/admin')) return true;
-    if (itemId === 'account' && location.pathname.startsWith('/account')) return true;
-    if (itemId === 'drhp' && (location.pathname.includes('drhp-builder') || location.pathname.includes('command-center'))) return true;
-    return location.pathname === path || location.pathname.startsWith(path + "/");
-  };
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-border flex flex-col z-20" data-testid="sidebar">
@@ -86,16 +118,39 @@ const Sidebar = ({ user, apiClient }) => {
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
+          const active = isActive(item.id);
+          const baseClasses = "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left";
+          const activeClasses = active ? "bg-gray-100 text-black" : "text-gray-700 hover:bg-gray-100";
+          const disabledClasses = item.disabled ? "text-gray-400 cursor-not-allowed" : "";
+
+          // Items with custom onClick handler (like DRHP)
+          if (item.onClick && !item.disabled) {
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={item.onClick}
+                disabled={loadingDRHP}
+                className={`${baseClasses} ${activeClasses}`}
+                data-testid={`nav-${item.id}`}
+              >
+                {loadingDRHP && item.id === 'drhp' ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <item.icon className="w-5 h-5" />
+                )}
+                <span className="flex-1">{item.label}</span>
+              </button>
+            );
+          }
+
+          // Items with path (Link navigation)
           if (item.path && !item.disabled) {
             return (
               <Link
                 key={item.id}
                 to={item.path}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left
-                  ${isActive(item.path, item.id) || (item.id === 'drhp' && location.pathname.includes('drhp-builder'))
-                    ? "bg-[#1DA1F2]/10 text-[#1DA1F2] border-r-2 border-[#1DA1F2]"
-                    : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                className={`${baseClasses} ${activeClasses}`}
                 data-testid={`nav-${item.id}`}
               >
                 <item.icon className="w-5 h-5" />
@@ -103,16 +158,14 @@ const Sidebar = ({ user, apiClient }) => {
               </Link>
             );
           }
+
+          // Disabled items
           return (
             <button
               key={item.id}
               type="button"
-              disabled={item.disabled}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left
-                ${item.disabled
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-700 hover:bg-gray-100"
-                }`}
+              disabled
+              className={`${baseClasses} ${disabledClasses}`}
               data-testid={`nav-${item.id}`}
             >
               <item.icon className="w-5 h-5" />
