@@ -43,25 +43,9 @@ const Sidebar = ({ user, apiClient }) => {
     }
   };
 
-  const handleDRHPClick = async () => {
-    setLoadingDRHP(true);
-    try {
-      const response = await apiClient.get("/projects");
-      const projects = response.data;
-      if (projects && projects.length > 0) {
-        // Navigate to the first project's Command Center
-        navigate(`/project/${projects[0].project_id}/command-center`);
-      } else {
-        // No projects exist, go to dashboard to create one
-        toast.info("Create an IPO project first to access DRHP Builder");
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      console.error("Failed to fetch projects:", error);
-      navigate("/dashboard");
-    } finally {
-      setLoadingDRHP(false);
-    }
+  const handleDRHPClick = () => {
+    // Navigate to dashboard and scroll to projects section
+    navigate("/dashboard#projects");
   };
 
   const isActive = (itemId) => {
