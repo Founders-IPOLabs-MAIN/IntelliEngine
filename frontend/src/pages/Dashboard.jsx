@@ -294,7 +294,7 @@ const Dashboard = ({ user, apiClient }) => {
           <Separator />
 
           {/* Projects Section */}
-          <div>
+          <div ref={projectsSectionRef}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold tracking-tight text-black">Your IPO Projects</h3>
               {projects.length > 0 && (
