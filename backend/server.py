@@ -3076,6 +3076,34 @@ class AIDelayExplanationRequest(BaseModel):
     delay_days: int
     status: str
 
+# Helper function to get checklist status
+async def get_checklist_status(project_id: str, checklist_type: str) -> dict:
+    """Get the status of a checklist for a project"""
+    checklist = await db.checklists.find_one(
+        {"project_id": project_id, "type": checklist_type},
+        {"_id": 0}
+    )
+    
+    if not checklist:
+        # Return default pending counts based on checklist type
+        default_pending = {
+            "company_data": 45,  # 5 sections with ~9 fields each
+            "promoter": 30,     # 6 sections
+            "kmp": 30,          # 6 sections
+            "pre_ipo": 68       # 9 sections with multiple items
+        }
+        return {
+            "total": default_pending.get(checklist_type, 30),
+            "completed": 0,
+            "pending": default_pending.get(checklist_type, 30)
+        }
+    
+    return {
+        "total": checklist.get("total_items", 0),
+        "completed": checklist.get("completed_items", 0),
+        "pending": checklist.get("total_items", 0) - checklist.get("completed_items", 0)
+    }
+
 @api_router.get("/projects/{project_id}/command-center")
 async def get_command_center_data(
     project_id: str,
