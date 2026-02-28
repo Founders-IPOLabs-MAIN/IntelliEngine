@@ -16,7 +16,6 @@ import {
   ChevronRight,
   Loader2,
   Save,
-  CheckCircle2,
   Plus,
   Trash2,
   ArrowLeft,
@@ -65,11 +64,7 @@ const PromoterChecklist = ({ user, apiClient }) => {
   };
 
   const handleAddPromoter = () => {
-    const newPromoter = {
-      promoter_id: `new_${Date.now()}`,
-      data: {},
-      isNew: true
-    };
+    const newPromoter = { promoter_id: `new_${Date.now()}`, data: {}, isNew: true };
     setPromoters([...promoters, newPromoter]);
     setActivePromoter(newPromoter.promoter_id);
     setFormData({});
@@ -79,10 +74,7 @@ const PromoterChecklist = ({ user, apiClient }) => {
   const handleFieldChange = (sectionKey, fieldId, value) => {
     setFormData(prev => ({
       ...prev,
-      [sectionKey]: {
-        ...(prev[sectionKey] || {}),
-        [fieldId]: value
-      }
+      [sectionKey]: { ...(prev[sectionKey] || {}), [fieldId]: value }
     }));
   };
 
@@ -93,8 +85,6 @@ const PromoterChecklist = ({ user, apiClient }) => {
         promoter_id: activePromoter?.startsWith('new_') ? null : activePromoter,
         data: formData
       });
-      
-      // Update local state
       const updatedPromoters = promoters.map(p => 
         p.promoter_id === activePromoter 
           ? { ...p, promoter_id: response.data.promoter_id, data: formData, isNew: false }
@@ -102,11 +92,9 @@ const PromoterChecklist = ({ user, apiClient }) => {
       );
       setPromoters(updatedPromoters);
       setActivePromoter(response.data.promoter_id);
-      
       toast.success("Promoter saved successfully");
-      fetchData(); // Refresh stats
+      fetchData();
     } catch (error) {
-      console.error("Failed to save:", error);
       toast.error("Failed to save promoter data");
     } finally {
       setSaving(false);
@@ -115,15 +103,12 @@ const PromoterChecklist = ({ user, apiClient }) => {
 
   const handleDelete = async () => {
     if (!promoterToDelete) return;
-    
     try {
       if (!promoterToDelete.startsWith('new_')) {
         await apiClient.delete(`/projects/${projectId}/promoter-checklist/${promoterToDelete}`);
       }
-      
       const updatedPromoters = promoters.filter(p => p.promoter_id !== promoterToDelete);
       setPromoters(updatedPromoters);
-      
       if (activePromoter === promoterToDelete) {
         if (updatedPromoters.length > 0) {
           setActivePromoter(updatedPromoters[0].promoter_id);
@@ -133,12 +118,10 @@ const PromoterChecklist = ({ user, apiClient }) => {
           setFormData({});
         }
       }
-      
       toast.success("Promoter deleted");
       setDeleteDialogOpen(false);
       setPromoterToDelete(null);
     } catch (error) {
-      console.error("Failed to delete:", error);
       toast.error("Failed to delete promoter");
     }
   };
@@ -149,21 +132,11 @@ const PromoterChecklist = ({ user, apiClient }) => {
     if (field.type === "select") {
       return (
         <div key={field.id} className="space-y-2">
-          <Label className="text-gray-300 flex items-center gap-2">
-            {field.label}
-            {field.required && <span className="text-red-400 text-xs">*</span>}
-          </Label>
-          <Select 
-            value={value} 
-            onValueChange={(v) => handleFieldChange(sectionKey, field.id, v)}
-          >
-            <SelectTrigger className="bg-[#0a0a0a] border-gray-800 text-white">
-              <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
-            </SelectTrigger>
-            <SelectContent className="bg-[#111] border-gray-800">
-              {field.options?.map(opt => (
-                <SelectItem key={opt} value={opt} className="text-white">{opt}</SelectItem>
-              ))}
+          <Label className="text-gray-700">{field.label} {field.required && <span className="text-red-500">*</span>}</Label>
+          <Select value={value} onValueChange={(v) => handleFieldChange(sectionKey, field.id, v)}>
+            <SelectTrigger className="bg-white border-gray-300"><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectContent className="bg-white border-gray-200">
+              {field.options?.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -173,85 +146,63 @@ const PromoterChecklist = ({ user, apiClient }) => {
     if (field.type === "textarea" || field.type === "table") {
       return (
         <div key={field.id} className="space-y-2">
-          <Label className="text-gray-300 flex items-center gap-2">
-            {field.label}
-            {field.required && <span className="text-red-400 text-xs">*</span>}
-          </Label>
-          <Textarea
-            value={value}
-            onChange={(e) => handleFieldChange(sectionKey, field.id, e.target.value)}
-            className="bg-[#0a0a0a] border-gray-800 text-white min-h-[100px]"
-            placeholder={`Enter ${field.label.toLowerCase()}...`}
-          />
+          <Label className="text-gray-700">{field.label} {field.required && <span className="text-red-500">*</span>}</Label>
+          <Textarea value={value} onChange={(e) => handleFieldChange(sectionKey, field.id, e.target.value)} className="bg-white border-gray-300 min-h-[100px]" placeholder={`Enter ${field.label.toLowerCase()}...`} />
         </div>
       );
     }
     
     return (
       <div key={field.id} className="space-y-2">
-        <Label className="text-gray-300 flex items-center gap-2">
-          {field.label}
-          {field.required && <span className="text-red-400 text-xs">*</span>}
-        </Label>
-        <Input
-          type={field.type === "number" ? "number" : field.type === "date" ? "date" : field.type === "email" ? "email" : "text"}
-          value={value}
-          onChange={(e) => handleFieldChange(sectionKey, field.id, e.target.value)}
-          className="bg-[#0a0a0a] border-gray-800 text-white"
-          placeholder={`Enter ${field.label.toLowerCase()}...`}
-        />
+        <Label className="text-gray-700">{field.label} {field.required && <span className="text-red-500">*</span>}</Label>
+        <Input type={field.type === "number" ? "number" : field.type === "date" ? "date" : field.type === "email" ? "email" : "text"} value={value} onChange={(e) => handleFieldChange(sectionKey, field.id, e.target.value)} className="bg-white border-gray-300" placeholder={`Enter ${field.label.toLowerCase()}...`} />
       </div>
     );
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-[#0a0a0a]">
+      <div className="flex min-h-screen bg-gray-50">
         <Sidebar user={user} apiClient={apiClient} />
         <main className="flex-1 ml-64 flex items-center justify-center">
-          <Loader2 className="w-10 h-10 animate-spin text-[#1DA1F2]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#1DA1F2]" />
         </main>
       </div>
     );
   }
 
   if (!data) return null;
-
   const sections = Object.entries(data.sections);
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0a]" data-testid="promoter-checklist-page">
+    <div className="flex min-h-screen bg-gray-50" data-testid="promoter-checklist-page">
       <Sidebar user={user} apiClient={apiClient} />
       
-      <main className="flex-1 ml-64 pb-20">
-        {/* Header */}
-        <header className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-gray-800 px-6 py-4">
+      <main className="flex-1 ml-64">
+        <header className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button onClick={() => navigate(`/project/${projectId}/command-center`)} className="text-gray-400 hover:text-white flex items-center gap-1">
-                <ArrowLeft className="w-4 h-4" />
-                Back
+              <button onClick={() => navigate(`/project/${projectId}/command-center`)} className="text-gray-500 hover:text-gray-700 flex items-center gap-1 text-sm">
+                <ArrowLeft className="w-4 h-4" />Back
               </button>
-              <ChevronRight className="w-4 h-4 text-gray-600" />
-              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <Users className="w-5 h-5 text-purple-400" />
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <div className="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
+                <Users className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-white">Promoter Checklist</h1>
+                <h1 className="text-lg font-semibold text-gray-900">Promoter Checklist</h1>
                 <p className="text-xs text-gray-500">Promoter Details & KYC</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <Badge className={`${data.stats.pending > 0 ? 'bg-[#FFBF00]/20 text-[#FFBF00]' : 'bg-[#00FF41]/20 text-[#00FF41]'}`}>
+            <div className="flex items-center gap-3">
+              <Badge className={`${data.stats.pending > 0 ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700'}`}>
                 {data.stats.pending > 0 ? `${data.stats.pending} Pending` : 'Complete'}
               </Badge>
-              <Button onClick={handleAddPromoter} variant="outline" className="border-gray-700 text-gray-300">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Promoter
+              <Button onClick={handleAddPromoter} variant="outline" className="border-gray-300">
+                <Plus className="w-4 h-4 mr-2" />Add Promoter
               </Button>
               <Button onClick={handleSave} disabled={saving || !activePromoter} className="bg-[#1DA1F2] hover:bg-[#1a8cd8]">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                Save
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}Save
               </Button>
             </div>
           </div>
@@ -259,86 +210,45 @@ const PromoterChecklist = ({ user, apiClient }) => {
 
         <div className="p-6">
           {promoters.length === 0 ? (
-            <Card className="bg-[#111] border-gray-800">
+            <Card className="bg-white border-gray-200">
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="w-12 h-12 text-gray-600 mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">No Promoters Added</h3>
-                <p className="text-gray-500 mb-4">Add your first promoter to start the checklist</p>
-                <Button onClick={handleAddPromoter} className="bg-[#1DA1F2]">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Promoter
-                </Button>
+                <Users className="w-12 h-12 text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Promoters Added</h3>
+                <p className="text-gray-500 mb-4">Add your first promoter to start</p>
+                <Button onClick={handleAddPromoter} className="bg-[#1DA1F2]"><Plus className="w-4 h-4 mr-2" />Add Promoter</Button>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-12 gap-6">
-              {/* Promoter List */}
               <div className="col-span-3">
-                <Card className="bg-[#111] border-gray-800 mb-4">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-white text-sm">Promoters ({promoters.length})</CardTitle>
-                  </CardHeader>
+                <Card className="bg-white border-gray-200 mb-4">
+                  <CardHeader className="pb-2"><CardTitle className="text-gray-900 text-sm">Promoters ({promoters.length})</CardTitle></CardHeader>
                   <CardContent className="p-2">
                     <div className="space-y-1">
                       {promoters.map((promoter, idx) => (
-                        <div
-                          key={promoter.promoter_id}
-                          className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
-                            activePromoter === promoter.promoter_id 
-                              ? 'bg-[#1DA1F2]/10 text-[#1DA1F2]' 
-                              : 'text-gray-400 hover:bg-gray-800'
-                          }`}
-                          onClick={() => handlePromoterChange(promoter.promoter_id)}
-                        >
+                        <div key={promoter.promoter_id} className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${activePromoter === promoter.promoter_id ? 'bg-[#1DA1F2]/10 text-[#1DA1F2]' : 'text-gray-600 hover:bg-gray-100'}`} onClick={() => handlePromoterChange(promoter.promoter_id)}>
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
-                              <User className="w-4 h-4" />
-                            </div>
-                            <span className="text-sm font-medium truncate">
-                              {promoter.data?.personal_info?.legal_name || `Promoter ${idx + 1}`}
-                            </span>
+                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><User className="w-4 h-4" /></div>
+                            <span className="text-sm font-medium truncate">{promoter.data?.personal_info?.legal_name || `Promoter ${idx + 1}`}</span>
                           </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPromoterToDelete(promoter.promoter_id);
-                              setDeleteDialogOpen(true);
-                            }}
-                            className="text-gray-500 hover:text-red-500"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); setPromoterToDelete(promoter.promoter_id); setDeleteDialogOpen(true); }} className="text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       ))}
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Section Navigation */}
-                <Card className="bg-[#111] border-gray-800">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-white text-sm">Sections</CardTitle>
-                  </CardHeader>
+                <Card className="bg-white border-gray-200">
+                  <CardHeader className="pb-2"><CardTitle className="text-gray-900 text-sm">Sections</CardTitle></CardHeader>
                   <CardContent className="p-2">
                     <ScrollArea className="h-[300px]">
                       <div className="space-y-1">
                         {sections.map(([key, section]) => {
                           const sectionData = formData[key] || {};
                           const filledFields = Object.values(sectionData).filter(v => v && String(v).trim()).length;
-                          const totalFields = section.fields.length;
-                          
                           return (
-                            <button
-                              key={key}
-                              onClick={() => setActiveSection(key)}
-                              className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${
-                                activeSection === key 
-                                  ? 'bg-[#1DA1F2]/10 text-[#1DA1F2]' 
-                                  : 'text-gray-400 hover:bg-gray-800'
-                              }`}
-                            >
+                            <button key={key} onClick={() => setActiveSection(key)} className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${activeSection === key ? 'bg-[#1DA1F2]/10 text-[#1DA1F2]' : 'text-gray-600 hover:bg-gray-100'}`}>
                               <span className="text-sm truncate pr-2">{section.name}</span>
-                              <span className="text-xs text-gray-500">{filledFields}/{totalFields}</span>
+                              <span className="text-xs text-gray-400">{filledFields}/{section.fields.length}</span>
                             </button>
                           );
                         })}
@@ -347,19 +257,13 @@ const PromoterChecklist = ({ user, apiClient }) => {
                   </CardContent>
                 </Card>
               </div>
-
-              {/* Form Content */}
               <div className="col-span-9">
-                <Card className="bg-[#111] border-gray-800">
-                  <CardHeader>
-                    <CardTitle className="text-white">{data.sections[activeSection]?.name}</CardTitle>
-                  </CardHeader>
+                <Card className="bg-white border-gray-200">
+                  <CardHeader><CardTitle className="text-gray-900">{data.sections[activeSection]?.name}</CardTitle></CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-6">
                       {data.sections[activeSection]?.fields.map(field => (
-                        <div key={field.id} className={field.type === "textarea" || field.type === "table" ? "col-span-2" : ""}>
-                          {renderField(activeSection, field)}
-                        </div>
+                        <div key={field.id} className={field.type === "textarea" || field.type === "table" ? "col-span-2" : ""}>{renderField(activeSection, field)}</div>
                       ))}
                     </div>
                   </CardContent>
@@ -370,20 +274,13 @@ const PromoterChecklist = ({ user, apiClient }) => {
         </div>
       </main>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="bg-[#111] border-gray-800 text-white">
-          <DialogHeader>
-            <DialogTitle>Delete Promoter</DialogTitle>
-          </DialogHeader>
-          <p className="text-gray-400">Are you sure you want to delete this promoter? This action cannot be undone.</p>
+        <DialogContent className="bg-white border-gray-200">
+          <DialogHeader><DialogTitle>Delete Promoter</DialogTitle></DialogHeader>
+          <p className="text-gray-600">Are you sure you want to delete this promoter?</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="border-gray-700">
-              Cancel
-            </Button>
-            <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Delete
-            </Button>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white">Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
