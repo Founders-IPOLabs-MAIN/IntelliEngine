@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from
 import axios from "axios";
 
 // Pages
+import LandingPage from "@/pages/LandingPage";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import DRHPBuilder from "@/pages/DRHPBuilder";
