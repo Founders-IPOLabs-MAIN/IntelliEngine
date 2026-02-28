@@ -13,6 +13,7 @@ import CompanyData from "@/pages/CompanyData";
 import PromoterChecklist from "@/pages/PromoterChecklist";
 import KMPChecklist from "@/pages/KMPChecklist";
 import PreIPOTracker from "@/pages/PreIPOTracker";
+import NonDRHPTracker from "@/pages/NonDRHPTracker";
 import MatchMaker from "@/pages/MatchMaker";
 import MatchMakerSearch from "@/pages/MatchMakerSearch";
 import ProfessionalProfile from "@/pages/ProfessionalProfile";
