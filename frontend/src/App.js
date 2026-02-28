@@ -164,6 +164,7 @@ const AppRouter = () => {
 
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login apiClient={apiClient} />} />
       <Route
         path="/dashboard"
