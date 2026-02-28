@@ -3247,7 +3247,8 @@ async def get_command_center_data(
             "company_data": await get_checklist_status(project_id, "company_data"),
             "promoter": await get_checklist_status(project_id, "promoter"),
             "kmp": await get_checklist_status(project_id, "kmp"),
-            "pre_ipo": await get_checklist_status(project_id, "pre_ipo")
+            "pre_ipo": await get_checklist_status(project_id, "pre_ipo"),
+            "non_drhp": await get_checklist_status(project_id, "non_drhp")
         }
     }
 
