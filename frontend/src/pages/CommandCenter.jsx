@@ -13,9 +13,6 @@ import {
   Shield,
   ChevronRight,
   Loader2,
-  Building2,
-  UserCheck,
-  ClipboardList,
   ArrowRight
 } from "lucide-react";
 
@@ -88,6 +85,45 @@ const CommandCenter = ({ user, apiClient }) => {
 
   const { project, sections, section_stats } = data;
 
+  // Checklist modules configuration
+  const checklistModules = [
+    {
+      id: "company-data",
+      title: "Company Data",
+      subtitle: "Corporate & Business Info",
+      path: `/project/${projectId}/company-data`,
+      pending: data.checklists?.company_data?.pending || 0
+    },
+    {
+      id: "promoter-checklist",
+      title: "Promoter Checklist",
+      subtitle: "Promoter Details & KYC",
+      path: `/project/${projectId}/promoter-checklist`,
+      pending: data.checklists?.promoter?.pending || 0
+    },
+    {
+      id: "kmp-checklist",
+      title: "KMP Checklist",
+      subtitle: "Key Managerial Personnel",
+      path: `/project/${projectId}/kmp-checklist`,
+      pending: data.checklists?.kmp?.pending || 0
+    },
+    {
+      id: "pre-ipo-tracker",
+      title: "Pre-IPO Tracker",
+      subtitle: "IPO Readiness Checklist",
+      path: `/project/${projectId}/pre-ipo-tracker`,
+      pending: data.checklists?.pre_ipo?.pending || 0
+    },
+    {
+      id: "non-drhp-tracker",
+      title: "Non-DRHP Tracker",
+      subtitle: "Non-DRHP Compliance Items",
+      path: `/project/${projectId}/non-drhp-tracker`,
+      pending: data.checklists?.non_drhp?.pending || 0
+    }
+  ];
+
   return (
     <div className="flex min-h-screen bg-gray-50" data-testid="command-center-page">
       <Sidebar user={user} apiClient={apiClient} />
@@ -113,83 +149,26 @@ const CommandCenter = ({ user, apiClient }) => {
         </header>
 
         <div className="p-6">
-          {/* Data Capture Modules - 4 Checklist Buttons */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            <button
-              onClick={() => navigate(`/project/${projectId}/company-data`)}
-              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-white hover:border-[#1DA1F2] hover:shadow-sm transition-all"
-              data-testid="company-data-btn"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-blue-600" />
-                </div>
+          {/* Data Capture Modules - 5 Checklist Buttons */}
+          <div className="grid grid-cols-5 gap-4 mb-6">
+            {checklistModules.map((module) => (
+              <button
+                key={module.id}
+                onClick={() => navigate(module.path)}
+                className="flex flex-col justify-between p-4 rounded-lg border border-blue-100 bg-blue-50/50 hover:border-[#1DA1F2] hover:bg-blue-50 transition-all h-[120px]"
+                data-testid={`${module.id}-btn`}
+              >
                 <div className="text-left">
-                  <p className="text-sm font-medium text-gray-900">Company Data</p>
-                  <p className="text-xs text-gray-500">Corporate & Business Info</p>
+                  <p className="text-sm font-bold text-gray-900">{module.title}</p>
+                  <p className="text-xs text-gray-500 mt-1">{module.subtitle}</p>
                 </div>
-              </div>
-              <Badge className={`${data.checklists?.company_data?.pending > 0 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
-                {data.checklists?.company_data?.pending > 0 ? `${data.checklists.company_data.pending} Pending` : 'Complete'}
-              </Badge>
-            </button>
-
-            <button
-              onClick={() => navigate(`/project/${projectId}/promoter-checklist`)}
-              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-white hover:border-[#1DA1F2] hover:shadow-sm transition-all"
-              data-testid="promoter-checklist-btn"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-purple-600" />
+                <div className="flex justify-start">
+                  <Badge className={`text-xs ${module.pending > 0 ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-green-100 text-green-700 border-green-200'}`}>
+                    {module.pending > 0 ? `${module.pending} Pending` : 'Complete'}
+                  </Badge>
                 </div>
-                <div className="text-left">
-                  <p className="text-sm font-medium text-gray-900">Promoter Checklist</p>
-                  <p className="text-xs text-gray-500">Promoter Details & KYC</p>
-                </div>
-              </div>
-              <Badge className={`${data.checklists?.promoter?.pending > 0 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
-                {data.checklists?.promoter?.pending > 0 ? `${data.checklists.promoter.pending} Pending` : 'Complete'}
-              </Badge>
-            </button>
-
-            <button
-              onClick={() => navigate(`/project/${projectId}/kmp-checklist`)}
-              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-white hover:border-[#1DA1F2] hover:shadow-sm transition-all"
-              data-testid="kmp-checklist-btn"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
-                  <UserCheck className="w-5 h-5 text-green-600" />
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-medium text-gray-900">KMP Checklist</p>
-                  <p className="text-xs text-gray-500">Key Managerial Personnel</p>
-                </div>
-              </div>
-              <Badge className={`${data.checklists?.kmp?.pending > 0 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
-                {data.checklists?.kmp?.pending > 0 ? `${data.checklists.kmp.pending} Pending` : 'Complete'}
-              </Badge>
-            </button>
-
-            <button
-              onClick={() => navigate(`/project/${projectId}/pre-ipo-tracker`)}
-              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-white hover:border-[#1DA1F2] hover:shadow-sm transition-all"
-              data-testid="pre-ipo-tracker-btn"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
-                  <ClipboardList className="w-5 h-5 text-orange-600" />
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-medium text-gray-900">Pre-IPO Tracker</p>
-                  <p className="text-xs text-gray-500">IPO Readiness Checklist</p>
-                </div>
-              </div>
-              <Badge className={`${data.checklists?.pre_ipo?.pending > 0 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
-                {data.checklists?.pre_ipo?.pending > 0 ? `${data.checklists.pre_ipo.pending} Pending` : 'Complete'}
-              </Badge>
-            </button>
+              </button>
+            ))}
           </div>
 
           {/* Module Progress - DRHP Sections Grid */}
