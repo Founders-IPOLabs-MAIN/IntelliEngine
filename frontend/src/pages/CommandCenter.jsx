@@ -233,6 +233,85 @@ const CommandCenter = ({ user, apiClient }) => {
           </header>
 
           <div className="p-6 space-y-6">
+            {/* Data Capture Modules - 4 Checklist Buttons */}
+            <div className="grid grid-cols-4 gap-4">
+              <button
+                onClick={() => navigate(`/project/${projectId}/company-data`)}
+                className="flex items-center justify-between p-4 rounded-lg border border-gray-800 bg-[#111] hover:border-[#1DA1F2]/50 hover:bg-[#1DA1F2]/5 transition-all"
+                data-testid="company-data-btn"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white">Company Data</p>
+                    <p className="text-xs text-gray-500">Corporate & Business Info</p>
+                  </div>
+                </div>
+                <Badge className={`${data.checklists?.company_data?.pending > 0 ? 'bg-[#FFBF00]/20 text-[#FFBF00] border-[#FFBF00]/30' : 'bg-[#00FF41]/20 text-[#00FF41] border-[#00FF41]/30'}`}>
+                  {data.checklists?.company_data?.pending > 0 ? `${data.checklists.company_data.pending} Pending` : 'Complete'}
+                </Badge>
+              </button>
+
+              <button
+                onClick={() => navigate(`/project/${projectId}/promoter-checklist`)}
+                className="flex items-center justify-between p-4 rounded-lg border border-gray-800 bg-[#111] hover:border-[#1DA1F2]/50 hover:bg-[#1DA1F2]/5 transition-all"
+                data-testid="promoter-checklist-btn"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white">Promoter Checklist</p>
+                    <p className="text-xs text-gray-500">Promoter Details & KYC</p>
+                  </div>
+                </div>
+                <Badge className={`${data.checklists?.promoter?.pending > 0 ? 'bg-[#FFBF00]/20 text-[#FFBF00] border-[#FFBF00]/30' : 'bg-[#00FF41]/20 text-[#00FF41] border-[#00FF41]/30'}`}>
+                  {data.checklists?.promoter?.pending > 0 ? `${data.checklists.promoter.pending} Pending` : 'Complete'}
+                </Badge>
+              </button>
+
+              <button
+                onClick={() => navigate(`/project/${projectId}/kmp-checklist`)}
+                className="flex items-center justify-between p-4 rounded-lg border border-gray-800 bg-[#111] hover:border-[#1DA1F2]/50 hover:bg-[#1DA1F2]/5 transition-all"
+                data-testid="kmp-checklist-btn"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                    <UserCheck className="w-5 h-5 text-green-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white">KMP Checklist</p>
+                    <p className="text-xs text-gray-500">Key Managerial Personnel</p>
+                  </div>
+                </div>
+                <Badge className={`${data.checklists?.kmp?.pending > 0 ? 'bg-[#FFBF00]/20 text-[#FFBF00] border-[#FFBF00]/30' : 'bg-[#00FF41]/20 text-[#00FF41] border-[#00FF41]/30'}`}>
+                  {data.checklists?.kmp?.pending > 0 ? `${data.checklists.kmp.pending} Pending` : 'Complete'}
+                </Badge>
+              </button>
+
+              <button
+                onClick={() => navigate(`/project/${projectId}/pre-ipo-tracker`)}
+                className="flex items-center justify-between p-4 rounded-lg border border-gray-800 bg-[#111] hover:border-[#1DA1F2]/50 hover:bg-[#1DA1F2]/5 transition-all"
+                data-testid="pre-ipo-tracker-btn"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                    <ClipboardList className="w-5 h-5 text-orange-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white">Pre-IPO Tracker</p>
+                    <p className="text-xs text-gray-500">IPO Readiness Checklist</p>
+                  </div>
+                </div>
+                <Badge className={`${data.checklists?.pre_ipo?.pending > 0 ? 'bg-[#FFBF00]/20 text-[#FFBF00] border-[#FFBF00]/30' : 'bg-[#00FF41]/20 text-[#00FF41] border-[#00FF41]/30'}`}>
+                  {data.checklists?.pre_ipo?.pending > 0 ? `${data.checklists.pre_ipo.pending} Pending` : 'Complete'}
+                </Badge>
+              </button>
+            </div>
+
             {/* KPI Ribbon */}
             <div className="grid grid-cols-6 gap-4">
               {/* IPO Readiness Score - Radial Gauge */}
