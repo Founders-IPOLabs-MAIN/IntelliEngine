@@ -3090,7 +3090,8 @@ async def get_checklist_status(project_id: str, checklist_type: str) -> dict:
             "company_data": 45,  # 5 sections with ~9 fields each
             "promoter": 30,     # 6 sections
             "kmp": 30,          # 6 sections
-            "pre_ipo": 68       # 9 sections with multiple items
+            "pre_ipo": 68,      # 9 sections with multiple items
+            "non_drhp": 34      # 8 sections with multiple items
         }
         return {
             "total": default_pending.get(checklist_type, 30),
