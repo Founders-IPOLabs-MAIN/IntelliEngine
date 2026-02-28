@@ -41,7 +41,10 @@ import {
   Check,
   AlertCircle,
   ArrowRight,
-  Zap
+  Zap,
+  Building2,
+  UserCheck,
+  ClipboardList
 } from "lucide-react";
 
 // Section icons mapping
