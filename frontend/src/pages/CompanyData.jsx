@@ -6,8 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
@@ -17,8 +15,6 @@ import {
   Loader2,
   Save,
   CheckCircle2,
-  AlertCircle,
-  Upload,
   FileText,
   ArrowLeft
 } from "lucide-react";
@@ -78,52 +74,35 @@ const CompanyData = ({ user, apiClient }) => {
   const renderField = (sectionKey, field) => {
     const value = formData[sectionKey]?.[field.id] || "";
     
-    if (field.type === "textarea") {
+    if (field.type === "textarea" || field.type === "table") {
       return (
         <div key={field.id} className="space-y-2">
-          <Label className="text-gray-300 flex items-center gap-2">
+          <Label className="text-gray-700 flex items-center gap-2">
             {field.label}
-            {field.required && <span className="text-red-400 text-xs">*</span>}
+            {field.required && <span className="text-red-500 text-xs">*</span>}
           </Label>
           <Textarea
             value={value}
             onChange={(e) => handleFieldChange(sectionKey, field.id, e.target.value)}
-            className="bg-[#0a0a0a] border-gray-800 text-white min-h-[100px]"
+            className="bg-white border-gray-300 text-gray-900 min-h-[100px]"
             placeholder={`Enter ${field.label.toLowerCase()}...`}
           />
-        </div>
-      );
-    }
-    
-    if (field.type === "table") {
-      return (
-        <div key={field.id} className="space-y-2">
-          <Label className="text-gray-300 flex items-center gap-2">
-            {field.label}
-            {field.required && <span className="text-red-400 text-xs">*</span>}
-          </Label>
-          <Textarea
-            value={value}
-            onChange={(e) => handleFieldChange(sectionKey, field.id, e.target.value)}
-            className="bg-[#0a0a0a] border-gray-800 text-white min-h-[120px]"
-            placeholder={`Enter ${field.label.toLowerCase()} (one entry per line)...`}
-          />
-          <p className="text-xs text-gray-500">Enter each item on a new line</p>
+          {field.type === "table" && <p className="text-xs text-gray-500">Enter each item on a new line</p>}
         </div>
       );
     }
     
     return (
       <div key={field.id} className="space-y-2">
-        <Label className="text-gray-300 flex items-center gap-2">
+        <Label className="text-gray-700 flex items-center gap-2">
           {field.label}
-          {field.required && <span className="text-red-400 text-xs">*</span>}
+          {field.required && <span className="text-red-500 text-xs">*</span>}
         </Label>
         <Input
           type={field.type === "number" ? "number" : field.type === "date" ? "date" : field.type === "email" ? "email" : field.type === "url" ? "url" : "text"}
           value={value}
           onChange={(e) => handleFieldChange(sectionKey, field.id, e.target.value)}
-          className="bg-[#0a0a0a] border-gray-800 text-white"
+          className="bg-white border-gray-300 text-gray-900"
           placeholder={`Enter ${field.label.toLowerCase()}...`}
         />
       </div>
@@ -132,13 +111,10 @@ const CompanyData = ({ user, apiClient }) => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-[#0a0a0a]">
+      <div className="flex min-h-screen bg-gray-50">
         <Sidebar user={user} apiClient={apiClient} />
         <main className="flex-1 ml-64 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-[#1DA1F2]" />
-            <p className="text-gray-400 text-sm">Loading Company Data...</p>
-          </div>
+          <Loader2 className="w-8 h-8 animate-spin text-[#1DA1F2]" />
         </main>
       </div>
     );
@@ -149,41 +125,32 @@ const CompanyData = ({ user, apiClient }) => {
   const sections = Object.entries(data.sections);
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0a]" data-testid="company-data-page">
+    <div className="flex min-h-screen bg-gray-50" data-testid="company-data-page">
       <Sidebar user={user} apiClient={apiClient} />
       
-      <main className="flex-1 ml-64 pb-20">
+      <main className="flex-1 ml-64">
         {/* Header */}
-        <header className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-gray-800 px-6 py-4">
+        <header className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => navigate(`/project/${projectId}/command-center`)} 
-                className="text-gray-400 hover:text-white flex items-center gap-1"
-              >
+              <button onClick={() => navigate(`/project/${projectId}/command-center`)} className="text-gray-500 hover:text-gray-700 flex items-center gap-1 text-sm">
                 <ArrowLeft className="w-4 h-4" />
                 Back
               </button>
-              <ChevronRight className="w-4 h-4 text-gray-600" />
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-blue-400" />
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-white">Company Data</h1>
+                <h1 className="text-lg font-semibold text-gray-900">Company Data</h1>
                 <p className="text-xs text-gray-500">Corporate & Business Information</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Badge className={`${data.stats.pending > 0 ? 'bg-[#FFBF00]/20 text-[#FFBF00]' : 'bg-[#00FF41]/20 text-[#00FF41]'}`}>
-                  {data.stats.completed}/{data.stats.total} Complete
-                </Badge>
-              </div>
-              <Button 
-                onClick={handleSave} 
-                disabled={saving}
-                className="bg-[#1DA1F2] hover:bg-[#1a8cd8]"
-              >
+              <Badge className={`${data.stats.pending > 0 ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700'}`}>
+                {data.stats.completed}/{data.stats.total} Complete
+              </Badge>
+              <Button onClick={handleSave} disabled={saving} className="bg-[#1DA1F2] hover:bg-[#1a8cd8]">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
                 {saving ? "Saving..." : "Save Changes"}
               </Button>
@@ -195,12 +162,12 @@ const CompanyData = ({ user, apiClient }) => {
           <div className="grid grid-cols-12 gap-6">
             {/* Section Navigation */}
             <div className="col-span-3">
-              <Card className="bg-[#111] border-gray-800 sticky top-24">
+              <Card className="bg-white border-gray-200 sticky top-6">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-white text-sm">Sections</CardTitle>
+                  <CardTitle className="text-gray-900 text-sm">Sections</CardTitle>
                 </CardHeader>
                 <CardContent className="p-2">
-                  <ScrollArea className="h-[calc(100vh-250px)]">
+                  <ScrollArea className="h-[calc(100vh-200px)]">
                     <div className="space-y-1">
                       {sections.map(([key, section]) => {
                         const sectionData = formData[key] || {};
@@ -215,14 +182,14 @@ const CompanyData = ({ user, apiClient }) => {
                             className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${
                               activeSection === key 
                                 ? 'bg-[#1DA1F2]/10 text-[#1DA1F2]' 
-                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                : 'text-gray-600 hover:bg-gray-100'
                             }`}
                           >
                             <span className="text-sm font-medium truncate pr-2">{section.name}</span>
                             {isComplete ? (
-                              <CheckCircle2 className="w-4 h-4 text-[#00FF41] flex-shrink-0" />
+                              <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
                             ) : (
-                              <span className="text-xs text-gray-500 flex-shrink-0">{filledFields}/{totalFields}</span>
+                              <span className="text-xs text-gray-400 flex-shrink-0">{filledFields}/{totalFields}</span>
                             )}
                           </button>
                         );
@@ -235,9 +202,9 @@ const CompanyData = ({ user, apiClient }) => {
 
             {/* Form Content */}
             <div className="col-span-9">
-              <Card className="bg-[#111] border-gray-800">
+              <Card className="bg-white border-gray-200">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
+                  <CardTitle className="text-gray-900 flex items-center gap-2">
                     <FileText className="w-5 h-5 text-[#1DA1F2]" />
                     {data.sections[activeSection]?.name}
                   </CardTitle>
