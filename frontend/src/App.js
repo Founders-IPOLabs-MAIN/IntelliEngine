@@ -213,6 +213,14 @@ const AppRouter = () => {
         }
       />
       <Route
+        path="/project/:projectId/non-drhp-tracker"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <NonDRHPTracker user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/drhp-builder/:projectId"
         element={
           <ProtectedRoute>
