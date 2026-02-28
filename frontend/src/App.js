@@ -180,6 +180,38 @@ const AppRouter = () => {
         }
       />
       <Route
+        path="/project/:projectId/company-data"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <CompanyData user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/promoter-checklist"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <PromoterChecklist user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/kmp-checklist"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <KMPChecklist user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/pre-ipo-tracker"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <PreIPOTracker user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/drhp-builder/:projectId"
         element={
           <ProtectedRoute>
