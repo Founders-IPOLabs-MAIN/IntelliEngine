@@ -3213,7 +3213,13 @@ async def get_command_center_data(
         },
         "version_history": version_history,
         "audit_trail": audit_trail,
-        "team_members": team_members
+        "team_members": team_members,
+        "checklists": {
+            "company_data": await get_checklist_status(project_id, "company_data"),
+            "promoter": await get_checklist_status(project_id, "promoter"),
+            "kmp": await get_checklist_status(project_id, "kmp"),
+            "pre_ipo": await get_checklist_status(project_id, "pre_ipo")
+        }
     }
 
 @api_router.post("/projects/{project_id}/schedule-meeting")
