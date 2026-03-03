@@ -309,6 +309,29 @@ const MatchMaker = ({ user, apiClient }) => {
           </div>
         </div>
 
+        {/* Register as Professional - Compact Top Banner */}
+        <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+          <div className="max-w-6xl mx-auto px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-[#1DA1F2]" />
+                <div>
+                  <span className="text-white font-medium text-sm">Are You an IPO Expert?</span>
+                  <span className="text-gray-400 text-sm ml-2">Join India's premier AI-powered IPO marketplace. Get discovered by companies planning their IPO and grow your practice.</span>
+                </div>
+              </div>
+              <Button
+                onClick={() => navigate("/matchmaker/register")}
+                size="sm"
+                className="bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white px-4 py-2 text-sm rounded-lg whitespace-nowrap"
+                data-testid="register-professional-top-btn"
+              >
+                Register as a Professional
+              </Button>
+            </div>
+          </div>
+        </div>
+
         {/* Categories Section */}
         <div className="max-w-6xl mx-auto px-8 py-12">
           <div className="text-center mb-10">
