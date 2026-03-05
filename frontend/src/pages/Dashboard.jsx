@@ -105,7 +105,6 @@ const Dashboard = ({ user, apiClient }) => {
       icon: CheckCircle2,
       color: "text-green-600",
       bgColor: "bg-green-50",
-      disabled: false,
       path: "/assessment"
     },
     {
@@ -114,8 +113,7 @@ const Dashboard = ({ user, apiClient }) => {
       description: "End-to-end document generation with version control",
       icon: FileText,
       color: "text-[#1DA1F2]",
-      bgColor: "bg-blue-50",
-      disabled: false
+      bgColor: "bg-blue-50"
     },
     {
       id: "funding",
@@ -124,7 +122,6 @@ const Dashboard = ({ user, apiClient }) => {
       icon: TrendingUp,
       color: "text-emerald-600",
       bgColor: "bg-emerald-50",
-      disabled: false,
       path: "/funding"
     },
     {
@@ -134,17 +131,7 @@ const Dashboard = ({ user, apiClient }) => {
       icon: Users,
       color: "text-orange-600",
       bgColor: "bg-orange-50",
-      disabled: false,
       path: "/matchmaker"
-    },
-    {
-      id: "analytics",
-      title: "Market & DRHP Analytics",
-      description: "Real-time market insights and analysis",
-      icon: BarChart3,
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50",
-      disabled: true
     }
   ];
 
