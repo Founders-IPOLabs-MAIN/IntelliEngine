@@ -626,7 +626,7 @@ async def process_ocr(document_id: str, ocr_request: OCRRequest, user: User = De
 
 # Professional Categories for IPO Match Maker
 PROFESSIONAL_CATEGORIES = [
-    {"id": "ipo_consultants", "name": "IPO Consultants & SME's", "description": "Expert guidance for IPO journey and SME listings", "icon": "Briefcase"},
+    {"id": "ipo_consultants", "name": "IPO Consultant", "description": "Expert guidance for IPO journey and SME listings", "icon": "Briefcase"},
     {"id": "merchant_bankers", "name": "SEBI-registered Merchant Bankers", "description": "Licensed merchant banking services for IPO management", "icon": "Building2"},
     {"id": "cfo_finance", "name": "CFO & Finance Heads", "description": "Experienced financial leadership for IPO readiness", "icon": "TrendingUp"},
     {"id": "chartered_accountants", "name": "Chartered Accountants (CA)", "description": "Audit, taxation, and financial reporting expertise", "icon": "Calculator"},
@@ -636,7 +636,11 @@ PROFESSIONAL_CATEGORIES = [
     {"id": "independent_directors", "name": "Independent Directors", "description": "Board-level expertise and corporate governance", "icon": "Users"},
     {"id": "valuation_experts", "name": "Registered Valuation Experts", "description": "Professional business and asset valuation services", "icon": "PieChart"},
     {"id": "rta", "name": "RTA (Registrar & Transfer Agents)", "description": "Share registry and transfer management services", "icon": "FileSpreadsheet"},
-    {"id": "bankers", "name": "Bankers", "description": "Banking services and escrow account management", "icon": "Landmark"}
+    {"id": "bankers", "name": "Bankers", "description": "Banking services and escrow account management", "icon": "Landmark"},
+    {"id": "nse_bse_brokers", "name": "NSE / BSE Registered Brokers", "description": "Market making and trading services", "icon": "TrendingUp"},
+    {"id": "credit_rating", "name": "Credit Rating Agency", "description": "Credit assessment and rating services", "icon": "Star"},
+    {"id": "monitoring_agency", "name": "Monitoring Agency", "description": "IPO proceeds utilization monitoring", "icon": "Eye"},
+    {"id": "underwriters", "name": "Underwriters", "description": "IPO underwriting and risk management", "icon": "Shield"}
 ]
 
 EXPERTISE_TAGS = [
