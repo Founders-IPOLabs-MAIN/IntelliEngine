@@ -15,7 +15,6 @@ import {
   FileText,
   TrendingUp,
   Users,
-  BarChart3,
   Plus,
   ArrowRight,
   Clock,
