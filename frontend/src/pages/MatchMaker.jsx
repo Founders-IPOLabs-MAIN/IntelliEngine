@@ -68,7 +68,11 @@ const CATEGORY_COLORS = [
   { bg: "bg-red-50", text: "text-red-600", border: "border-red-200" },
   { bg: "bg-cyan-50", text: "text-cyan-600", border: "border-cyan-200" },
   { bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-200" },
-  { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200" }
+  { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200" },
+  { bg: "bg-violet-50", text: "text-violet-600", border: "border-violet-200" },
+  { bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-200" },
+  { bg: "bg-sky-50", text: "text-sky-600", border: "border-sky-200" },
+  { bg: "bg-lime-50", text: "text-lime-600", border: "border-lime-200" }
 ];
 
 const SECTORS = [
