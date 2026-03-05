@@ -199,270 +199,197 @@ const MatchMaker = ({ user, apiClient }) => {
       <Sidebar user={user} apiClient={apiClient} />
       
       <main className="flex-1 ml-64">
-        {/* Hero Section */}
+        {/* Hero Section - Compact */}
         <div className="bg-gradient-to-br from-[#1DA1F2] to-[#0d8ecf] text-white relative overflow-hidden">
-          {/* AI Pattern Background */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-10 left-10 w-32 h-32 border border-white rounded-full" />
-            <div className="absolute top-20 right-20 w-48 h-48 border border-white rounded-full" />
-            <div className="absolute bottom-10 left-1/3 w-24 h-24 border border-white rounded-full" />
-          </div>
-          
-          <div className="max-w-6xl mx-auto px-8 py-16 relative z-10">
-            <div className="text-center">
-              {/* AI Badge */}
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
-                <Sparkles className="w-5 h-5 text-yellow-300" />
-                <span className="font-semibold">AI-Powered Match Making Engine</span>
-                <Brain className="w-5 h-5 text-yellow-300" />
+          <div className="max-w-6xl mx-auto px-6 py-6 relative z-10">
+            <div className="flex items-center justify-between gap-8">
+              {/* Left - Title & Description */}
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs">
+                    <Sparkles className="w-3 h-3 text-yellow-300" />
+                    <span className="font-medium">AI-Powered</span>
+                  </div>
+                </div>
+                <h1 className="text-2xl font-bold tracking-tight mb-1">
+                  IPO Match Maker
+                </h1>
+                <p className="text-sm text-blue-100 max-w-md">
+                  AI-powered recommendations from India's top IPO professionals
+                </p>
               </div>
               
-              <h1 className="text-4xl font-bold tracking-tight mb-4">
-                IPO Match Maker
-              </h1>
-              <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-                Our intelligent AI analyzes your IPO requirements and recommends the most suitable experts from India's top IPO professionals.
-              </p>
-              
-              {/* CTA Buttons */}
-              <div className="flex items-center justify-center gap-4 mb-8">
+              {/* Right - Search & Buttons */}
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search experts..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 h-9 w-48 text-sm bg-white text-black border-0 rounded-lg"
+                    data-testid="search-input"
+                  />
+                </div>
                 <Button
                   onClick={() => setShowAIDialog(true)}
-                  className="bg-white text-[#1DA1F2] hover:bg-gray-100 gap-2 px-8 py-6 text-lg rounded-xl shadow-lg"
+                  size="sm"
+                  className="bg-white text-[#1DA1F2] hover:bg-gray-100 gap-1.5 px-4 h-9 text-sm rounded-lg"
                   data-testid="get-ai-recommendations-btn"
                 >
-                  <Sparkles className="w-5 h-5" />
-                  Get AI Recommendations
+                  <Sparkles className="w-3.5 h-3.5" />
+                  AI Match
                 </Button>
                 <Button
                   onClick={() => navigate("/matchmaker/search")}
+                  size="sm"
                   variant="outline"
-                  className="border-white text-white hover:bg-white/10 gap-2 px-8 py-6 text-lg rounded-xl"
+                  className="border-white/50 text-white hover:bg-white/10 gap-1.5 px-4 h-9 text-sm rounded-lg"
                 >
-                  <Search className="w-5 h-5" />
-                  Browse All Experts
+                  <Search className="w-3.5 h-3.5" />
+                  Browse All
                 </Button>
               </div>
-              
-              {/* Search Bar */}
-              <div className="max-w-xl mx-auto relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search for IPO consultants, CAs, Legal advisors..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-14 text-lg bg-white text-black border-0 shadow-lg rounded-xl"
-                  data-testid="search-input"
-                />
-              </div>
             </div>
           </div>
         </div>
 
-        {/* AI Features Bar */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
-          <div className="max-w-6xl mx-auto px-8 py-4">
-            <div className="flex items-center justify-center gap-8 text-sm">
-              <div className="flex items-center gap-2">
-                <Brain className="w-4 h-4" />
-                <span>Intelligent Matching</span>
-              </div>
-              <div className="w-px h-4 bg-white/30" />
-              <div className="flex items-center gap-2">
-                <Target className="w-4 h-4" />
-                <span>Expertise Analysis</span>
-              </div>
-              <div className="w-px h-4 bg-white/30" />
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4" />
-                <span>Instant Recommendations</span>
-              </div>
-              <div className="w-px h-4 bg-white/30" />
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Verified Professionals</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Bar */}
+        {/* Compact Stats & Features Bar */}
         <div className="bg-white border-b border-border">
-          <div className="max-w-6xl mx-auto px-8 py-6">
-            <div className="flex items-center justify-center gap-12">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-black">500+</p>
-                <p className="text-sm text-muted-foreground">Verified Experts</p>
-              </div>
-              <div className="w-px h-12 bg-border" />
-              <div className="text-center">
-                <p className="text-3xl font-bold text-black">11</p>
-                <p className="text-sm text-muted-foreground">Expert Categories</p>
-              </div>
-              <div className="w-px h-12 bg-border" />
-              <div className="text-center">
-                <p className="text-3xl font-bold text-black">100+</p>
-                <p className="text-sm text-muted-foreground">Cities Covered</p>
-              </div>
-              <div className="w-px h-12 bg-border" />
-              <div className="text-center">
-                <p className="text-3xl font-bold text-black">200+</p>
-                <p className="text-sm text-muted-foreground">IPOs Managed</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Register as Professional - Compact Top Banner */}
-        <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
-          <div className="max-w-6xl mx-auto px-8 py-4">
+          <div className="max-w-6xl mx-auto px-6 py-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-[#1DA1F2]" />
-                <div>
-                  <span className="text-white font-medium text-sm">Are You an IPO Expert?</span>
-                  <span className="text-gray-400 text-sm ml-2">Join India's premier AI-powered IPO marketplace. Get discovered by companies planning their IPO and grow your practice.</span>
+              <div className="flex items-center gap-6 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <Brain className="w-3.5 h-3.5 text-purple-500" />
+                  <span className="text-muted-foreground">Intelligent Matching</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                  <span className="text-muted-foreground">500+ Verified Experts</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Target className="w-3.5 h-3.5 text-blue-500" />
+                  <span className="text-muted-foreground">15 Categories</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-orange-500" />
+                  <span className="text-muted-foreground">100+ Cities</span>
                 </div>
               </div>
-              <Button
-                onClick={() => navigate("/matchmaker/register")}
-                size="sm"
-                className="bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white px-4 py-2 text-sm rounded-lg whitespace-nowrap"
-                data-testid="register-professional-top-btn"
-              >
-                Register as a Professional
-              </Button>
+              {/* Register Professional - Inline */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Are you an IPO Expert?</span>
+                <Button
+                  onClick={() => navigate("/matchmaker/register")}
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-3 text-xs rounded-md"
+                  data-testid="register-professional-top-btn"
+                >
+                  Register as Professional
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Categories Section */}
-        <div className="max-w-6xl mx-auto px-8 py-12">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium mb-4">
-              <Sparkles className="w-4 h-4" />
-              AI-Powered Selection
+        {/* Categories Section - Compact Grid */}
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-black">
+                Find the Right Expert for Your IPO
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Select a category to browse verified professionals
+              </p>
             </div>
-            <h2 className="text-2xl font-bold text-black mb-2">
-              Find the Right Expert for Your IPO
-            </h2>
-            <p className="text-muted-foreground">
-              Our AI carefully analyzes each professional's expertise to match your specific IPO needs
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {filteredCategories.map((category, index) => {
               const IconComponent = CATEGORY_ICONS[category.icon] || Briefcase;
               const colors = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
               
               return (
-                <Card
+                <div
                   key={category.id}
-                  className={`border ${colors.border} cursor-pointer group transition-all duration-200 hover:shadow-lg hover:-translate-y-1`}
                   onClick={() => handleCategoryClick(category.id)}
+                  className={`group cursor-pointer p-3 rounded-lg border ${colors.border} bg-white hover:shadow-md hover:border-[#1DA1F2] transition-all duration-200`}
                   data-testid={`category-${category.id}`}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-14 h-14 ${colors.bg} rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110`}>
-                        <IconComponent className={`w-7 h-7 ${colors.text}`} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-black text-lg mb-1 group-hover:text-[#1DA1F2] transition-colors">
-                          {category.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {category.description}
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={`w-7 h-7 ${colors.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                      <IconComponent className={`w-3.5 h-3.5 ${colors.text}`} />
                     </div>
-                    <div className="flex items-center justify-end mt-4 text-[#1DA1F2] opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-sm font-medium">Find Experts</span>
-                      <ArrowRight className="w-4 h-4 ml-1" />
-                    </div>
-                  </CardContent>
-                </Card>
+                    <h3 className="font-medium text-black text-xs leading-tight group-hover:text-[#1DA1F2] transition-colors line-clamp-2">
+                      {category.name}
+                    </h3>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-tight opacity-0 group-hover:opacity-100 transition-opacity duration-200 line-clamp-2 mt-1">
+                    {category.description}
+                  </p>
+                </div>
               );
             })}
           </div>
         </div>
 
-        {/* AI Recommendation CTA Section */}
+        {/* AI Recommendation CTA - Compact */}
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-y border-border">
-          <div className="max-w-6xl mx-auto px-8 py-16">
-            <div className="flex items-center gap-12">
+          <div className="max-w-6xl mx-auto px-6 py-6">
+            <div className="flex items-center gap-8">
               <div className="flex-1">
-                <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium mb-4">
-                  <Brain className="w-4 h-4" />
-                  AI-Powered
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-lg font-semibold text-black">
+                    Let AI Find Your Perfect IPO Team
+                  </h3>
                 </div>
-                <h3 className="text-3xl font-bold text-black mb-4">
-                  Let AI Find Your Perfect IPO Team
-                </h3>
-                <p className="text-lg text-muted-foreground mb-6">
-                  Our intelligent matching engine analyzes your company profile, IPO requirements, and preferences to recommend the most suitable professionals with proven track records.
+                <p className="text-sm text-muted-foreground mb-3">
+                  Our AI analyzes your requirements to recommend the most suitable professionals.
                 </p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    <span className="text-muted-foreground">Analyzes 500+ professionals in seconds</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    <span className="text-muted-foreground">Matches based on sector expertise & IPO track record</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    <span className="text-muted-foreground">Provides personalized recommendations with reasoning</span>
-                  </li>
-                </ul>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                  <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> 500+ professionals</span>
+                  <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Sector expertise matching</span>
+                  <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Personalized reasoning</span>
+                </div>
                 <Button
                   onClick={() => setShowAIDialog(true)}
-                  className="bg-[#1DA1F2] hover:bg-[#1a8cd8] gap-2 px-8 py-6 text-lg rounded-xl"
+                  size="sm"
+                  className="bg-[#1DA1F2] hover:bg-[#1a8cd8] gap-1.5 px-4 h-9 text-sm rounded-lg"
                 >
-                  <Sparkles className="w-5 h-5" />
+                  <Sparkles className="w-3.5 h-3.5" />
                   Get AI Recommendations
                 </Button>
               </div>
-              <div className="hidden lg:block w-96">
-                <div className="bg-white rounded-2xl shadow-xl p-6 border border-border">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                      <Brain className="w-5 h-5 text-purple-600" />
+              <div className="hidden lg:block w-64">
+                <div className="bg-white rounded-xl shadow-sm p-4 border border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                      <Brain className="w-4 h-4 text-purple-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-black">AI Analysis</p>
-                      <p className="text-xs text-muted-foreground">Matching in progress...</p>
+                      <p className="font-medium text-black text-sm">AI Analysis</p>
+                      <p className="text-[10px] text-muted-foreground">Matching...</p>
                     </div>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-blue-600">98</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-blue-600">98</span>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">IPO Consultant Match</p>
-                        <p className="text-xs text-muted-foreground">Perfect for Tech sector</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-green-600">95</span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">CA with IPO Expertise</p>
-                        <p className="text-xs text-muted-foreground">12+ IPOs managed</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">IPO Consultant</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-orange-600">92</span>
+                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
+                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-green-600">95</span>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Legal Advisor</p>
-                        <p className="text-xs text-muted-foreground">SEBI compliance expert</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">CA Expert</p>
                       </div>
                     </div>
                   </div>
@@ -472,23 +399,25 @@ const MatchMaker = ({ user, apiClient }) => {
           </div>
         </div>
 
-        {/* For Professionals CTA */}
-        <div className="bg-white border-t border-border">
-          <div className="max-w-6xl mx-auto px-8 py-16">
-            <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-center">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <CheckCircle2 className="w-6 h-6 text-[#1DA1F2]" />
-                <span className="text-[#1DA1F2] font-medium">For Professionals</span>
+        {/* For Professionals CTA - Compact */}
+        <div className="bg-gray-900">
+          <div className="max-w-6xl mx-auto px-6 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <CheckCircle2 className="w-5 h-5 text-[#1DA1F2]" />
+                <div>
+                  <h3 className="text-white font-medium text-sm">
+                    Are You an IPO Expert?
+                  </h3>
+                  <p className="text-gray-400 text-xs">
+                    Join India's premier AI-powered IPO marketplace. Get discovered by companies planning their IPO.
+                  </p>
+                </div>
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                Are You an IPO Expert?
-              </h3>
-              <p className="text-gray-300 mb-6 max-w-xl mx-auto">
-                Join India's premier AI-powered IPO marketplace. Get discovered by companies planning their IPO and grow your practice.
-              </p>
               <Button
                 onClick={() => navigate("/matchmaker/register")}
-                className="bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white px-8 py-6 text-lg rounded-xl"
+                size="sm"
+                className="bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white px-4 h-9 text-sm rounded-lg"
                 data-testid="register-professional-btn"
               >
                 Register as a Professional
@@ -497,44 +426,38 @@ const MatchMaker = ({ user, apiClient }) => {
           </div>
         </div>
 
-        {/* How It Works */}
+        {/* How It Works - Compact */}
         <div className="bg-gray-50 border-t border-border">
-          <div className="max-w-6xl mx-auto px-8 py-16">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium mb-4">
-                <Zap className="w-4 h-4" />
-                Powered by AI
-              </div>
-              <h3 className="text-2xl font-bold text-black">
-                How Our AI Match Maker Works
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="max-w-6xl mx-auto px-6 py-6">
+            <h3 className="text-sm font-semibold text-black mb-4 text-center">
+              How Our AI Match Maker Works
+            </h3>
+            <div className="grid grid-cols-3 gap-6">
               <div className="text-center">
-                <div className="w-16 h-16 bg-[#1DA1F2]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Target className="w-8 h-8 text-[#1DA1F2]" />
+                <div className="w-10 h-10 bg-[#1DA1F2]/10 rounded-xl flex items-center justify-center mx-auto mb-2">
+                  <Target className="w-5 h-5 text-[#1DA1F2]" />
                 </div>
-                <h4 className="font-semibold text-black mb-2">1. Share Your Needs</h4>
-                <p className="text-muted-foreground text-sm">
-                  Tell us about your company, sector, IPO stage, and specific requirements.
+                <h4 className="font-medium text-black text-xs mb-1">1. Share Your Needs</h4>
+                <p className="text-muted-foreground text-[10px]">
+                  Tell us about your company and IPO requirements
                 </p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 bg-[#1DA1F2]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Brain className="w-8 h-8 text-[#1DA1F2]" />
+                <div className="w-10 h-10 bg-[#1DA1F2]/10 rounded-xl flex items-center justify-center mx-auto mb-2">
+                  <Brain className="w-5 h-5 text-[#1DA1F2]" />
                 </div>
-                <h4 className="font-semibold text-black mb-2">2. AI Analysis</h4>
-                <p className="text-muted-foreground text-sm">
-                  Our AI analyzes 500+ professionals, matching expertise, track record, and fit.
+                <h4 className="font-medium text-black text-xs mb-1">2. AI Analysis</h4>
+                <p className="text-muted-foreground text-[10px]">
+                  Our AI analyzes 500+ professionals for best fit
                 </p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 bg-[#1DA1F2]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-8 h-8 text-[#1DA1F2]" />
+                <div className="w-10 h-10 bg-[#1DA1F2]/10 rounded-xl flex items-center justify-center mx-auto mb-2">
+                  <CheckCircle2 className="w-5 h-5 text-[#1DA1F2]" />
                 </div>
-                <h4 className="font-semibold text-black mb-2">3. Get Matched</h4>
-                <p className="text-muted-foreground text-sm">
-                  Receive personalized recommendations with match scores and detailed reasoning.
+                <h4 className="font-medium text-black text-xs mb-1">3. Get Matched</h4>
+                <p className="text-muted-foreground text-[10px]">
+                  Receive personalized recommendations with scores
                 </p>
               </div>
             </div>
