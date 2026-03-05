@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   TrendingUp,
   Users,
-  BarChart3,
   LogOut,
   ChevronDown,
   Loader2,
