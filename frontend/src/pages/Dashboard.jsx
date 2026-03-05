@@ -239,16 +239,15 @@ const Dashboard = ({ user, apiClient }) => {
             </CardContent>
           </Card>
 
-          {/* Modules Grid */}
+          {/* Modules Grid - 2x2 */}
           <div>
             <h3 className="text-lg font-semibold tracking-tight text-black mb-4">Platform Modules</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {modules.map((module, index) => (
+            <div className="grid grid-cols-2 gap-4 max-w-3xl">
+              {modules.map((module) => (
                 <Card
                   key={module.id}
-                  className={`border border-border card-hover cursor-pointer animate-fade-in stagger-${index + 1} ${module.disabled ? 'opacity-60' : ''}`}
+                  className="border border-border cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md"
                   onClick={() => {
-                    if (module.disabled) return;
                     if (module.path) {
                       navigate(module.path);
                     } else if (module.id === 'drhp' && projects.length > 0) {
@@ -257,19 +256,14 @@ const Dashboard = ({ user, apiClient }) => {
                   }}
                   data-testid={`module-${module.id}`}
                 >
-                  <CardContent className="p-6">
+                  <CardContent className="p-5">
                     <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 ${module.bgColor} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                        <module.icon className={`w-6 h-6 ${module.color}`} />
+                      <div className={`w-11 h-11 ${module.bgColor} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                        <module.icon className={`w-5 h-5 ${module.color}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-black truncate">{module.title}</h4>
-                          {module.disabled && (
-                            <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">Soon</span>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">{module.description}</p>
+                        <h4 className="font-semibold text-black text-sm">{module.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">{module.description}</p>
                       </div>
                     </div>
                   </CardContent>
