@@ -33,7 +33,9 @@ import {
   Zap,
   Target,
   Clock,
-  X
+  X,
+  Eye,
+  Shield
 } from "lucide-react";
 
 // Icon mapping for categories
@@ -48,7 +50,10 @@ const CATEGORY_ICONS = {
   "Users": Users,
   "PieChart": PieChart,
   "FileSpreadsheet": FileSpreadsheet,
-  "Landmark": Landmark
+  "Landmark": Landmark,
+  "Star": Star,
+  "Eye": Eye,
+  "Shield": Shield
 };
 
 // Category colors
