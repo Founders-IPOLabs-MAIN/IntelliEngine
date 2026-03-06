@@ -726,6 +726,15 @@ class ProfessionalUpdate(BaseModel):
     years_experience: Optional[int] = None
     professional_summary: Optional[str] = None
     expertise_tags: Optional[List[str]] = None
+    top_3_expertise: Optional[List[str]] = None
+    registration_numbers: Optional[dict] = None
+    pan_document: Optional[str] = None
+    pan_file_name: Optional[str] = None
+    aadhaar_document: Optional[str] = None
+    aadhaar_file_name: Optional[str] = None
+    registration_document: Optional[str] = None
+    registration_file_name: Optional[str] = None
+    registration_expiry_date: Optional[str] = None
     ipo_track_record: Optional[List[dict]] = None
     certifications: Optional[List[dict]] = None
     sebi_registration: Optional[str] = None
