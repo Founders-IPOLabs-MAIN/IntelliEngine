@@ -883,6 +883,19 @@ async def get_professional(professional_id: str):
     
     return professional
 
+@api_router.get("/matchmaker/my-profile")
+async def get_my_professional_profile(user: User = Depends(get_current_user)):
+    """Get the current user's professional profile"""
+    professional = await db.professionals.find_one(
+        {"user_id": user.user_id},
+        {"_id": 0}
+    )
+    
+    if not professional:
+        raise HTTPException(status_code=404, detail="No professional profile found for this user")
+    
+    return professional
+
 @api_router.post("/matchmaker/professionals")
 async def create_professional(
     prof_data: ProfessionalCreate,
