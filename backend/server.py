@@ -906,6 +906,17 @@ async def create_professional(
         "years_experience": prof_data.years_experience,
         "professional_summary": prof_data.professional_summary,
         "expertise_tags": prof_data.expertise_tags,
+        "top_3_expertise": prof_data.top_3_expertise,
+        "registration_numbers": prof_data.registration_numbers,
+        # Document uploads
+        "pan_document": prof_data.pan_document,
+        "pan_file_name": prof_data.pan_file_name,
+        "aadhaar_document": prof_data.aadhaar_document,
+        "aadhaar_file_name": prof_data.aadhaar_file_name,
+        "registration_document": prof_data.registration_document,
+        "registration_file_name": prof_data.registration_file_name,
+        "registration_expiry_date": prof_data.registration_expiry_date,
+        # Legacy and other fields
         "ipo_track_record": [],
         "certifications": [],
         "sebi_registration": prof_data.sebi_registration,
@@ -918,9 +929,10 @@ async def create_professional(
         "average_rating": 0.0,
         "reviews": [],
         "is_verified": False,
+        "documents_verified": False,
         "consent_display": prof_data.consent_display,
         "consent_marketing": prof_data.consent_marketing,
-        "status": "active",
+        "status": "pending_review",  # New profiles need review
         "created_at": now.isoformat(),
         "updated_at": now.isoformat()
     }
