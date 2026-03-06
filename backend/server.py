@@ -700,6 +700,17 @@ class ProfessionalCreate(BaseModel):
     years_experience: int = 0
     professional_summary: Optional[str] = None
     expertise_tags: List[str] = []
+    top_3_expertise: List[str] = []  # New: Top 3 selected expertise
+    registration_numbers: dict = {}  # New: Category-specific registration numbers
+    # Document uploads (base64 encoded)
+    pan_document: Optional[str] = None
+    pan_file_name: Optional[str] = None
+    aadhaar_document: Optional[str] = None
+    aadhaar_file_name: Optional[str] = None
+    registration_document: Optional[str] = None
+    registration_file_name: Optional[str] = None
+    registration_expiry_date: Optional[str] = None
+    # Legacy fields (kept for compatibility)
     sebi_registration: Optional[str] = None
     ca_cs_membership: Optional[str] = None
     services: List[dict] = []
