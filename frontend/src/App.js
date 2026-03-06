@@ -19,6 +19,7 @@ import MatchMaker from "@/pages/MatchMaker";
 import MatchMakerSearch from "@/pages/MatchMakerSearch";
 import ProfessionalProfile from "@/pages/ProfessionalProfile";
 import ProfessionalRegister from "@/pages/ProfessionalRegister";
+import EditProfile from "@/pages/EditProfile";
 import LegalDisclaimer from "@/pages/LegalDisclaimer";
 import TermsOfUse from "@/pages/TermsOfUse";
 import Funding from "@/pages/Funding";
