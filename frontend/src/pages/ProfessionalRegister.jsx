@@ -98,6 +98,8 @@ const REGISTRATION_FIELDS = {
 
 const ProfessionalRegister = ({ user, apiClient }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const categoryFromUrl = searchParams.get("category");
   
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
@@ -109,7 +111,7 @@ const ProfessionalRegister = ({ user, apiClient }) => {
   
   // Form data
   const [formData, setFormData] = useState({
-    category_id: "",
+    category_id: categoryFromUrl || "",
     name: user?.name || "",
     agency_name: "",
     email: user?.email || "",
