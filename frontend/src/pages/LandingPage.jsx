@@ -104,14 +104,16 @@ const LandingPage = () => {
               Building India's <span className="text-[#00D1FF]">T</span>ruly <span className="text-[#00D1FF]">D</span>emocratic <span className="text-[#00D1FF]">IPO</span> Platform
             </h1>
             
-            {/* Utility Description */}
-            <div className="border-l-4 border-[#00D1FF] pl-4 py-2 bg-white/50 rounded-r-lg">
-              <p className="text-gray-700 text-base leading-relaxed">
-                DRHP, Funding and Expert Matchmaking. With us you can{" "}
-                <strong className="text-[#003366]">Build</strong> (End-to-End DRHP),{" "}
-                <strong className="text-[#003366]">Fund</strong> (Pre, Post or Bridge Fund Rounds) or{" "}
-                <strong className="text-[#003366]">Connect</strong> with IPO Subject Matter Experts 
-                (ranging from CAs to Legal, to SEBI Registered Merchant Bankers).
+            {/* Utility Description - 3 Bullet Points */}
+            <div className="border-l-4 border-[#00D1FF] pl-4 py-3 bg-white/50 rounded-r-lg space-y-2">
+              <p className="text-gray-700 text-sm leading-relaxed">
+                <strong className="text-[#003366]">BUILD:</strong> End-to-End DRHP & RHP in a Safe, Version Controlled Environment
+              </p>
+              <p className="text-gray-700 text-sm leading-relaxed">
+                <strong className="text-[#003366]">RAISE:</strong> Pre-IPO, Post-IPO or Bridge Funding with support of our expert Funding Team
+              </p>
+              <p className="text-gray-700 text-sm leading-relaxed">
+                <strong className="text-[#003366]">HIRE:</strong> Experienced & SEBI Registered Experts like CA, CS, Auditors, Ind. Directors, CFO, Merchant Bankers...
               </p>
             </div>
             
