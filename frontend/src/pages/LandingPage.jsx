@@ -101,7 +101,7 @@ const LandingPage = () => {
             
             {/* Headline */}
             <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#003366] leading-tight" style={{fontFamily: "'General Sans', sans-serif"}}>
-              Building India's <span className="text-[#00D1FF]">T</span>ruly <span className="text-[#00D1FF]">D</span>emocratic <span className="text-[#00D1FF]">IPO</span> Platform
+              Building India's Truly Democratic IPO Platform
             </h1>
             
             {/* Utility Description - 3 Bullet Points */}
