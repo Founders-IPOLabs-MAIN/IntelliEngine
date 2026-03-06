@@ -272,6 +272,14 @@ const AppRouter = () => {
         }
       />
       <Route
+        path="/matchmaker/edit-profile"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <EditProfile user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/legal-disclaimer"
         element={
           <ProtectedRoute>
