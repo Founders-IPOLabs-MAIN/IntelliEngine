@@ -306,7 +306,7 @@ const MatchMaker = ({ user, apiClient }) => {
                 Find the Right Expert for Your IPO
               </h2>
               <p className="text-xs text-muted-foreground">
-                Select a category to browse verified professionals
+                Select a category to browse verified professionals or register/edit your profile
               </p>
             </div>
           </div>
@@ -319,21 +319,54 @@ const MatchMaker = ({ user, apiClient }) => {
               return (
                 <div
                   key={category.id}
-                  onClick={() => handleCategoryClick(category.id)}
-                  className={`group cursor-pointer p-3 rounded-lg border ${colors.border} bg-white hover:shadow-md hover:border-[#1DA1F2] transition-all duration-200`}
+                  className={`group p-3 rounded-lg border ${colors.border} bg-white hover:shadow-md hover:border-[#1DA1F2] transition-all duration-200`}
                   data-testid={`category-${category.id}`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className={`w-7 h-7 ${colors.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                      <IconComponent className={`w-3.5 h-3.5 ${colors.text}`} />
+                  {/* Category Header - Clickable */}
+                  <div 
+                    className="cursor-pointer"
+                    onClick={() => handleCategoryClick(category.id)}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className={`w-7 h-7 ${colors.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                        <IconComponent className={`w-3.5 h-3.5 ${colors.text}`} />
+                      </div>
+                      <h3 className="font-medium text-black text-xs leading-tight group-hover:text-[#1DA1F2] transition-colors line-clamp-2">
+                        {category.name}
+                      </h3>
                     </div>
-                    <h3 className="font-medium text-black text-xs leading-tight group-hover:text-[#1DA1F2] transition-colors line-clamp-2">
-                      {category.name}
-                    </h3>
+                    <p className="text-[10px] text-muted-foreground leading-tight opacity-0 group-hover:opacity-100 transition-opacity duration-200 line-clamp-2 mt-1">
+                      {category.description}
+                    </p>
                   </div>
-                  <p className="text-[10px] text-muted-foreground leading-tight opacity-0 group-hover:opacity-100 transition-opacity duration-200 line-clamp-2 mt-1">
-                    {category.description}
-                  </p>
+                  
+                  {/* Register/Edit Profile Buttons */}
+                  <div className="flex gap-1.5 mt-2 pt-2 border-t border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 h-6 text-[10px] px-2 rounded hover:bg-[#1DA1F2] hover:text-white hover:border-[#1DA1F2]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/matchmaker/register?category=${category.id}`);
+                      }}
+                      data-testid={`register-profile-${category.id}`}
+                    >
+                      Register Profile
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 h-6 text-[10px] px-2 rounded hover:bg-[#1DA1F2] hover:text-white hover:border-[#1DA1F2]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/matchmaker/edit-profile?category=${category.id}`);
+                      }}
+                      data-testid={`edit-profile-${category.id}`}
+                    >
+                      Edit Profile
+                    </Button>
+                  </div>
                 </div>
               );
             })}
