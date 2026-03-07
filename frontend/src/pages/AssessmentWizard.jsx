@@ -360,6 +360,21 @@ const AssessmentWizard = ({ user, apiClient }) => {
                     </div>
                   </RadioGroup>
                 </div>
+
+                {/* Industry & Nifty Index Selector */}
+                <div className="space-y-4 pt-4 border-t border-border">
+                  <Label className="text-base font-semibold">Industry & Market Benchmark *</Label>
+                  <p className="text-sm text-muted-foreground">Select your industry to get relevant market performance data</p>
+                  <IndustryIndexSelector
+                    value={{ industry: formData.industry, index: formData.nifty_index }}
+                    onChange={({ industry, index }) => {
+                      updateField("industry", industry);
+                      updateField("nifty_index", index);
+                    }}
+                    showBenchmark={true}
+                    apiClient={apiClient}
+                  />
+                </div>
               </CardContent>
             </Card>
           )}
