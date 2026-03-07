@@ -154,7 +154,7 @@ const MatchMaker = ({ user, apiClient }) => {
   };
 
   const handleAIRecommend = async () => {
-    if (!aiForm.company_name || !aiForm.sector) {
+    if (!aiForm.company_name || !aiForm.industry) {
       toast.error("Please fill company name and sector");
       return;
     }
