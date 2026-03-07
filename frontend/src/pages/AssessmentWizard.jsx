@@ -43,6 +43,8 @@ const AssessmentWizard = ({ user, apiClient }) => {
     company_type: "",
     target_board: "",
     reporting_unit: "crores",
+    industry: "",
+    nifty_index: "",
     
     // Step 2: P&L Data (3 years)
     year1_pat: "",
