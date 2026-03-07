@@ -135,7 +135,9 @@ const AssessmentWizard = ({ user, apiClient }) => {
         company_info: {
           company_type: formData.company_type,
           target_board: formData.target_board,
-          reporting_unit: formData.reporting_unit
+          reporting_unit: formData.reporting_unit,
+          industry: formData.industry,
+          nifty_index: formData.nifty_index
         },
         pl_data: {
           year1_pat: parseFloat(formData.year1_pat) || 0,
