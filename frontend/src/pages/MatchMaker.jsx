@@ -513,29 +513,27 @@ const MatchMaker = ({ user, apiClient }) => {
           
           {!aiResults ? (
             <div className="space-y-6 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Company Name *</Label>
-                  <Input
-                    value={aiForm.company_name}
-                    onChange={(e) => setAiForm({ ...aiForm, company_name: e.target.value })}
-                    placeholder="Your company name"
-                    data-testid="ai-company-name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Sector *</Label>
-                  <Select value={aiForm.sector} onValueChange={(v) => setAiForm({ ...aiForm, sector: v })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select sector" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SECTORS.map((sector) => (
-                        <SelectItem key={sector} value={sector}>{sector}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label>Company Name *</Label>
+                <Input
+                  value={aiForm.company_name}
+                  onChange={(e) => setAiForm({ ...aiForm, company_name: e.target.value })}
+                  placeholder="Your company name"
+                  data-testid="ai-company-name"
+                />
+              </div>
+
+              {/* Industry & Nifty Index Selector */}
+              <div className="space-y-2">
+                <Label>Industry & Market Benchmark *</Label>
+                <IndustryIndexSelector
+                  value={{ industry: aiForm.industry, index: aiForm.nifty_index }}
+                  onChange={({ industry, index }) => {
+                    setAiForm({ ...aiForm, industry, nifty_index: index });
+                  }}
+                  showBenchmark={true}
+                  apiClient={apiClient}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
