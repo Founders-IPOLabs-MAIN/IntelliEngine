@@ -76,12 +76,6 @@ const CATEGORY_COLORS = [
   { bg: "bg-lime-50", text: "text-lime-600", border: "border-lime-200" }
 ];
 
-const SECTORS = [
-  "Technology", "Healthcare", "Financial Services", "Manufacturing",
-  "Consumer Goods", "Energy", "Real Estate", "Telecommunications",
-  "Pharmaceuticals", "Logistics", "Education", "Media & Entertainment"
-];
-
 const SPECIFIC_NEEDS = [
   "IPO Readiness Assessment", "DRHP Drafting", "Financial Audit",
   "Legal Due Diligence", "Valuation Services", "SEBI Compliance",
