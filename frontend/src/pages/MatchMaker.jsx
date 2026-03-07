@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
+import IndustryIndexSelector from "@/components/IndustryIndexSelector";
 import {
   Briefcase,
   Building2,
