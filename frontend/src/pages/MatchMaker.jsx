@@ -630,7 +630,7 @@ const MatchMaker = ({ user, apiClient }) => {
                 <Button variant="outline" onClick={() => setShowAIDialog(false)}>Cancel</Button>
                 <Button
                   onClick={handleAIRecommend}
-                  disabled={aiLoading || !aiForm.company_name || !aiForm.sector}
+                  disabled={aiLoading || !aiForm.company_name || !aiForm.industry}
                   className="bg-[#1DA1F2] hover:bg-[#1a8cd8] gap-2"
                   data-testid="submit-ai-recommend"
                 >
