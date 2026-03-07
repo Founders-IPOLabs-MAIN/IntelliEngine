@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
+import IndustryIndexSelector from "@/components/IndustryIndexSelector";
 import {
   ArrowLeft,
   ArrowRight,
