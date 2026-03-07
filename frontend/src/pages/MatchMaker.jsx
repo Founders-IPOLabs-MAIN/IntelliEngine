@@ -95,7 +95,8 @@ const MatchMaker = ({ user, apiClient }) => {
   const [aiResults, setAiResults] = useState(null);
   const [aiForm, setAiForm] = useState({
     company_name: "",
-    sector: "",
+    industry: "",
+    nifty_index: "",
     current_stage: "Assessment",
     target_exchange: "SME",
     estimated_issue_size: "",
