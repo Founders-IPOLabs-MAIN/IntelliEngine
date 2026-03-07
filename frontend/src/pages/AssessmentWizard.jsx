@@ -89,7 +89,7 @@ const AssessmentWizard = ({ user, apiClient }) => {
   const validateStep = (step) => {
     switch (step) {
       case 1:
-        return formData.company_type && formData.target_board;
+        return formData.company_type && formData.target_board && formData.industry;
       case 2:
         return formData.year1_pat && formData.year2_pat && formData.year3_pat &&
                formData.year1_ebitda && formData.year2_ebitda && formData.year3_ebitda &&
