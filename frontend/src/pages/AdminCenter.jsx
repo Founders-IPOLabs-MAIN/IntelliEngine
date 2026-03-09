@@ -169,6 +169,23 @@ const AdminCenter = ({ user, apiClient }) => {
     setShowActionDialog(true);
   };
 
+  const handleSendEmail = async (professional_id, professional_name) => {
+    setSendingEmailId(professional_id);
+    try {
+      const response = await apiClient.post(`/admin/send-email/${professional_id}`);
+      toast.success(`Email sent to ${professional_name} and Master Admin`);
+    } catch (error) {
+      console.error("Failed to send email:", error);
+      if (error.response?.data?.detail?.includes("not configured")) {
+        toast.error("Email not configured. Please add RESEND_API_KEY to backend/.env");
+      } else {
+        toast.error("Failed to send email");
+      }
+    } finally {
+      setSendingEmailId(null);
+    }
+  };
+
   const handleAssignRole = async () => {
     if (!assignEmail || !assignRole) {
       toast.error("Please fill all fields");
