@@ -883,6 +883,47 @@ async def search_professionals(
         "pages": (total + limit - 1) // limit
     }
 
+# NOTE: /all route must be defined BEFORE /{professional_id} to avoid route conflict
+@api_router.get("/matchmaker/professionals/all")
+async def get_all_professionals(
+    page: int = 1,
+    limit: int = 20,
+    category: Optional[str] = None,
+    city: Optional[str] = None,
+    search: Optional[str] = None,
+    user: User = Depends(get_current_user)
+):
+    """Get all professionals (master database) with pagination and filters"""
+    query = {"status": {"$in": ["active", "pending_review"]}, "consent_display": True}
+    
+    if category:
+        query["category_id"] = category
+    if city:
+        query["locations"] = city
+    if search:
+        query["$or"] = [
+            {"name": {"$regex": search, "$options": "i"}},
+            {"agency_name": {"$regex": search, "$options": "i"}},
+            {"expertise_tags": {"$regex": search, "$options": "i"}}
+        ]
+    
+    skip = (page - 1) * limit
+    
+    # Get total count
+    total = await db.professionals.count_documents(query)
+    
+    # Get professionals with pagination
+    cursor = db.professionals.find(query, {"_id": 0, "pan_document": 0, "aadhaar_document": 0, "registration_document": 0}).sort("created_at", -1).skip(skip).limit(limit)
+    professionals = await cursor.to_list(length=limit)
+    
+    return {
+        "professionals": professionals,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total + limit - 1) // limit
+    }
+
 @api_router.get("/matchmaker/professionals/{professional_id}")
 async def get_professional(professional_id: str):
     """Get a specific professional profile"""
