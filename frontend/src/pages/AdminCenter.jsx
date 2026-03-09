@@ -370,10 +370,21 @@ const AdminCenter = ({ user, apiClient }) => {
                         </CardTitle>
                         <CardDescription>Review and approve professional registrations</CardDescription>
                       </div>
-                      <Button variant="outline" size="sm" onClick={fetchData}>
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Refresh
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {/* Email Configuration Status */}
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs ${
+                          emailConfig?.email_configured 
+                            ? "bg-green-100 text-green-700" 
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}>
+                          <Mail className="w-3.5 h-3.5" />
+                          {emailConfig?.email_configured ? "Email Enabled" : "Email Not Configured"}
+                        </div>
+                        <Button variant="outline" size="sm" onClick={fetchData}>
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Refresh
+                        </Button>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
