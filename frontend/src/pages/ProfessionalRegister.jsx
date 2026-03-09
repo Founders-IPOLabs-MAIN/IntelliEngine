@@ -369,8 +369,12 @@ const ProfessionalRegister = ({ user, apiClient }) => {
         const requiredFields = fields.filter(f => f.required);
         return requiredFields.every(f => formData.registration_numbers[f.id]?.trim());
       case 3:
-        // Locations required, experience required, at least 1 expertise required (top 3 is optional but recommended)
-        return formData.locations.length > 0 && formData.years_experience && formData.expertise_tags.length >= 1;
+        // Locations required, experience required, at least 1 expertise required
+        const hasLocations = formData.locations && formData.locations.length > 0;
+        const hasExperience = formData.years_experience !== "" && formData.years_experience !== null && formData.years_experience !== undefined;
+        const hasExpertise = formData.expertise_tags && formData.expertise_tags.length >= 1;
+        console.log("Step 3 validation:", { hasLocations, hasExperience, hasExpertise, locations: formData.locations, experience: formData.years_experience, expertise: formData.expertise_tags });
+        return hasLocations && hasExperience && hasExpertise;
       case 4:
         // Documents validation
         if (!formData.pan_document) return false;
