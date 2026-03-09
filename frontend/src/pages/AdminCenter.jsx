@@ -67,6 +67,8 @@ const AdminCenter = ({ user, apiClient }) => {
   const [pendingRegistrations, setPendingRegistrations] = useState([]);
   const [registrationStats, setRegistrationStats] = useState(null);
   const [processingId, setProcessingId] = useState(null);
+  const [emailConfig, setEmailConfig] = useState(null);
+  const [sendingEmailId, setSendingEmailId] = useState(null);
   
   // Dialog states
   const [showAssignDialog, setShowAssignDialog] = useState(false);
