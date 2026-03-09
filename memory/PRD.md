@@ -552,6 +552,13 @@ Build a complete IPO-readiness platform with:
   - Email configuration status indicator in Admin Center
   - Uses Resend API for transactional emails
   - HTML-formatted professional emails with IntelliEngine branding
+- ✅ **NEW: State-wise Professional View in MatchMaker**
+  - "Skip for now" button shows ALL professionals grouped by state (alphabetically)
+  - City selection dialog now groups cities by state
+  - Collapsible/expandable state sections
+  - View toggle: "City View" vs "All States"
+  - Clicking specific city filters to only that city's professionals
+  - All 10 UI tests passed (iteration_10.json)
 
 ## Testing Status
 - ✅ Backend API tests passed (100%)
