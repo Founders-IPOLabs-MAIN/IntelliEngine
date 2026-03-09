@@ -1116,31 +1116,41 @@ async def get_professionals_by_city(
 @api_router.get("/matchmaker/statistics")
 async def get_matchmaker_statistics(user: User = Depends(get_current_user)):
     """Get statistics for the matchmaker module"""
-    total_professionals = await db.professionals.count_documents({"status": {"$in": ["active", "pending_review"]}})
-    
-    # Get counts by category
-    pipeline = [
-        {"$match": {"status": {"$in": ["active", "pending_review"]}}},
-        {"$group": {"_id": "$category_id", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}}
-    ]
-    category_counts = await db.professionals.aggregate(pipeline).to_list(length=20)
-    
-    # Get unique cities
-    cities_pipeline = [
-        {"$match": {"status": {"$in": ["active", "pending_review"]}}},
-        {"$unwind": "$locations"},
-        {"$group": {"_id": "$locations"}},
-        {"$count": "total"}
-    ]
-    cities_result = await db.professionals.aggregate(cities_pipeline).to_list(length=1)
-    unique_cities = cities_result[0]["total"] if cities_result else 0
-    
-    return {
-        "total_professionals": total_professionals,
-        "categories": category_counts,
-        "unique_cities": unique_cities
-    }
+    try:
+        total_professionals = await db.professionals.count_documents({"status": {"$in": ["active", "pending_review"]}})
+        
+        # Get counts by category
+        pipeline = [
+            {"$match": {"status": {"$in": ["active", "pending_review"]}}},
+            {"$group": {"_id": "$category_id", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        category_counts = await db.professionals.aggregate(pipeline).to_list(length=20)
+        
+        # Get unique cities - with proper null handling
+        unique_cities = 0
+        if total_professionals > 0:
+            cities_pipeline = [
+                {"$match": {"status": {"$in": ["active", "pending_review"]}, "locations": {"$exists": True, "$ne": []}}},
+                {"$unwind": "$locations"},
+                {"$group": {"_id": "$locations"}},
+                {"$count": "total"}
+            ]
+            cities_result = await db.professionals.aggregate(cities_pipeline).to_list(length=1)
+            unique_cities = cities_result[0]["total"] if cities_result else 0
+        
+        return {
+            "total_professionals": total_professionals,
+            "categories": category_counts,
+            "unique_cities": unique_cities
+        }
+    except Exception as e:
+        print(f"Error in statistics: {e}")
+        return {
+            "total_professionals": 0,
+            "categories": [],
+            "unique_cities": 0
+        }
 
 @api_router.put("/matchmaker/professionals/{professional_id}")
 async def update_professional(
