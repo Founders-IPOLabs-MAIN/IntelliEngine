@@ -952,12 +952,195 @@ async def create_professional(
     
     await db.professionals.insert_one(prof_doc)
     
+    # Also add to city-wise collections for quick lookup
+    for location in prof_data.locations:
+        city_doc = {
+            "professional_id": professional_id,
+            "city": location,
+            "category_id": prof_data.category_id,
+            "name": prof_data.name,
+            "expertise_tags": prof_data.expertise_tags,
+            "years_experience": prof_data.years_experience,
+            "created_at": now.isoformat()
+        }
+        await db.professionals_by_city.insert_one(city_doc)
+    
+    # Delete any existing draft for this user
+    await db.professional_drafts.delete_many({"user_id": user.user_id})
+    
     prof_doc["created_at"] = now
     prof_doc["updated_at"] = now
     if "_id" in prof_doc:
         del prof_doc["_id"]
     
     return Professional(**prof_doc)
+
+# ============ PROFESSIONAL DRAFT ENDPOINTS ============
+
+class ProfessionalDraft(BaseModel):
+    draft_id: Optional[str] = None
+    current_step: int = 1
+    data: dict = {}
+
+@api_router.post("/matchmaker/professionals/draft")
+async def save_professional_draft(
+    draft_data: ProfessionalDraft,
+    user: User = Depends(get_current_user)
+):
+    """Save or update a professional registration draft"""
+    now = datetime.now(timezone.utc)
+    
+    if draft_data.draft_id:
+        # Update existing draft
+        result = await db.professional_drafts.update_one(
+            {"draft_id": draft_data.draft_id, "user_id": user.user_id},
+            {
+                "$set": {
+                    "current_step": draft_data.current_step,
+                    "data": draft_data.data,
+                    "updated_at": now.isoformat()
+                }
+            }
+        )
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Draft not found")
+        return {"draft_id": draft_data.draft_id, "message": "Draft updated", "updated_at": now.isoformat()}
+    else:
+        # Create new draft
+        draft_id = f"draft_{uuid.uuid4().hex[:12]}"
+        draft_doc = {
+            "draft_id": draft_id,
+            "user_id": user.user_id,
+            "current_step": draft_data.current_step,
+            "data": draft_data.data,
+            "created_at": now.isoformat(),
+            "updated_at": now.isoformat()
+        }
+        
+        # Delete any existing draft for this user first
+        await db.professional_drafts.delete_many({"user_id": user.user_id})
+        await db.professional_drafts.insert_one(draft_doc)
+        
+        return {"draft_id": draft_id, "message": "Draft created", "updated_at": now.isoformat()}
+
+@api_router.get("/matchmaker/professionals/draft")
+async def get_user_draft(user: User = Depends(get_current_user)):
+    """Get the current user's professional registration draft"""
+    draft = await db.professional_drafts.find_one(
+        {"user_id": user.user_id},
+        {"_id": 0}
+    )
+    if not draft:
+        raise HTTPException(status_code=404, detail="No draft found")
+    return draft
+
+@api_router.get("/matchmaker/professionals/draft/{draft_id}")
+async def get_draft_by_id(draft_id: str, user: User = Depends(get_current_user)):
+    """Get a specific draft by ID"""
+    draft = await db.professional_drafts.find_one(
+        {"draft_id": draft_id, "user_id": user.user_id},
+        {"_id": 0}
+    )
+    if not draft:
+        raise HTTPException(status_code=404, detail="Draft not found")
+    return draft
+
+@api_router.delete("/matchmaker/professionals/draft/{draft_id}")
+async def delete_draft(draft_id: str, user: User = Depends(get_current_user)):
+    """Delete a draft"""
+    result = await db.professional_drafts.delete_one(
+        {"draft_id": draft_id, "user_id": user.user_id}
+    )
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Draft not found")
+    return {"message": "Draft deleted"}
+
+# ============ MASTER DATABASE & BROWSE ALL ============
+
+@api_router.get("/matchmaker/professionals/all")
+async def get_all_professionals(
+    page: int = 1,
+    limit: int = 20,
+    category: Optional[str] = None,
+    city: Optional[str] = None,
+    search: Optional[str] = None,
+    user: User = Depends(get_current_user)
+):
+    """Get all professionals (master database) with pagination and filters"""
+    query = {"status": {"$in": ["active", "pending_review"]}, "consent_display": True}
+    
+    if category:
+        query["category_id"] = category
+    if city:
+        query["locations"] = city
+    if search:
+        query["$or"] = [
+            {"name": {"$regex": search, "$options": "i"}},
+            {"agency_name": {"$regex": search, "$options": "i"}},
+            {"expertise_tags": {"$regex": search, "$options": "i"}}
+        ]
+    
+    skip = (page - 1) * limit
+    
+    # Get total count
+    total = await db.professionals.count_documents(query)
+    
+    # Get professionals with pagination
+    cursor = db.professionals.find(query, {"_id": 0, "pan_document": 0, "aadhaar_document": 0, "registration_document": 0}).sort("created_at", -1).skip(skip).limit(limit)
+    professionals = await cursor.to_list(length=limit)
+    
+    return {
+        "professionals": professionals,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total + limit - 1) // limit
+    }
+
+@api_router.get("/matchmaker/professionals/by-city/{city}")
+async def get_professionals_by_city(
+    city: str,
+    category: Optional[str] = None,
+    user: User = Depends(get_current_user)
+):
+    """Get professionals filtered by city"""
+    query = {"city": city}
+    if category:
+        query["category_id"] = category
+    
+    cursor = db.professionals_by_city.find(query, {"_id": 0})
+    results = await cursor.to_list(length=100)
+    
+    return {"city": city, "professionals": results, "count": len(results)}
+
+@api_router.get("/matchmaker/statistics")
+async def get_matchmaker_statistics(user: User = Depends(get_current_user)):
+    """Get statistics for the matchmaker module"""
+    total_professionals = await db.professionals.count_documents({"status": {"$in": ["active", "pending_review"]}})
+    
+    # Get counts by category
+    pipeline = [
+        {"$match": {"status": {"$in": ["active", "pending_review"]}}},
+        {"$group": {"_id": "$category_id", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    category_counts = await db.professionals.aggregate(pipeline).to_list(length=20)
+    
+    # Get unique cities
+    cities_pipeline = [
+        {"$match": {"status": {"$in": ["active", "pending_review"]}}},
+        {"$unwind": "$locations"},
+        {"$group": {"_id": "$locations"}},
+        {"$count": "total"}
+    ]
+    cities_result = await db.professionals.aggregate(cities_pipeline).to_list(length=1)
+    unique_cities = cities_result[0]["total"] if cities_result else 0
+    
+    return {
+        "total_professionals": total_professionals,
+        "categories": category_counts,
+        "unique_cities": unique_cities
+    }
 
 @api_router.put("/matchmaker/professionals/{professional_id}")
 async def update_professional(
