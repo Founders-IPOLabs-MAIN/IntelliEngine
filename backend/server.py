@@ -49,6 +49,155 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ============ EMAIL NOTIFICATION FUNCTIONS ============
+
+async def send_registration_email(
+    recipient_email: str,
+    professional_name: str,
+    category: str,
+    action: str,
+    reason: Optional[str] = None,
+    send_to_master_admin: bool = True
+) -> dict:
+    """Send email notification for registration status change"""
+    
+    if not RESEND_API_KEY or RESEND_API_KEY == 're_placeholder_key':
+        logger.warning("Resend API key not configured - skipping email")
+        return {"status": "skipped", "message": "Email not configured"}
+    
+    # Define email content based on action
+    if action == "approve":
+        subject = f"🎉 Registration Approved - Welcome to IntelliEngine!"
+        status_color = "#22c55e"  # Green
+        status_text = "APPROVED"
+        body_text = f"""
+            <p>Congratulations! Your professional registration as a <strong>{category}</strong> has been approved.</p>
+            <p>You are now part of India's premier IPO professional network. Companies seeking IPO services can now discover and connect with you through our Match Maker platform.</p>
+            <p><strong>Next Steps:</strong></p>
+            <ul>
+                <li>Complete your profile with additional details</li>
+                <li>Add your services and pricing</li>
+                <li>Start receiving inquiries from IPO-seeking companies</li>
+            </ul>
+        """
+    elif action == "reject":
+        subject = f"Registration Update - Action Required"
+        status_color = "#ef4444"  # Red
+        status_text = "NOT APPROVED"
+        body_text = f"""
+            <p>We regret to inform you that your professional registration as a <strong>{category}</strong> could not be approved at this time.</p>
+            {f'<p><strong>Reason:</strong> {reason}</p>' if reason else ''}
+            <p>If you believe this was in error or have additional documentation, please contact our support team.</p>
+        """
+    elif action == "reapply":
+        subject = f"Registration Update - Re-submission Required"
+        status_color = "#f59e0b"  # Orange
+        status_text = "NEEDS RE-SUBMISSION"
+        body_text = f"""
+            <p>Your professional registration as a <strong>{category}</strong> requires some corrections before it can be approved.</p>
+            {f'<p><strong>Reason:</strong> {reason}</p>' if reason else ''}
+            <p>Please log in to your account and update your registration with the required information.</p>
+        """
+    else:
+        return {"status": "error", "message": f"Unknown action: {action}"}
+    
+    # HTML email template
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #1DA1F2 0%, #0d8ecf 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">IntelliEngine</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0; font-size: 14px;">IPO Readiness Platform</p>
+        </div>
+        
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span style="display: inline-block; background: {status_color}; color: white; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 14px;">
+                    {status_text}
+                </span>
+            </div>
+            
+            <p style="font-size: 16px;">Dear <strong>{professional_name}</strong>,</p>
+            
+            {body_text}
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                <p style="color: #666; font-size: 14px; margin: 0;">Best regards,</p>
+                <p style="color: #333; font-weight: bold; margin: 5px 0 0 0;">IPO Labs Operations Team</p>
+            </div>
+        </div>
+        
+        <div style="background: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
+            <p style="color: #666; font-size: 12px; margin: 0;">
+                © 2026 IPO Labs. All rights reserved.<br>
+                Building India's Truly Democratic IPO Platform
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    results = []
+    
+    # Send to professional
+    try:
+        params = {
+            "from": SENDER_EMAIL,
+            "to": [recipient_email],
+            "subject": subject,
+            "html": html_content
+        }
+        email_result = await asyncio.to_thread(resend.Emails.send, params)
+        results.append({"recipient": recipient_email, "status": "sent", "email_id": email_result.get("id")})
+        logger.info(f"Email sent to professional: {recipient_email}")
+    except Exception as e:
+        logger.error(f"Failed to send email to {recipient_email}: {str(e)}")
+        results.append({"recipient": recipient_email, "status": "failed", "error": str(e)})
+    
+    # Also send notification to master admin
+    if send_to_master_admin and MASTER_ADMIN_EMAIL:
+        admin_subject = f"[Admin] Registration {action.upper()}: {professional_name}"
+        admin_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #1f2937; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="color: white; margin: 0; font-size: 20px;">🔔 Registration Notification</h1>
+            </div>
+            <div style="background: #ffffff; padding: 25px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+                <p><strong>Action:</strong> <span style="color: {status_color}; font-weight: bold;">{status_text}</span></p>
+                <p><strong>Professional:</strong> {professional_name}</p>
+                <p><strong>Category:</strong> {category}</p>
+                <p><strong>Email:</strong> {recipient_email}</p>
+                {f'<p><strong>Reason:</strong> {reason}</p>' if reason else ''}
+                <p><strong>Timestamp:</strong> {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
+                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+                <p style="color: #666; font-size: 12px;">This is an automated notification from IntelliEngine Admin Center.</p>
+            </div>
+        </body>
+        </html>
+        """
+        try:
+            admin_params = {
+                "from": SENDER_EMAIL,
+                "to": [MASTER_ADMIN_EMAIL],
+                "subject": admin_subject,
+                "html": admin_html
+            }
+            admin_result = await asyncio.to_thread(resend.Emails.send, admin_params)
+            results.append({"recipient": MASTER_ADMIN_EMAIL, "status": "sent", "email_id": admin_result.get("id")})
+            logger.info(f"Admin notification sent to: {MASTER_ADMIN_EMAIL}")
+        except Exception as e:
+            logger.error(f"Failed to send admin notification: {str(e)}")
+            results.append({"recipient": MASTER_ADMIN_EMAIL, "status": "failed", "error": str(e)})
+    
+    return {"status": "completed", "results": results}
+
 # ============ MODELS ============
 
 class User(BaseModel):
