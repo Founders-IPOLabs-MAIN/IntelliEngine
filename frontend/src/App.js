@@ -396,6 +396,7 @@ function App() {
       <BrowserRouter>
         <AppRouter />
       </BrowserRouter>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }
