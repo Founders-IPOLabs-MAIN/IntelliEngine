@@ -1049,15 +1049,23 @@ const ProfessionalRegister = ({ user, apiClient }) => {
                 <Button
                   size="sm"
                   onClick={() => {
-                    if (validateStep(currentStep)) {
+                    console.log("Next clicked, currentStep:", currentStep, "formData:", formData);
+                    const isValid = validateStep(currentStep);
+                    console.log("Validation result:", isValid);
+                    
+                    if (isValid) {
                       setCurrentStep(s => s + 1);
                     } else {
-                      if (currentStep === 3 && formData.expertise_tags.length === 0) {
-                        toast.error("Please select at least 1 expertise area");
-                      } else if (currentStep === 3 && formData.locations.length === 0) {
-                        toast.error("Please add at least 1 service location");
-                      } else if (currentStep === 3 && !formData.years_experience) {
-                        toast.error("Please enter your years of experience");
+                      if (currentStep === 3) {
+                        if (!formData.locations || formData.locations.length === 0) {
+                          toast.error("Please add at least 1 service location");
+                        } else if (formData.years_experience === "" || formData.years_experience === null || formData.years_experience === undefined) {
+                          toast.error("Please enter your years of experience");
+                        } else if (!formData.expertise_tags || formData.expertise_tags.length === 0) {
+                          toast.error("Please select at least 1 expertise area");
+                        } else {
+                          toast.error("Please fill all required fields");
+                        }
                       } else {
                         toast.error("Please fill all required fields");
                       }
