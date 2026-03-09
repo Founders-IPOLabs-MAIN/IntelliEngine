@@ -35,7 +35,9 @@ import {
   Building2,
   AlertTriangle,
   RotateCcw,
-  Star
+  Star,
+  Mail,
+  Send
 } from "lucide-react";
 
 const ACTION_ICONS = {
