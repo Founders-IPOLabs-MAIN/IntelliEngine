@@ -1178,6 +1178,155 @@ async def get_matchmaker_statistics(user: User = Depends(get_current_user)):
             "unique_cities": 0
         }
 
+# ============ REGISTRATION APPROVAL SYSTEM (Master Admin) ============
+
+class RegistrationAction(BaseModel):
+    action: str  # "approve", "reject", "reapply"
+    reason: Optional[str] = None
+
+@api_router.get("/admin/pending-registrations")
+async def get_pending_registrations(
+    page: int = 1,
+    limit: int = 20,
+    user: User = Depends(get_current_user)
+):
+    """Get all pending professional registrations (Master Admin only)"""
+    # Check if user is master admin or has admin role
+    if not is_master_admin(user.email) and user.role not in ["admin", "super_admin", "master_admin"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = {"status": "pending_review"}
+    skip = (page - 1) * limit
+    
+    total = await db.professionals.count_documents(query)
+    cursor = db.professionals.find(query, {"_id": 0, "pan_document": 0, "aadhaar_document": 0, "registration_document": 0}).sort("created_at", -1).skip(skip).limit(limit)
+    registrations = await cursor.to_list(length=limit)
+    
+    return {
+        "registrations": registrations,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total + limit - 1) // limit
+    }
+
+@api_router.post("/admin/registrations/{professional_id}/action")
+async def process_registration(
+    professional_id: str,
+    action_data: RegistrationAction,
+    user: User = Depends(get_current_user)
+):
+    """Approve, Reject, or Request Re-application for a registration (Master Admin only)"""
+    # Check if user is master admin or has admin role
+    if not is_master_admin(user.email) and user.role not in ["admin", "super_admin", "master_admin"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Get the registration
+    registration = await db.professionals.find_one(
+        {"professional_id": professional_id},
+        {"_id": 0}
+    )
+    
+    if not registration:
+        raise HTTPException(status_code=404, detail="Registration not found")
+    
+    now = datetime.now(timezone.utc)
+    
+    if action_data.action == "approve":
+        # Approve the registration - change status to active
+        await db.professionals.update_one(
+            {"professional_id": professional_id},
+            {
+                "$set": {
+                    "status": "active",
+                    "is_verified": True,
+                    "approved_by": user.email,
+                    "approved_at": now.isoformat(),
+                    "updated_at": now.isoformat()
+                }
+            }
+        )
+        message = "Registration approved successfully"
+        
+    elif action_data.action == "reject":
+        # Reject the registration
+        await db.professionals.update_one(
+            {"professional_id": professional_id},
+            {
+                "$set": {
+                    "status": "rejected",
+                    "rejection_reason": action_data.reason,
+                    "rejected_by": user.email,
+                    "rejected_at": now.isoformat(),
+                    "updated_at": now.isoformat()
+                }
+            }
+        )
+        message = "Registration rejected"
+        
+    elif action_data.action == "reapply":
+        # Ask to re-apply - send back for corrections
+        await db.professionals.update_one(
+            {"professional_id": professional_id},
+            {
+                "$set": {
+                    "status": "needs_resubmission",
+                    "reapply_reason": action_data.reason,
+                    "reapply_requested_by": user.email,
+                    "reapply_requested_at": now.isoformat(),
+                    "updated_at": now.isoformat()
+                }
+            }
+        )
+        message = "Re-application requested"
+        
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action. Use 'approve', 'reject', or 'reapply'")
+    
+    # Log the action
+    await db.audit_logs.insert_one({
+        "log_id": f"log_{uuid.uuid4().hex[:12]}",
+        "user_id": user.user_id,
+        "user_email": user.email,
+        "user_name": user.name,
+        "action_type": f"registration_{action_data.action}",
+        "module": "matchmaker",
+        "details": f"Processed registration for {registration.get('name', 'Unknown')} ({professional_id}): {action_data.action}",
+        "timestamp": now.isoformat()
+    })
+    
+    return {"message": message, "professional_id": professional_id, "new_status": action_data.action}
+
+@api_router.get("/admin/master-profile")
+async def get_master_admin_profile(user: User = Depends(get_current_user)):
+    """Get master admin profile info"""
+    if not is_master_admin(user.email) and user.role not in ["admin", "super_admin", "master_admin"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    return {
+        "master_admin": MASTER_ADMIN_CONFIG,
+        "is_current_user_master": is_master_admin(user.email)
+    }
+
+@api_router.get("/admin/registration-stats")
+async def get_registration_stats(user: User = Depends(get_current_user)):
+    """Get registration statistics for admin dashboard"""
+    if not is_master_admin(user.email) and user.role not in ["admin", "super_admin", "master_admin"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    pending = await db.professionals.count_documents({"status": "pending_review"})
+    approved = await db.professionals.count_documents({"status": "active"})
+    rejected = await db.professionals.count_documents({"status": "rejected"})
+    needs_resubmission = await db.professionals.count_documents({"status": "needs_resubmission"})
+    
+    return {
+        "pending": pending,
+        "approved": approved,
+        "rejected": rejected,
+        "needs_resubmission": needs_resubmission,
+        "total": pending + approved + rejected + needs_resubmission
+    }
+
 @api_router.put("/matchmaker/professionals/{professional_id}")
 async def update_professional(
     professional_id: str,
