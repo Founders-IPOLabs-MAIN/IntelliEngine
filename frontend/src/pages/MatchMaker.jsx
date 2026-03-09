@@ -242,7 +242,7 @@ const MatchMaker = ({ user, apiClient }) => {
                   AI Match
                 </Button>
                 <Button
-                  onClick={() => navigate("/matchmaker/search")}
+                  onClick={() => navigate("/matchmaker/browse-all")}
                   size="sm"
                   variant="outline"
                   className="border-white/50 text-white hover:bg-white/10 gap-1.5 px-4 h-9 text-sm rounded-lg"
