@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import {
@@ -31,7 +31,11 @@ import {
   UserPlus,
   Crown,
   User,
-  RefreshCw
+  RefreshCw,
+  Building2,
+  AlertTriangle,
+  RotateCcw,
+  Star
 } from "lucide-react";
 
 const ACTION_ICONS = {
@@ -46,7 +50,7 @@ const ACTION_ICONS = {
 
 const AdminCenter = ({ user, apiClient }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("roles");
+  const [activeTab, setActiveTab] = useState("operations");
   const [loading, setLoading] = useState(true);
   
   // Data states
@@ -56,8 +60,18 @@ const AdminCenter = ({ user, apiClient }) => {
   const [users, setUsers] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   
+  // Master Admin / Registration states
+  const [masterProfile, setMasterProfile] = useState(null);
+  const [pendingRegistrations, setPendingRegistrations] = useState([]);
+  const [registrationStats, setRegistrationStats] = useState(null);
+  const [processingId, setProcessingId] = useState(null);
+  
   // Dialog states
   const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [showActionDialog, setShowActionDialog] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState(null);
+  const [actionType, setActionType] = useState("");
+  const [actionReason, setActionReason] = useState("");
   const [assignEmail, setAssignEmail] = useState("");
   const [assignRole, setAssignRole] = useState("");
   const [assignLoading, setAssignLoading] = useState(false);
@@ -73,7 +87,16 @@ const AdminCenter = ({ user, apiClient }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      if (activeTab === "roles" || activeTab === "matrix") {
+      if (activeTab === "operations") {
+        const [masterRes, statsRes, pendingRes] = await Promise.all([
+          apiClient.get("/admin/master-profile"),
+          apiClient.get("/admin/registration-stats"),
+          apiClient.get("/admin/pending-registrations?limit=50")
+        ]);
+        setMasterProfile(masterRes.data);
+        setRegistrationStats(statsRes.data);
+        setPendingRegistrations(pendingRes.data.registrations);
+      } else if (activeTab === "roles" || activeTab === "matrix") {
         const [rolesRes, featuresRes, matrixRes] = await Promise.all([
           apiClient.get("/admin/roles"),
           apiClient.get("/admin/features"),
@@ -85,7 +108,6 @@ const AdminCenter = ({ user, apiClient }) => {
       } else if (activeTab === "users") {
         const usersRes = await apiClient.get("/admin/users");
         setUsers(usersRes.data.users);
-        // Also fetch roles for assignment
         const rolesRes = await apiClient.get("/admin/roles");
         setRoles(rolesRes.data.roles);
       } else if (activeTab === "audit") {
@@ -103,6 +125,42 @@ const AdminCenter = ({ user, apiClient }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRegistrationAction = async () => {
+    if (!selectedRegistration || !actionType) return;
+    
+    if ((actionType === "reject" || actionType === "reapply") && !actionReason.trim()) {
+      toast.error("Please provide a reason");
+      return;
+    }
+    
+    setProcessingId(selectedRegistration.professional_id);
+    try {
+      await apiClient.post(`/admin/registrations/${selectedRegistration.professional_id}/action`, {
+        action: actionType,
+        reason: actionReason || null
+      });
+      
+      toast.success(`Registration ${actionType === "approve" ? "approved" : actionType === "reject" ? "rejected" : "sent back for re-application"}`);
+      setShowActionDialog(false);
+      setSelectedRegistration(null);
+      setActionType("");
+      setActionReason("");
+      fetchData();
+    } catch (error) {
+      console.error("Failed to process registration:", error);
+      toast.error("Failed to process registration");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const openActionDialog = (registration, action) => {
+    setSelectedRegistration(registration);
+    setActionType(action);
+    setActionReason("");
+    setShowActionDialog(true);
   };
 
   const handleAssignRole = async () => {
@@ -132,6 +190,7 @@ const AdminCenter = ({ user, apiClient }) => {
 
   const getRoleBadgeColor = (roleId) => {
     switch (roleId) {
+      case "master_admin": return "bg-yellow-100 text-yellow-700";
       case "super_admin": return "bg-red-100 text-red-700";
       case "admin": return "bg-purple-100 text-purple-700";
       case "editor": return "bg-blue-100 text-blue-700";
@@ -140,13 +199,13 @@ const AdminCenter = ({ user, apiClient }) => {
     }
   };
 
-  const getRoleIcon = (roleId) => {
-    switch (roleId) {
-      case "super_admin": return Crown;
-      case "admin": return Shield;
-      case "editor": return Edit2;
-      case "viewer": return Eye;
-      default: return User;
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "pending_review": return <Badge className="bg-yellow-100 text-yellow-700">Pending Review</Badge>;
+      case "active": return <Badge className="bg-green-100 text-green-700">Approved</Badge>;
+      case "rejected": return <Badge className="bg-red-100 text-red-700">Rejected</Badge>;
+      case "needs_resubmission": return <Badge className="bg-orange-100 text-orange-700">Needs Re-submission</Badge>;
+      default: return <Badge variant="outline">{status}</Badge>;
     }
   };
 
@@ -161,7 +220,7 @@ const AdminCenter = ({ user, apiClient }) => {
     return true;
   });
 
-  if (loading && activeTab === "roles") {
+  if (loading && activeTab === "operations") {
     return (
       <div className="flex min-h-screen bg-white">
         <Sidebar user={user} apiClient={apiClient} />
@@ -203,7 +262,11 @@ const AdminCenter = ({ user, apiClient }) => {
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-8 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-4 w-full max-w-xl mb-6">
+            <TabsList className="grid grid-cols-5 w-full max-w-2xl mb-6">
+              <TabsTrigger value="operations" className="gap-2">
+                <Star className="w-4 h-4" />
+                Operations
+              </TabsTrigger>
               <TabsTrigger value="roles" className="gap-2">
                 <Shield className="w-4 h-4" />
                 Roles
@@ -222,63 +285,197 @@ const AdminCenter = ({ user, apiClient }) => {
               </TabsTrigger>
             </TabsList>
 
+            {/* IPO Labs Operations Tab */}
+            <TabsContent value="operations">
+              <div className="space-y-6">
+                {/* Master Admin Profile Card */}
+                <Card className="border-2 border-yellow-300 bg-gradient-to-r from-yellow-50 to-orange-50">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center border-2 border-yellow-400">
+                          <Crown className="w-8 h-8 text-yellow-600" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl flex items-center gap-2">
+                            IPO Labs Operations
+                            <Badge className="bg-yellow-500 text-white">Master Admin</Badge>
+                          </CardTitle>
+                          <CardDescription className="text-base">
+                            {masterProfile?.master_admin?.name || "Ronak Rajan"} • {masterProfile?.master_admin?.email || "ronraj2312@gmail.com"}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      {masterProfile?.is_current_user_master && (
+                        <Badge className="bg-green-500 text-white text-sm px-4 py-1">
+                          <CheckCircle2 className="w-4 h-4 mr-1" />
+                          Currently Logged In
+                        </Badge>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-white rounded-lg border border-yellow-200">
+                        <p className="text-2xl font-bold text-yellow-600">{registrationStats?.pending || 0}</p>
+                        <p className="text-sm text-muted-foreground">Pending Approval</p>
+                      </div>
+                      <div className="text-center p-4 bg-white rounded-lg border border-green-200">
+                        <p className="text-2xl font-bold text-green-600">{registrationStats?.approved || 0}</p>
+                        <p className="text-sm text-muted-foreground">Approved</p>
+                      </div>
+                      <div className="text-center p-4 bg-white rounded-lg border border-red-200">
+                        <p className="text-2xl font-bold text-red-600">{registrationStats?.rejected || 0}</p>
+                        <p className="text-sm text-muted-foreground">Rejected</p>
+                      </div>
+                      <div className="text-center p-4 bg-white rounded-lg border border-orange-200">
+                        <p className="text-2xl font-bold text-orange-600">{registrationStats?.needs_resubmission || 0}</p>
+                        <p className="text-sm text-muted-foreground">Re-apply</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Pending Registrations */}
+                <Card className="border border-border">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Clock className="w-5 h-5 text-yellow-500" />
+                          Pending Registrations
+                        </CardTitle>
+                        <CardDescription>Review and approve professional registrations</CardDescription>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={fetchData}>
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Refresh
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {pendingRegistrations.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-green-300" />
+                        <p className="text-lg">No pending registrations</p>
+                        <p className="text-sm">All registrations have been processed</p>
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Professional</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Experience</TableHead>
+                            <TableHead>Submitted</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {pendingRegistrations.map((reg) => (
+                            <TableRow key={reg.professional_id}>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{reg.name}</p>
+                                  <p className="text-xs text-muted-foreground">{reg.email}</p>
+                                  {reg.agency_name && (
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <Building2 className="w-3 h-3" />
+                                      {reg.agency_name}
+                                    </p>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">{reg.category_id?.replace(/_/g, ' ')}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                {reg.locations?.slice(0, 2).join(", ")}
+                                {reg.locations?.length > 2 && ` +${reg.locations.length - 2}`}
+                              </TableCell>
+                              <TableCell>{reg.years_experience} yrs</TableCell>
+                              <TableCell className="text-muted-foreground">
+                                {new Date(reg.created_at).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell>{getStatusBadge(reg.status)}</TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 px-2 text-green-600 hover:bg-green-50 hover:text-green-700"
+                                    onClick={() => openActionDialog(reg, "approve")}
+                                    disabled={processingId === reg.professional_id}
+                                  >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 px-2 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                    onClick={() => openActionDialog(reg, "reject")}
+                                    disabled={processingId === reg.professional_id}
+                                  >
+                                    <XCircle className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 px-2 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
+                                    onClick={() => openActionDialog(reg, "reapply")}
+                                    disabled={processingId === reg.professional_id}
+                                  >
+                                    <RotateCcw className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
             {/* Roles Tab */}
             <TabsContent value="roles">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {roles.map((role) => {
-                  const RoleIcon = getRoleIcon(role.role_id);
-                  return (
-                    <Card key={role.role_id} className="border border-border">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getRoleBadgeColor(role.role_id).replace('text-', 'bg-').split(' ')[0]}`}>
-                              <RoleIcon className={`w-5 h-5 ${getRoleBadgeColor(role.role_id).split(' ')[1]}`} />
-                            </div>
-                            <div>
-                              <CardTitle className="text-lg">{role.name}</CardTitle>
-                              <CardDescription>{role.description}</CardDescription>
-                            </div>
+                {roles.map((role) => (
+                  <Card key={role.role_id} className="border border-border">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getRoleBadgeColor(role.role_id).split(' ')[0]}`}>
+                            <Shield className={`w-5 h-5 ${getRoleBadgeColor(role.role_id).split(' ')[1]}`} />
                           </div>
-                          {role.is_default && (
-                            <Badge variant="outline">Default</Badge>
-                          )}
+                          <div>
+                            <CardTitle className="text-lg">{role.name}</CardTitle>
+                            <CardDescription>{role.description}</CardDescription>
+                          </div>
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
+                        {role.is_default && <Badge variant="outline">Default</Badge>}
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Access Level</span>
+                          <span className="font-medium">{role.level}/100</span>
+                        </div>
+                        {role.max_users && (
                           <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">Access Level</span>
-                            <span className="font-medium">{role.level}/100</span>
+                            <span className="text-muted-foreground">Max Users</span>
+                            <span className="font-medium">{role.max_users}</span>
                           </div>
-                          {role.max_users && (
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">Max Users</span>
-                              <span className="font-medium">{role.max_users}</span>
-                            </div>
-                          )}
-                          <div className="pt-2">
-                            <p className="text-xs text-muted-foreground mb-2">Permissions:</p>
-                            <div className="flex flex-wrap gap-1">
-                              {Object.entries(role.permissions || {}).slice(0, 4).map(([feature, perms]) => (
-                                perms.length > 0 && (
-                                  <Badge key={feature} variant="secondary" className="text-xs">
-                                    {feature.replace('_', ' ')}
-                                  </Badge>
-                                )
-                              ))}
-                              {Object.keys(role.permissions || {}).length > 4 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  +{Object.keys(role.permissions).length - 4} more
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </TabsContent>
 
@@ -287,7 +484,7 @@ const AdminCenter = ({ user, apiClient }) => {
               <Card className="border border-border">
                 <CardHeader>
                   <CardTitle>Permission Matrix</CardTitle>
-                  <CardDescription>View and manage role permissions across features</CardDescription>
+                  <CardDescription>View role permissions across features</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {permissionMatrix && (
@@ -297,38 +494,23 @@ const AdminCenter = ({ user, apiClient }) => {
                           <TableRow>
                             <TableHead className="w-48">Feature</TableHead>
                             {permissionMatrix.roles.map(role => (
-                              <TableHead key={role.role_id} className="text-center">
-                                {role.name}
-                              </TableHead>
+                              <TableHead key={role.role_id} className="text-center">{role.name}</TableHead>
                             ))}
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {permissionMatrix.matrix.map((row) => (
                             <TableRow key={row.feature.id}>
-                              <TableCell className="font-medium">
-                                <div>
-                                  {row.feature.name}
-                                  <p className="text-xs text-muted-foreground">{row.feature.description}</p>
-                                </div>
-                              </TableCell>
+                              <TableCell className="font-medium">{row.feature.name}</TableCell>
                               {permissionMatrix.roles.map(role => {
                                 const perms = row[role.role_id] || [];
                                 return (
                                   <TableCell key={role.role_id} className="text-center">
                                     <div className="flex justify-center gap-1">
-                                      {perms.includes("read") && (
-                                        <Badge variant="outline" className="text-xs bg-blue-50">R</Badge>
-                                      )}
-                                      {perms.includes("write") && (
-                                        <Badge variant="outline" className="text-xs bg-green-50">W</Badge>
-                                      )}
-                                      {perms.includes("delete") && (
-                                        <Badge variant="outline" className="text-xs bg-red-50">D</Badge>
-                                      )}
-                                      {perms.length === 0 && (
-                                        <span className="text-muted-foreground">—</span>
-                                      )}
+                                      {perms.includes("read") && <Badge variant="outline" className="text-xs bg-blue-50">R</Badge>}
+                                      {perms.includes("write") && <Badge variant="outline" className="text-xs bg-green-50">W</Badge>}
+                                      {perms.includes("delete") && <Badge variant="outline" className="text-xs bg-red-50">D</Badge>}
+                                      {perms.length === 0 && <span className="text-muted-foreground">—</span>}
                                     </div>
                                   </TableCell>
                                 );
@@ -339,11 +521,6 @@ const AdminCenter = ({ user, apiClient }) => {
                       </Table>
                     </div>
                   )}
-                  <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
-                    <span><Badge variant="outline" className="bg-blue-50 mr-1">R</Badge> Read</span>
-                    <span><Badge variant="outline" className="bg-green-50 mr-1">W</Badge> Write</span>
-                    <span><Badge variant="outline" className="bg-red-50 mr-1">D</Badge> Delete</span>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -397,6 +574,9 @@ const AdminCenter = ({ user, apiClient }) => {
                                 </div>
                               )}
                               <span className="font-medium">{u.name}</span>
+                              {u.email === "ronraj2312@gmail.com" && (
+                                <Crown className="w-4 h-4 text-yellow-500" />
+                              )}
                             </div>
                           </TableCell>
                           <TableCell className="text-muted-foreground">{u.email}</TableCell>
@@ -445,26 +625,9 @@ const AdminCenter = ({ user, apiClient }) => {
                         <SelectContent>
                           <SelectItem value="all">All Actions</SelectItem>
                           <SelectItem value="login">Login</SelectItem>
-                          <SelectItem value="view">View</SelectItem>
-                          <SelectItem value="create">Create</SelectItem>
-                          <SelectItem value="update">Update</SelectItem>
-                          <SelectItem value="delete">Delete</SelectItem>
-                          <SelectItem value="download">Download</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Select value={logFilter.module || "all"} onValueChange={(v) => setLogFilter({...logFilter, module: v === "all" ? "" : v})}>
-                        <SelectTrigger className="w-36">
-                          <SelectValue placeholder="All Modules" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Modules</SelectItem>
-                          <SelectItem value="dashboard">Dashboard</SelectItem>
-                          <SelectItem value="assessment">Assessment</SelectItem>
-                          <SelectItem value="drhp_builder">DRHP Builder</SelectItem>
-                          <SelectItem value="funding">Funding</SelectItem>
-                          <SelectItem value="matchmaker">Match Maker</SelectItem>
-                          <SelectItem value="admin_center">Admin Center</SelectItem>
-                          <SelectItem value="account">Account</SelectItem>
+                          <SelectItem value="registration_approve">Approve</SelectItem>
+                          <SelectItem value="registration_reject">Reject</SelectItem>
+                          <SelectItem value="registration_reapply">Re-apply</SelectItem>
                         </SelectContent>
                       </Select>
                       <Button variant="outline" size="icon" onClick={fetchData}>
@@ -480,49 +643,36 @@ const AdminCenter = ({ user, apiClient }) => {
                         <TableHead>Timestamp</TableHead>
                         <TableHead>User</TableHead>
                         <TableHead>Action</TableHead>
-                        <TableHead>Module</TableHead>
                         <TableHead>Details</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredLogs.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                          <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                             No audit logs found
                           </TableCell>
                         </TableRow>
                       ) : (
-                        filteredLogs.map((log) => {
-                          const ActionIcon = ACTION_ICONS[log.action_type] || FileText;
-                          return (
-                            <TableRow key={log.log_id}>
-                              <TableCell className="text-muted-foreground">
-                                <div className="flex items-center gap-2">
-                                  <Clock className="w-3 h-3" />
-                                  {new Date(log.timestamp).toLocaleString()}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div>
-                                  <p className="font-medium">{log.user_name || "Unknown"}</p>
-                                  <p className="text-xs text-muted-foreground">{log.user_email}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className="gap-1">
-                                  <ActionIcon className="w-3 h-3" />
-                                  {log.action_type}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="secondary">{log.module?.replace('_', ' ')}</Badge>
-                              </TableCell>
-                              <TableCell className="text-muted-foreground max-w-xs truncate">
-                                {log.details || "—"}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
+                        filteredLogs.map((log) => (
+                          <TableRow key={log.log_id}>
+                            <TableCell className="text-muted-foreground">
+                              {new Date(log.timestamp).toLocaleString()}
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{log.user_name || "Unknown"}</p>
+                                <p className="text-xs text-muted-foreground">{log.user_email}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{log.action_type}</Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground max-w-xs truncate">
+                              {log.details || "—"}
+                            </TableCell>
+                          </TableRow>
+                        ))
                       )}
                     </TableBody>
                   </Table>
@@ -532,6 +682,60 @@ const AdminCenter = ({ user, apiClient }) => {
           </Tabs>
         </div>
       </main>
+
+      {/* Registration Action Dialog */}
+      <Dialog open={showActionDialog} onOpenChange={setShowActionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {actionType === "approve" && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+              {actionType === "reject" && <XCircle className="w-5 h-5 text-red-600" />}
+              {actionType === "reapply" && <RotateCcw className="w-5 h-5 text-orange-600" />}
+              {actionType === "approve" ? "Approve Registration" : actionType === "reject" ? "Reject Registration" : "Request Re-application"}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedRegistration?.name} ({selectedRegistration?.category_id?.replace(/_/g, ' ')})
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            {actionType === "approve" ? (
+              <p className="text-sm text-muted-foreground">
+                Are you sure you want to approve this registration? The professional will be visible in the marketplace.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <Label>Reason {actionType === "reject" ? "for Rejection" : "for Re-application"} *</Label>
+                <Textarea
+                  value={actionReason}
+                  onChange={(e) => setActionReason(e.target.value)}
+                  placeholder={actionType === "reject" ? "Explain why the registration is being rejected..." : "What needs to be corrected..."}
+                  rows={4}
+                />
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowActionDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={handleRegistrationAction}
+              disabled={processingId}
+              className={
+                actionType === "approve" ? "bg-green-600 hover:bg-green-700" :
+                actionType === "reject" ? "bg-red-600 hover:bg-red-700" :
+                "bg-orange-600 hover:bg-orange-700"
+              }
+            >
+              {processingId ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>
+              ) : (
+                <>Confirm {actionType === "approve" ? "Approval" : actionType === "reject" ? "Rejection" : "Re-apply Request"}</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Assign Role Dialog */}
       <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
@@ -564,29 +768,19 @@ const AdminCenter = ({ user, apiClient }) => {
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="master_admin">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-yellow-100 text-yellow-700 text-xs">Master Admin</Badge>
+                    </div>
+                  </SelectItem>
                   {roles.map(role => (
                     <SelectItem key={role.role_id} value={role.role_id}>
-                      <div className="flex items-center gap-2">
-                        <Badge className={`${getRoleBadgeColor(role.role_id)} text-xs`}>
-                          {role.name}
-                        </Badge>
-                        {role.max_users && (
-                          <span className="text-xs text-muted-foreground">(max {role.max_users})</span>
-                        )}
-                      </div>
+                      <Badge className={`${getRoleBadgeColor(role.role_id)} text-xs`}>{role.name}</Badge>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            
-            {assignRole === "super_admin" && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p className="text-sm text-amber-800">
-                  <strong>Note:</strong> Maximum 3 Super Admins allowed. Only existing Super Admins can assign this role.
-                </p>
-              </div>
-            )}
           </div>
 
           <DialogFooter>
