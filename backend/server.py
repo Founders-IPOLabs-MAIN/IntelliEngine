@@ -622,6 +622,32 @@ async def process_ocr(document_id: str, ocr_request: OCRRequest, user: User = De
         )
         raise HTTPException(status_code=500, detail=f"OCR processing failed: {str(e)}")
 
+# ============ MASTER ADMIN CONFIGURATION ============
+
+MASTER_ADMIN_CONFIG = {
+    "email": "ronraj2312@gmail.com",
+    "name": "Ronak Rajan",
+    "title": "IPO Labs Operations",
+    "role": "master_admin",
+    "permissions": "all"  # Full unrestricted access
+}
+
+def is_master_admin(user_email: str) -> bool:
+    """Check if user is the master admin"""
+    return user_email.lower() == MASTER_ADMIN_CONFIG["email"].lower()
+
+async def ensure_master_admin_exists():
+    """Ensure master admin user exists in database with correct role"""
+    existing = await db.users.find_one({"email": MASTER_ADMIN_CONFIG["email"]})
+    if existing:
+        # Update role to master_admin if not already
+        if existing.get("role") != "master_admin":
+            await db.users.update_one(
+                {"email": MASTER_ADMIN_CONFIG["email"]},
+                {"$set": {"role": "master_admin", "is_master_admin": True}}
+            )
+    # If user doesn't exist, they'll be created on first login with master admin role
+
 # ============ MATCH MAKER MODELS ============
 
 # Professional Categories for IPO Match Maker
