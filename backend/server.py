@@ -1457,7 +1457,34 @@ async def process_registration(
         "timestamp": now.isoformat()
     })
     
-    return {"message": message, "professional_id": professional_id, "new_status": action_data.action}
+    # Send email notification automatically
+    email_result = {"status": "not_sent"}
+    try:
+        # Get category name for email
+        category_name = registration.get("category_id", "Professional")
+        for cat in PROFESSIONAL_CATEGORIES:
+            if cat["id"] == registration.get("category_id"):
+                category_name = cat["name"]
+                break
+        
+        email_result = await send_registration_email(
+            recipient_email=registration.get("email", ""),
+            professional_name=registration.get("name", "Professional"),
+            category=category_name,
+            action=action_data.action,
+            reason=action_data.reason,
+            send_to_master_admin=True
+        )
+    except Exception as e:
+        logger.error(f"Failed to send notification email: {str(e)}")
+        email_result = {"status": "error", "message": str(e)}
+    
+    return {
+        "message": message, 
+        "professional_id": professional_id, 
+        "new_status": action_data.action,
+        "email_notification": email_result
+    }
 
 @api_router.get("/admin/master-profile")
 async def get_master_admin_profile(user: User = Depends(get_current_user)):
