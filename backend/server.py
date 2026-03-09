@@ -1486,6 +1486,101 @@ async def process_registration(
         "email_notification": email_result
     }
 
+# Model for manual email sending
+class ManualEmailRequest(BaseModel):
+    professional_id: str
+    action: str  # "welcome", "reminder", "custom"
+    custom_subject: Optional[str] = None
+    custom_message: Optional[str] = None
+
+@api_router.post("/admin/send-email/{professional_id}")
+async def send_manual_email(
+    professional_id: str,
+    email_type: str = "status_update",
+    user: User = Depends(get_current_user)
+):
+    """Manually send email notification to a professional (Master Admin button)"""
+    if not is_master_admin(user.email) and user.role not in ["admin", "super_admin", "master_admin"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Get the professional
+    professional = await db.professionals.find_one(
+        {"professional_id": professional_id},
+        {"_id": 0}
+    )
+    
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional not found")
+    
+    # Get category name
+    category_name = professional.get("category_id", "Professional")
+    for cat in PROFESSIONAL_CATEGORIES:
+        if cat["id"] == professional.get("category_id"):
+            category_name = cat["name"]
+            break
+    
+    # Determine the action based on current status
+    status = professional.get("status", "pending_review")
+    if status == "active":
+        action = "approve"
+    elif status == "rejected":
+        action = "reject"
+    elif status == "needs_resubmission":
+        action = "reapply"
+    else:
+        # For pending, send a generic notification
+        action = "approve"  # Will be a welcome/reminder type
+    
+    # Get reason if exists
+    reason = professional.get("rejection_reason") or professional.get("reapply_reason")
+    
+    try:
+        email_result = await send_registration_email(
+            recipient_email=professional.get("email", ""),
+            professional_name=professional.get("name", "Professional"),
+            category=category_name,
+            action=action,
+            reason=reason,
+            send_to_master_admin=True
+        )
+        
+        # Log the manual email
+        await db.audit_logs.insert_one({
+            "log_id": f"log_{uuid.uuid4().hex[:12]}",
+            "user_id": user.user_id,
+            "user_email": user.email,
+            "user_name": user.name,
+            "action_type": "manual_email_sent",
+            "module": "matchmaker",
+            "details": f"Manual email sent to {professional.get('name', 'Unknown')} ({professional_id})",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {
+            "message": "Email sent successfully",
+            "professional_id": professional_id,
+            "professional_email": professional.get("email"),
+            "email_result": email_result
+        }
+    except Exception as e:
+        logger.error(f"Failed to send manual email: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+@api_router.get("/admin/email-config")
+async def get_email_config(user: User = Depends(get_current_user)):
+    """Get email configuration status for admin"""
+    if not is_master_admin(user.email) and user.role not in ["admin", "super_admin", "master_admin"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    is_configured = RESEND_API_KEY and RESEND_API_KEY != 're_placeholder_key'
+    
+    return {
+        "email_configured": is_configured,
+        "sender_email": SENDER_EMAIL if is_configured else None,
+        "master_admin_email": MASTER_ADMIN_EMAIL,
+        "message": "Email notifications are enabled" if is_configured else "Please configure RESEND_API_KEY in backend/.env"
+    }
+
 @api_router.get("/admin/master-profile")
 async def get_master_admin_profile(user: User = Depends(get_current_user)):
     """Get master admin profile info"""
