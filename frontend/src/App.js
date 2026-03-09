@@ -281,6 +281,14 @@ const AppRouter = () => {
         }
       />
       <Route
+        path="/matchmaker/browse-all"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <BrowseAllProfessionals user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/legal-disclaimer"
         element={
           <ProtectedRoute>
