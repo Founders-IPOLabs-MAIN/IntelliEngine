@@ -92,14 +92,16 @@ const AdminCenter = ({ user, apiClient }) => {
     setLoading(true);
     try {
       if (activeTab === "operations") {
-        const [masterRes, statsRes, pendingRes] = await Promise.all([
+        const [masterRes, statsRes, pendingRes, emailRes] = await Promise.all([
           apiClient.get("/admin/master-profile"),
           apiClient.get("/admin/registration-stats"),
-          apiClient.get("/admin/pending-registrations?limit=50")
+          apiClient.get("/admin/pending-registrations?limit=50"),
+          apiClient.get("/admin/email-config").catch(() => ({ data: { email_configured: false } }))
         ]);
         setMasterProfile(masterRes.data);
         setRegistrationStats(statsRes.data);
         setPendingRegistrations(pendingRes.data.registrations);
+        setEmailConfig(emailRes.data);
       } else if (activeTab === "roles" || activeTab === "matrix") {
         const [rolesRes, featuresRes, matrixRes] = await Promise.all([
           apiClient.get("/admin/roles"),
