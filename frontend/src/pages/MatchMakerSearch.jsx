@@ -671,123 +671,149 @@ const MatchMakerSearch = ({ user, apiClient }) => {
               <div className="text-center py-20">
                 <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-black mb-2">No professionals found</h3>
-                <p className="text-muted-foreground mb-4">Try adjusting your filters or search in a different city</p>
-                <Button onClick={clearFilters} variant="outline">Clear Filters</Button>
+                <p className="text-muted-foreground mb-4">
+                  {viewMode === "city" 
+                    ? "Try adjusting your filters or search in a different city"
+                    : "No professionals registered for this category yet"
+                  }
+                </p>
+                <div className="flex gap-2 justify-center">
+                  <Button onClick={clearFilters} variant="outline">Clear Filters</Button>
+                  {viewMode === "city" && (
+                    <Button onClick={() => setViewMode("all")} variant="outline" className="gap-2">
+                      <Globe className="w-4 h-4" />
+                      View All States
+                    </Button>
+                  )}
+                </div>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {professionals.map((prof) => (
-                  <Card
-                    key={prof.professional_id}
-                    className="border border-border hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => navigate(`/matchmaker/profile/${prof.professional_id}`)}
-                    data-testid={`professional-${prof.professional_id}`}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex gap-6">
-                        {/* Avatar */}
-                        <Avatar className="w-24 h-24 rounded-xl">
-                          <AvatarImage src={prof.profile_picture} alt={prof.name} />
-                          <AvatarFallback className="bg-[#1DA1F2] text-white text-2xl rounded-xl">
-                            {prof.name?.charAt(0) || "P"}
-                          </AvatarFallback>
-                        </Avatar>
-
-                        {/* Info */}
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-semibold text-black">{prof.name}</h3>
-                                {prof.is_verified && (
-                                  <Badge className="bg-blue-500 text-white text-xs px-2 py-0.5">
-                                    VERIFIED
-                                  </Badge>
-                                )}
-                              </div>
-                              {prof.agency_name && (
-                                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                  <Building2 className="w-3 h-3" />
-                                  {prof.agency_name}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              {renderStars(prof.average_rating)}
-                              <span className="text-sm text-muted-foreground ml-1">
-                                ({prof.ratings_count})
-                              </span>
-                            </div>
-                          </div>
-
-                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                            {prof.professional_summary || "Experienced professional ready to assist with your IPO needs."}
-                          </p>
-
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {prof.expertise_tags?.slice(0, 4).map((tag) => (
-                              <Badge key={tag} variant="outline" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-
-                          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-4 h-4" />
-                              {prof.years_experience} years exp.
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4" />
-                              {prof.locations?.slice(0, 2).join(", ")}
-                            </span>
-                            {prof.ipo_track_record?.length > 0 && (
-                              <span className="flex items-center gap-1">
-                                <Briefcase className="w-4 h-4" />
-                                {prof.ipo_track_record.length} IPOs managed
-                              </span>
-                            )}
-                          </div>
+            ) : viewMode === "all" ? (
+              /* State-wise Grouped View */
+              <div className="space-y-6">
+                {Object.entries(getGroupedByState(professionals)).map(([state, stateProfs]) => (
+                  <div key={state} className="bg-white rounded-xl border border-border overflow-hidden">
+                    {/* State Header */}
+                    <button
+                      className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-gray-50 to-white hover:from-gray-100 transition-colors"
+                      onClick={() => toggleStateExpand(state)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#1DA1F2]/10 rounded-lg flex items-center justify-center">
+                          <MapPin className="w-5 h-5 text-[#1DA1F2]" />
                         </div>
-
-                        {/* Actions */}
-                        <div className="flex flex-col gap-2 min-w-[140px]">
-                          <Button
-                            className="bg-[#1DA1F2] hover:bg-[#1a8cd8] gap-2"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/matchmaker/profile/${prof.professional_id}`);
-                            }}
-                          >
-                            View Profile
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="gap-2"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toast.info("Consultation booking coming soon!");
-                            }}
-                          >
-                            <Video className="w-4 h-4" />
-                            Book Call
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            className="gap-2 text-muted-foreground"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toast.info("Enquiry feature coming soon!");
-                            }}
-                          >
-                            <Mail className="w-4 h-4" />
-                            Send Enquiry
-                          </Button>
+                        <div className="text-left">
+                          <h3 className="font-semibold text-black text-lg">{state}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {stateProfs.length} {stateProfs.length === 1 ? "professional" : "professionals"}
+                          </p>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-white">
+                          {stateProfs.length}
+                        </Badge>
+                        {expandedStates[state] ? (
+                          <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </div>
+                    </button>
+                    
+                    {/* Professionals in State */}
+                    {expandedStates[state] && (
+                      <div className="border-t border-border">
+                        <div className="divide-y divide-border">
+                          {stateProfs.map((prof) => (
+                            <div
+                              key={prof.professional_id}
+                              className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                              onClick={() => navigate(`/matchmaker/profile/${prof.professional_id}`)}
+                              data-testid={`professional-${prof.professional_id}`}
+                            >
+                              <div className="flex gap-4">
+                                <Avatar className="w-16 h-16 rounded-xl">
+                                  <AvatarImage src={prof.profile_picture} alt={prof.name} />
+                                  <AvatarFallback className="bg-[#1DA1F2] text-white text-xl rounded-xl">
+                                    {prof.name?.charAt(0) || "P"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-semibold text-black">{prof.name}</h4>
+                                    {prof.is_verified && (
+                                      <Badge className="bg-blue-500 text-white text-[10px] px-1.5 py-0">
+                                        VERIFIED
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {prof.agency_name && (
+                                    <p className="text-sm text-muted-foreground flex items-center gap-1 mb-1">
+                                      <Building2 className="w-3 h-3" />
+                                      {prof.agency_name}
+                                    </p>
+                                  )}
+                                  <div className="flex flex-wrap gap-1 mb-2">
+                                    {prof.expertise_tags?.slice(0, 3).map((tag) => (
+                                      <Badge key={tag} variant="outline" className="text-[10px] px-1.5 py-0">
+                                        {tag}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="w-3 h-3" />
+                                      {prof.years_experience} yrs
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <MapPin className="w-3 h-3" />
+                                      {prof.locations?.join(", ")}
+                                    </span>
+                                    <span className="flex items-center gap-0.5">
+                                      {renderStars(prof.average_rating)}
+                                      <span className="ml-1">({prof.ratings_count})</span>
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex flex-col gap-1.5">
+                                  <Button
+                                    size="sm"
+                                    className="bg-[#1DA1F2] hover:bg-[#1a8cd8] h-8 text-xs"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/matchmaker/profile/${prof.professional_id}`);
+                                    }}
+                                  >
+                                    View Profile
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 text-xs"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toast.info("Consultation booking coming soon!");
+                                    }}
+                                  >
+                                    <Video className="w-3 h-3 mr-1" />
+                                    Book Call
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ))}
+              </div>
+            ) : (
+              /* City View - Original List */
+              <div className="space-y-4">
+                {professionals.map((prof) => renderProfessionalCard(prof))}
 
                 {/* Pagination */}
                 {totalPages > 1 && (
