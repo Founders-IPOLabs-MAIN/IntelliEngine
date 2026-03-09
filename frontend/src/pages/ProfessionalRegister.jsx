@@ -100,14 +100,18 @@ const ProfessionalRegister = ({ user, apiClient }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const categoryFromUrl = searchParams.get("category");
+  const editDraftId = searchParams.get("draft");
   
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
   const [expertiseTags, setExpertiseTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [activeTab, setActiveTab] = useState("basic");
+  const [draftId, setDraftId] = useState(editDraftId || null);
+  const [lastSaved, setLastSaved] = useState(null);
   
   // Form data
   const [formData, setFormData] = useState({
@@ -147,6 +151,51 @@ const ProfessionalRegister = ({ user, apiClient }) => {
     fetchInitialData();
   }, []);
 
+  // Load draft if exists
+  useEffect(() => {
+    if (editDraftId) {
+      loadDraft(editDraftId);
+    } else {
+      // Check for existing draft for this user
+      checkExistingDraft();
+    }
+  }, []);
+
+  const checkExistingDraft = async () => {
+    try {
+      const response = await apiClient.get("/matchmaker/professionals/draft");
+      if (response.data && response.data.draft_id) {
+        setDraftId(response.data.draft_id);
+        setFormData(prev => ({
+          ...prev,
+          ...response.data.data,
+          category_id: response.data.data.category_id || categoryFromUrl || ""
+        }));
+        setLastSaved(new Date(response.data.updated_at));
+        toast.info("Loaded your saved draft");
+      }
+    } catch (error) {
+      // No draft found, that's okay
+      console.log("No existing draft found");
+    }
+  };
+
+  const loadDraft = async (id) => {
+    try {
+      const response = await apiClient.get(`/matchmaker/professionals/draft/${id}`);
+      if (response.data) {
+        setFormData(prev => ({
+          ...prev,
+          ...response.data.data
+        }));
+        setLastSaved(new Date(response.data.updated_at));
+      }
+    } catch (error) {
+      console.error("Failed to load draft:", error);
+      toast.error("Failed to load saved draft");
+    }
+  };
+
   const fetchInitialData = async () => {
     try {
       const [categoriesRes, citiesRes, tagsRes] = await Promise.all([
@@ -161,6 +210,28 @@ const ProfessionalRegister = ({ user, apiClient }) => {
       console.error("Failed to fetch data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Save draft function
+  const handleSaveDraft = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        draft_id: draftId,
+        current_step: currentStep,
+        data: formData
+      };
+      
+      const response = await apiClient.post("/matchmaker/professionals/draft", payload);
+      setDraftId(response.data.draft_id);
+      setLastSaved(new Date());
+      toast.success("Draft saved successfully!");
+    } catch (error) {
+      console.error("Failed to save draft:", error);
+      toast.error("Failed to save draft. Please try again.");
+    } finally {
+      setSaving(false);
     }
   };
 
