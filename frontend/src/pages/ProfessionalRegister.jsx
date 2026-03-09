@@ -1056,7 +1056,29 @@ const ProfessionalRegister = ({ user, apiClient }) => {
                     if (isValid) {
                       setCurrentStep(s => s + 1);
                     } else {
-                      if (currentStep === 3) {
+                      // Show specific error messages for each step
+                      if (currentStep === 1) {
+                        if (!formData.category_id) {
+                          toast.error("Please select your professional category");
+                        } else if (!formData.name) {
+                          toast.error("Please enter your full name");
+                        } else if (!formData.email) {
+                          toast.error("Please enter your email address");
+                        } else if (!formData.mobile) {
+                          toast.error("Please enter your mobile number");
+                        } else {
+                          toast.error("Please fill all required fields in Basic Info");
+                        }
+                      } else if (currentStep === 2) {
+                        const fields = getRegistrationFields();
+                        const requiredFields = fields.filter(f => f.required);
+                        const missingField = requiredFields.find(f => !formData.registration_numbers[f.id]?.trim());
+                        if (missingField) {
+                          toast.error(`Please enter your ${missingField.label}`);
+                        } else {
+                          toast.error("Please fill all required registration numbers");
+                        }
+                      } else if (currentStep === 3) {
                         if (!formData.locations || formData.locations.length === 0) {
                           toast.error("Please add at least 1 service location");
                         } else if (formData.years_experience === "" || formData.years_experience === null || formData.years_experience === undefined) {
@@ -1064,7 +1086,19 @@ const ProfessionalRegister = ({ user, apiClient }) => {
                         } else if (!formData.expertise_tags || formData.expertise_tags.length === 0) {
                           toast.error("Please select at least 1 expertise area");
                         } else {
-                          toast.error("Please fill all required fields");
+                          toast.error("Please fill all required fields in Expertise");
+                        }
+                      } else if (currentStep === 4) {
+                        if (!formData.pan_document) {
+                          toast.error("Please upload your PAN document");
+                        } else if (!formData.aadhaar_document) {
+                          toast.error("Please upload your Aadhaar document");
+                        } else if (!formData.registration_document) {
+                          toast.error("Please upload your registration certificate");
+                        } else if (!isExpiryValid()) {
+                          toast.error("Please enter a valid certificate expiry date (must be in the future)");
+                        } else {
+                          toast.error("Please complete all document uploads");
                         }
                       } else {
                         toast.error("Please fill all required fields");
@@ -1072,6 +1106,7 @@ const ProfessionalRegister = ({ user, apiClient }) => {
                     }
                   }}
                   className="bg-[#1DA1F2] hover:bg-[#1a8cd8]"
+                  data-testid="next-step-btn"
                 >
                   Next
                   <ArrowRight className="w-4 h-4 ml-1" />
