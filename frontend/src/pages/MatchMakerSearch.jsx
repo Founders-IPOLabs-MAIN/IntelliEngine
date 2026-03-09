@@ -463,27 +463,72 @@ const MatchMakerSearch = ({ user, apiClient }) => {
             </button>
             <ChevronRight className="w-4 h-4" />
             <span className="text-black font-medium">{getCategoryName(selectedCategory)}</span>
+            {viewMode === "all" && (
+              <>
+                <ChevronRight className="w-4 h-4" />
+                <span className="text-[#1DA1F2] font-medium flex items-center gap-1">
+                  <Globe className="w-3 h-3" />
+                  All States
+                </span>
+              </>
+            )}
           </div>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-semibold tracking-tight text-black">
                 {getCategoryName(selectedCategory)}
-                {selectedCity && <span className="text-muted-foreground font-normal"> in {selectedCity}</span>}
+                {viewMode === "city" && selectedCity && (
+                  <span className="text-muted-foreground font-normal"> in {selectedCity}</span>
+                )}
+                {viewMode === "all" && (
+                  <span className="text-muted-foreground font-normal"> - All India (State-wise)</span>
+                )}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {totalResults} professionals found
+                {viewMode === "all" && " • Organized alphabetically by state"}
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowCityDialog(true)}
-                className="gap-2"
-              >
-                <MapPin className="w-4 h-4" />
-                {selectedCity || "Select City"}
-              </Button>
+              {/* View Mode Toggle */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                <Button
+                  variant={viewMode === "city" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => {
+                    setViewMode("city");
+                    if (!selectedCity) setShowCityDialog(true);
+                  }}
+                  className={`gap-1.5 h-8 ${viewMode === "city" ? "bg-white shadow-sm" : ""}`}
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  City View
+                </Button>
+                <Button
+                  variant={viewMode === "all" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => {
+                    setViewMode("all");
+                    setSelectedCity("");
+                  }}
+                  className={`gap-1.5 h-8 ${viewMode === "all" ? "bg-white shadow-sm" : ""}`}
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  All States
+                </Button>
+              </div>
+              
+              {viewMode === "city" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCityDialog(true)}
+                  className="gap-2"
+                >
+                  <MapPin className="w-4 h-4" />
+                  {selectedCity || "Select City"}
+                </Button>
+              )}
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-40" data-testid="sort-select">
                   <SelectValue placeholder="Sort by" />
