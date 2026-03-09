@@ -491,6 +491,22 @@ Build a complete IPO-readiness platform with:
 
 ## Bug Fixes
 
+### Mar 9, 2026 - Professional Registration & Browse All Fixes
+**Issue 1:** "Browse All Professionals" button/API returning 404 error
+**Root Cause:** FastAPI route ordering bug - `/{professional_id}` route was defined before `/all` route, so "all" was being matched as a professional_id
+**Fix Applied:** Moved `/matchmaker/professionals/all` route definition BEFORE `/{professional_id}` route in server.py
+**Files Modified:** `/app/backend/server.py`
+
+**Issue 2:** Browse All Professionals page crashing with SelectItem empty value error
+**Root Cause:** shadcn/ui Select component does not allow empty string as value for SelectItem
+**Fix Applied:** Changed `value=""` to `value="all"` for category and city filters, added transformation in onValueChange
+**Files Modified:** `/app/frontend/src/pages/BrowseAllProfessionals.jsx`
+
+**Issue 3:** Sonner Toast component failing due to next-themes dependency
+**Root Cause:** The sonner.jsx component imported `useTheme` from `next-themes` which doesn't work in standard React apps
+**Fix Applied:** Removed next-themes import, hardcoded theme to "light"
+**Files Modified:** `/app/frontend/src/components/ui/sonner.jsx`
+
 ### Feb 19, 2026 - Navigation Bug Fix
 **Issue:** Admin Center and Account Settings navigation links not working after clicking.
 **Root Cause:** In `/app/frontend/src/components/Sidebar.jsx`:
