@@ -27,6 +27,15 @@ db = client[os.environ['DB_NAME']]
 # GridFS bucket for document storage
 fs_bucket = AsyncIOMotorGridFSBucket(db)
 
+# Email Configuration (Resend)
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
+MASTER_ADMIN_EMAIL = os.environ.get('MASTER_ADMIN_EMAIL', 'ronraj2312@gmail.com')
+
+# Initialize Resend
+if RESEND_API_KEY and RESEND_API_KEY != 're_placeholder_key':
+    resend.api_key = RESEND_API_KEY
+
 # Create the main app
 app = FastAPI(title="IntelliEngine API", version="1.0.0")
 
