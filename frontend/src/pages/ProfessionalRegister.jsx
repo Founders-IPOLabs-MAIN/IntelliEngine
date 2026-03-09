@@ -1001,7 +1001,7 @@ const ProfessionalRegister = ({ user, apiClient }) => {
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-4">
+          <div className="flex justify-between items-center mt-4">
             <Button
               variant="outline"
               size="sm"
@@ -1011,47 +1011,81 @@ const ProfessionalRegister = ({ user, apiClient }) => {
               <ArrowLeft className="w-4 h-4 mr-1" />
               Previous
             </Button>
-            
-            {currentStep < 5 ? (
+
+            <div className="flex items-center gap-2">
+              {/* Last Saved Indicator */}
+              {lastSaved && (
+                <span className="text-xs text-muted-foreground">
+                  Last saved: {lastSaved.toLocaleTimeString()}
+                </span>
+              )}
+              
+              {/* Save Draft Button */}
               <Button
+                variant="outline"
                 size="sm"
-                onClick={() => {
-                  if (validateStep(currentStep)) {
-                    setCurrentStep(s => s + 1);
-                  } else {
-                    if (currentStep === 3 && formData.top_3_expertise.length !== 3) {
-                      toast.error("Please select exactly 3 top expertise areas");
-                    } else {
-                      toast.error("Please fill all required fields");
-                    }
-                  }
-                }}
-                className="bg-[#1DA1F2] hover:bg-[#1a8cd8]"
+                onClick={handleSaveDraft}
+                disabled={saving}
+                className="border-green-500 text-green-600 hover:bg-green-50"
               >
-                Next
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                onClick={handleSubmit}
-                disabled={submitting || !formData.consent_display || !formData.terms_accepted}
-                className="bg-[#1DA1F2] hover:bg-[#1a8cd8]"
-                data-testid="submit-registration-btn"
-              >
-                {submitting ? (
+                {saving ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                    Creating...
+                    Saving...
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4 mr-1" />
-                    Submit Profile
+                    Save Draft
                   </>
                 )}
               </Button>
-            )}
+            
+              {currentStep < 5 ? (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (validateStep(currentStep)) {
+                      setCurrentStep(s => s + 1);
+                    } else {
+                      if (currentStep === 3 && formData.expertise_tags.length === 0) {
+                        toast.error("Please select at least 1 expertise area");
+                      } else if (currentStep === 3 && formData.locations.length === 0) {
+                        toast.error("Please add at least 1 service location");
+                      } else if (currentStep === 3 && !formData.years_experience) {
+                        toast.error("Please enter your years of experience");
+                      } else {
+                        toast.error("Please fill all required fields");
+                      }
+                    }
+                  }}
+                  className="bg-[#1DA1F2] hover:bg-[#1a8cd8]"
+                >
+                  Next
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={handleSubmit}
+                  disabled={submitting || !formData.consent_display || !formData.terms_accepted}
+                  className="bg-[#1DA1F2] hover:bg-[#1a8cd8]"
+                  data-testid="submit-registration-btn"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                      Submit Profile
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </main>
