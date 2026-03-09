@@ -431,6 +431,7 @@ const AdminCenter = ({ user, apiClient }) => {
                                     className="h-8 px-2 text-green-600 hover:bg-green-50 hover:text-green-700"
                                     onClick={() => openActionDialog(reg, "approve")}
                                     disabled={processingId === reg.professional_id}
+                                    title="Approve"
                                   >
                                     <CheckCircle2 className="w-4 h-4" />
                                   </Button>
@@ -440,6 +441,7 @@ const AdminCenter = ({ user, apiClient }) => {
                                     className="h-8 px-2 text-red-600 hover:bg-red-50 hover:text-red-700"
                                     onClick={() => openActionDialog(reg, "reject")}
                                     disabled={processingId === reg.professional_id}
+                                    title="Reject"
                                   >
                                     <XCircle className="w-4 h-4" />
                                   </Button>
@@ -449,8 +451,24 @@ const AdminCenter = ({ user, apiClient }) => {
                                     className="h-8 px-2 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
                                     onClick={() => openActionDialog(reg, "reapply")}
                                     disabled={processingId === reg.professional_id}
+                                    title="Request Re-apply"
                                   >
                                     <RotateCcw className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 px-2 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                                    onClick={() => handleSendEmail(reg.professional_id, reg.name)}
+                                    disabled={sendingEmailId === reg.professional_id}
+                                    title="Send Email Notification"
+                                    data-testid={`send-email-${reg.professional_id}`}
+                                  >
+                                    {sendingEmailId === reg.professional_id ? (
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                      <Mail className="w-4 h-4" />
+                                    )}
                                   </Button>
                                 </div>
                               </TableCell>
