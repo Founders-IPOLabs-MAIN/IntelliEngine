@@ -51,16 +51,24 @@ const BrowseAllProfessionals = ({ user, apiClient }) => {
 
   const fetchInitialData = async () => {
     try {
-      const [catRes, citiesRes, statsRes] = await Promise.all([
+      const [catRes, citiesRes] = await Promise.all([
         apiClient.get("/matchmaker/categories"),
-        apiClient.get("/matchmaker/cities"),
-        apiClient.get("/matchmaker/statistics")
+        apiClient.get("/matchmaker/cities")
       ]);
       setCategories(catRes.data.categories);
       setCities(citiesRes.data.cities);
-      setStats(statsRes.data);
+      
+      // Fetch statistics separately to not block the page
+      try {
+        const statsRes = await apiClient.get("/matchmaker/statistics");
+        setStats(statsRes.data);
+      } catch (statsError) {
+        console.error("Failed to fetch statistics:", statsError);
+        setStats({ total_professionals: 0, unique_cities: 0 });
+      }
     } catch (error) {
       console.error("Failed to fetch initial data:", error);
+      toast.error("Failed to load data");
     }
   };
 
