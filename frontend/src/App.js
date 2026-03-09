@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Toaster } from "@/components/ui/sonner";
 
 // Pages
 import LandingPage from "@/pages/LandingPage";
