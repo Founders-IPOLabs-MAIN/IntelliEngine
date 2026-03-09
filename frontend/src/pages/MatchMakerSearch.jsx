@@ -31,8 +31,39 @@ import {
   Briefcase,
   ChevronRight,
   Sparkles,
-  Brain
+  Brain,
+  Globe,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
+
+// Indian states/cities mapping for grouping
+const CITY_TO_STATE = {
+  "Mumbai": "Maharashtra",
+  "Pune": "Maharashtra",
+  "Nagpur": "Maharashtra",
+  "Thane": "Maharashtra",
+  "Navi Mumbai": "Maharashtra",
+  "Delhi": "Delhi",
+  "Gurgaon": "Haryana",
+  "Noida": "Uttar Pradesh",
+  "Lucknow": "Uttar Pradesh",
+  "Bangalore": "Karnataka",
+  "Hyderabad": "Telangana",
+  "Chennai": "Tamil Nadu",
+  "Coimbatore": "Tamil Nadu",
+  "Kolkata": "West Bengal",
+  "Ahmedabad": "Gujarat",
+  "Surat": "Gujarat",
+  "Vadodara": "Gujarat",
+  "Jaipur": "Rajasthan",
+  "Chandigarh": "Chandigarh",
+  "Indore": "Madhya Pradesh",
+  "Bhopal": "Madhya Pradesh",
+  "Kochi": "Kerala",
+  "Visakhapatnam": "Andhra Pradesh",
+  "Patna": "Bihar"
+};
 
 const MatchMakerSearch = ({ user, apiClient }) => {
   const navigate = useNavigate();
@@ -59,16 +90,22 @@ const MatchMakerSearch = ({ user, apiClient }) => {
   
   // City selection dialog
   const [showCityDialog, setShowCityDialog] = useState(true);
+  
+  // View mode: "city" (single city) or "all" (all states grouped)
+  const [viewMode, setViewMode] = useState("city");
+  
+  // Expanded states for collapsible state sections
+  const [expandedStates, setExpandedStates] = useState({});
 
   useEffect(() => {
     fetchInitialData();
   }, []);
 
   useEffect(() => {
-    if (selectedCity || !showCityDialog) {
+    if (selectedCity || viewMode === "all") {
       fetchProfessionals();
     }
-  }, [selectedCategory, selectedCity, minExperience, selectedExpertise, ipoExperience, verifiedOnly, sortBy, currentPage, showCityDialog]);
+  }, [selectedCategory, selectedCity, minExperience, selectedExpertise, ipoExperience, verifiedOnly, sortBy, currentPage, viewMode]);
 
   const fetchInitialData = async () => {
     try {
@@ -90,18 +127,29 @@ const MatchMakerSearch = ({ user, apiClient }) => {
     try {
       const params = new URLSearchParams();
       if (selectedCategory) params.append("category_id", selectedCategory);
-      if (selectedCity) params.append("city", selectedCity);
+      if (selectedCity && viewMode === "city") params.append("city", selectedCity);
       if (minExperience) params.append("min_experience", minExperience);
       if (selectedExpertise.length > 0) params.append("expertise", selectedExpertise.join(","));
       if (ipoExperience) params.append("ipo_experience", ipoExperience);
       if (verifiedOnly) params.append("verified_only", "true");
       params.append("sort_by", sortBy);
       params.append("page", currentPage.toString());
+      params.append("limit", viewMode === "all" ? "100" : "20"); // Fetch more for all-states view
       
       const response = await apiClient.get(`/matchmaker/professionals?${params.toString()}`);
       setProfessionals(response.data.professionals);
       setTotalResults(response.data.total);
       setTotalPages(response.data.pages);
+      
+      // Auto-expand all states when showing all professionals
+      if (viewMode === "all") {
+        const states = getGroupedByState(response.data.professionals);
+        const expanded = {};
+        Object.keys(states).forEach(state => {
+          expanded[state] = true;
+        });
+        setExpandedStates(expanded);
+      }
     } catch (error) {
       console.error("Failed to fetch professionals:", error);
     } finally {
@@ -111,6 +159,13 @@ const MatchMakerSearch = ({ user, apiClient }) => {
 
   const handleCitySelect = (city) => {
     setSelectedCity(city);
+    setViewMode("city");
+    setShowCityDialog(false);
+  };
+
+  const handleSkipForNow = () => {
+    setSelectedCity("");
+    setViewMode("all");
     setShowCityDialog(false);
   };
 
@@ -138,6 +193,38 @@ const MatchMakerSearch = ({ user, apiClient }) => {
     city.toLowerCase().includes(citySearch.toLowerCase())
   );
 
+  // Group professionals by state (alphabetically)
+  const getGroupedByState = (profs) => {
+    const grouped = {};
+    
+    profs.forEach(prof => {
+      // Get state from first location
+      const city = prof.locations?.[0];
+      const state = CITY_TO_STATE[city] || city || "Other";
+      
+      if (!grouped[state]) {
+        grouped[state] = [];
+      }
+      grouped[state].push(prof);
+    });
+    
+    // Sort states alphabetically and sort professionals within each state by name
+    const sortedStates = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+    const result = {};
+    sortedStates.forEach(state => {
+      result[state] = grouped[state].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    });
+    
+    return result;
+  };
+
+  const toggleStateExpand = (state) => {
+    setExpandedStates(prev => ({
+      ...prev,
+      [state]: !prev[state]
+    }));
+  };
+
   const renderStars = (rating) => {
     return (
       <div className="flex items-center gap-0.5">
@@ -151,20 +238,152 @@ const MatchMakerSearch = ({ user, apiClient }) => {
     );
   };
 
+  const renderProfessionalCard = (prof) => (
+    <Card
+      key={prof.professional_id}
+      className="border border-border hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => navigate(`/matchmaker/profile/${prof.professional_id}`)}
+      data-testid={`professional-${prof.professional_id}`}
+    >
+      <CardContent className="p-6">
+        <div className="flex gap-6">
+          {/* Avatar */}
+          <Avatar className="w-24 h-24 rounded-xl">
+            <AvatarImage src={prof.profile_picture} alt={prof.name} />
+            <AvatarFallback className="bg-[#1DA1F2] text-white text-2xl rounded-xl">
+              {prof.name?.charAt(0) || "P"}
+            </AvatarFallback>
+          </Avatar>
+
+          {/* Info */}
+          <div className="flex-1">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-black">{prof.name}</h3>
+                  {prof.is_verified && (
+                    <Badge className="bg-blue-500 text-white text-xs px-2 py-0.5">
+                      VERIFIED
+                    </Badge>
+                  )}
+                </div>
+                {prof.agency_name && (
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Building2 className="w-3 h-3" />
+                    {prof.agency_name}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                {renderStars(prof.average_rating)}
+                <span className="text-sm text-muted-foreground ml-1">
+                  ({prof.ratings_count})
+                </span>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+              {prof.professional_summary || "Experienced professional ready to assist with your IPO needs."}
+            </p>
+
+            <div className="flex flex-wrap gap-2 mb-3">
+              {prof.expertise_tags?.slice(0, 4).map((tag) => (
+                <Badge key={tag} variant="outline" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                {prof.years_experience} years exp.
+              </span>
+              <span className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                {prof.locations?.slice(0, 2).join(", ")}
+              </span>
+              {prof.ipo_track_record?.length > 0 && (
+                <span className="flex items-center gap-1">
+                  <Briefcase className="w-4 h-4" />
+                  {prof.ipo_track_record.length} IPOs managed
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col gap-2 min-w-[140px]">
+            <Button
+              className="bg-[#1DA1F2] hover:bg-[#1a8cd8] gap-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/matchmaker/profile/${prof.professional_id}`);
+              }}
+            >
+              View Profile
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                toast.info("Consultation booking coming soon!");
+              }}
+            >
+              <Video className="w-4 h-4" />
+              Book Call
+            </Button>
+            <Button
+              variant="ghost"
+              className="gap-2 text-muted-foreground"
+              onClick={(e) => {
+                e.stopPropagation();
+                toast.info("Enquiry feature coming soon!");
+              }}
+            >
+              <Mail className="w-4 h-4" />
+              Send Enquiry
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // Group cities by state for the city selection dialog
+  const getCitiesByState = () => {
+    const grouped = {};
+    filteredCities.forEach(city => {
+      const state = CITY_TO_STATE[city] || "Other";
+      if (!grouped[state]) {
+        grouped[state] = [];
+      }
+      grouped[state].push(city);
+    });
+    // Sort states alphabetically
+    const sortedStates = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+    const result = {};
+    sortedStates.forEach(state => {
+      result[state] = grouped[state].sort((a, b) => a.localeCompare(b));
+    });
+    return result;
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50" data-testid="matchmaker-search-page">
       <Sidebar user={user} apiClient={apiClient} />
       
       {/* City Selection Dialog */}
-      <Dialog open={showCityDialog && !selectedCity} onOpenChange={setShowCityDialog}>
-        <DialogContent className="sm:max-w-lg">
+      <Dialog open={showCityDialog && !selectedCity && viewMode !== "all"} onOpenChange={setShowCityDialog}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-[#1DA1F2]" />
               Select Your City
             </DialogTitle>
             <DialogDescription>
-              Choose your location to find IPO professionals near you
+              Choose a city to find {getCategoryName(selectedCategory)} near you, or skip to see all professionals organized by state
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -175,24 +394,39 @@ const MatchMakerSearch = ({ user, apiClient }) => {
               className="h-11"
               data-testid="city-search-input"
             />
-            <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
-              {filteredCities.map((city) => (
-                <Button
-                  key={city}
-                  variant="outline"
-                  className="justify-start h-10"
-                  onClick={() => handleCitySelect(city)}
-                  data-testid={`city-${city}`}
-                >
-                  <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
-                  {city}
-                </Button>
+            <div className="max-h-[400px] overflow-y-auto space-y-4">
+              {Object.entries(getCitiesByState()).map(([state, stateCities]) => (
+                <div key={state}>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 sticky top-0 bg-white py-1">
+                    {state}
+                  </h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {stateCities.map((city) => (
+                      <Button
+                        key={city}
+                        variant="outline"
+                        className="justify-start h-9 text-sm"
+                        onClick={() => handleCitySelect(city)}
+                        data-testid={`city-${city}`}
+                      >
+                        <MapPin className="w-3 h-3 mr-2 text-muted-foreground" />
+                        {city}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowCityDialog(false)}>
-              Skip for now
+          <DialogFooter className="border-t pt-4">
+            <Button 
+              variant="outline" 
+              onClick={handleSkipForNow}
+              className="gap-2"
+              data-testid="skip-for-now-btn"
+            >
+              <Globe className="w-4 h-4" />
+              Skip for now - Show All (State-wise)
             </Button>
           </DialogFooter>
         </DialogContent>
