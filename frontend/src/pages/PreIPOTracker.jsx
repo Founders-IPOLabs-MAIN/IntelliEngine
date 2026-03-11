@@ -10,7 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
-import { ClipboardList, ChevronRight, Loader2, Save, CheckCircle2, Clock, AlertCircle, ArrowLeft, Building2 } from "lucide-react";
+import DocumentUploader from "@/components/DocumentUploader";
+import { ClipboardList, ChevronRight, Loader2, Save, CheckCircle2, Clock, AlertCircle, ArrowLeft, Building2, Upload } from "lucide-react";
 
 const PreIPOTracker = ({ user, apiClient }) => {
   const { projectId } = useParams();
