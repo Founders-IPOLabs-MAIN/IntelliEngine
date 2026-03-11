@@ -782,6 +782,355 @@ async def process_ocr(document_id: str, ocr_request: OCRRequest, user: User = De
         )
         raise HTTPException(status_code=500, detail=f"OCR processing failed: {str(e)}")
 
+# ============ CENTRALIZED CORPORATE REPOSITORY ============
+
+# Field mapping from checklist modules to DRHP sections
+FIELD_TO_DRHP_MAPPING = {
+    "full_legal_name": ["Cover Page", "Introduction and Summary", "Business Overview"],
+    "cin": ["Cover Page", "Introduction and Summary"],
+    "pan": ["Cover Page"],
+    "gstin": ["Cover Page"],
+    "registered_office_address": ["Cover Page", "Other Information/Disclosures"],
+    "corporate_office_address": ["Cover Page"],
+    "website": ["Cover Page"],
+    "email": ["Cover Page"],
+    "phone": ["Cover Page"],
+    "date_of_incorporation": ["Introduction and Summary", "Business Overview"],
+    "business_description": ["Introduction and Summary", "Business Overview"],
+    "main_objects": ["Objects of the Issue", "Business Overview"],
+    "authorized_capital": ["Capital Structure"],
+    "paid_up_capital": ["Capital Structure"],
+    "promoter_name": ["Management & Promoter Group", "Capital Structure"],
+    "promoter_din": ["Management & Promoter Group"],
+    "promoter_shareholding": ["Capital Structure", "Management & Promoter Group"],
+    "kmp_name": ["Management & Promoter Group"],
+    "kmp_designation": ["Management & Promoter Group"],
+    "kmp_din": ["Management & Promoter Group"],
+    "total_revenue": ["Financial Information", "Introduction and Summary"],
+    "net_profit": ["Financial Information", "Introduction and Summary"],
+    "total_assets": ["Financial Information"],
+    "sector": ["Industry Overview", "Introduction and Summary"],
+    "industry": ["Industry Overview"],
+}
+
+@api_router.post("/projects/{project_id}/upload-document-ocr")
+async def upload_and_extract_data(
+    project_id: str,
+    file: UploadFile = File(...),
+    module_name: str = "company_data",
+    user: User = Depends(get_current_user)
+):
+    """Upload document, process OCR, extract structured data, and sync to centralized repository"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+    
+    content = await file.read()
+    
+    # Store in GridFS
+    gridfs_id = await fs_bucket.upload_from_stream(
+        file.filename,
+        io.BytesIO(content),
+        metadata={
+            "user_id": user.user_id,
+            "project_id": project_id,
+            "module_name": module_name,
+            "content_type": file.content_type
+        }
+    )
+    
+    # Create document record
+    document_id = f"doc_{uuid.uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc)
+    
+    doc_record = {
+        "document_id": document_id,
+        "user_id": user.user_id,
+        "project_id": project_id,
+        "module_name": module_name,
+        "filename": file.filename,
+        "content_type": file.content_type,
+        "gridfs_id": str(gridfs_id),
+        "ocr_text": None,
+        "ocr_status": "processing",
+        "extracted_data": {},
+        "file_size": len(content),
+        "created_at": now.isoformat()
+    }
+    
+    await db.documents.insert_one(doc_record)
+    
+    extracted_data = {}
+    
+    try:
+        # Save temporarily for OCR
+        temp_path = f"/tmp/{file.filename}"
+        with open(temp_path, "wb") as f:
+            f.write(content)
+        
+        # Initialize LLM Chat
+        api_key = os.environ.get("EMERGENT_LLM_KEY")
+        
+        # Create extraction prompt based on module
+        extraction_prompts = {
+            "company_data": """Extract the following corporate information from this document in JSON format:
+{
+    "full_legal_name": "Complete legal name of the company",
+    "cin": "Corporate Identification Number",
+    "pan": "PAN number",
+    "gstin": "GST Identification Number",
+    "registered_office_address": "Full registered office address",
+    "corporate_office_address": "Corporate office address if different",
+    "website": "Company website URL",
+    "email": "Official email",
+    "phone": "Contact phone number",
+    "date_of_incorporation": "Date of incorporation",
+    "business_description": "Brief description of business activities",
+    "main_objects": "Main objects of the company",
+    "authorized_capital": "Authorized share capital",
+    "paid_up_capital": "Paid-up share capital",
+    "sector": "Industry sector",
+    "total_revenue": "Total revenue if mentioned",
+    "net_profit": "Net profit if mentioned"
+}
+Only include fields that are clearly mentioned in the document. Return valid JSON only.""",
+            
+            "promoter_checklist": """Extract promoter information from this document in JSON format:
+{
+    "promoter_name": "Full name of promoter",
+    "promoter_din": "Director Identification Number",
+    "promoter_pan": "PAN number",
+    "promoter_address": "Residential address",
+    "promoter_shareholding": "Shareholding percentage",
+    "promoter_experience": "Professional experience",
+    "promoter_other_directorships": "Other company directorships"
+}
+Only include fields that are clearly mentioned. Return valid JSON only.""",
+            
+            "kmp_checklist": """Extract Key Managerial Personnel information from this document in JSON format:
+{
+    "kmp_name": "Full name",
+    "kmp_designation": "Designation/Title",
+    "kmp_din": "DIN if applicable",
+    "kmp_pan": "PAN number",
+    "kmp_qualification": "Educational qualifications",
+    "kmp_experience": "Years of experience",
+    "kmp_remuneration": "Remuneration details"
+}
+Only include fields that are clearly mentioned. Return valid JSON only.""",
+            
+            "pre_ipo_tracker": """Extract IPO-related information from this document in JSON format:
+{
+    "ipo_type": "Fresh issue / OFS / Both",
+    "issue_size": "Proposed issue size",
+    "price_band": "Expected price band",
+    "lot_size": "Minimum lot size",
+    "lead_managers": "Book Running Lead Managers",
+    "registrar": "Registrar to the issue",
+    "listing_exchange": "Stock exchange for listing"
+}
+Only include fields that are clearly mentioned. Return valid JSON only.""",
+            
+            "non_drhp_tracker": """Extract compliance and regulatory information from this document in JSON format:
+{
+    "statutory_auditor": "Name of statutory auditor",
+    "legal_advisor": "Legal counsel name",
+    "compliance_status": "Key compliance items",
+    "pending_litigations": "Any pending litigations",
+    "regulatory_approvals": "Required regulatory approvals"
+}
+Only include fields that are clearly mentioned. Return valid JSON only."""
+        }
+        
+        prompt = extraction_prompts.get(module_name, extraction_prompts["company_data"])
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"ocr_extract_{document_id}",
+            system_message="You are an expert document analyzer. Extract structured data from documents accurately. Always return valid JSON."
+        ).with_model("gemini", "gemini-2.5-flash")
+        
+        # Create file content
+        file_content = FileContentWithMimeType(
+            file_path=temp_path,
+            mime_type=file.content_type
+        )
+        
+        # Send message with file
+        user_message = UserMessage(
+            text=prompt,
+            file_contents=[file_content]
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        # Parse JSON response
+        try:
+            # Clean response - remove markdown code blocks if present
+            clean_response = response.strip()
+            if clean_response.startswith("```json"):
+                clean_response = clean_response[7:]
+            if clean_response.startswith("```"):
+                clean_response = clean_response[3:]
+            if clean_response.endswith("```"):
+                clean_response = clean_response[:-3]
+            
+            import json
+            extracted_data = json.loads(clean_response.strip())
+        except json.JSONDecodeError:
+            logger.warning(f"Failed to parse OCR response as JSON: {response[:200]}")
+            extracted_data = {"raw_text": response}
+        
+        # Update document with extracted data
+        await db.documents.update_one(
+            {"document_id": document_id},
+            {"$set": {
+                "ocr_text": response,
+                "ocr_status": "completed",
+                "extracted_data": extracted_data
+            }}
+        )
+        
+        # Sync to centralized corporate repository
+        await sync_to_corporate_repository(project_id, module_name, extracted_data, user.user_id)
+        
+        # Cleanup temp file
+        os.remove(temp_path)
+        
+    except Exception as e:
+        logger.error(f"OCR extraction failed: {e}")
+        await db.documents.update_one(
+            {"document_id": document_id},
+            {"$set": {"ocr_status": "failed"}}
+        )
+    
+    return {
+        "document_id": document_id,
+        "filename": file.filename,
+        "extracted_data": extracted_data,
+        "status": "completed" if extracted_data else "partial"
+    }
+
+async def sync_to_corporate_repository(project_id: str, module_name: str, extracted_data: dict, user_id: str):
+    """Sync extracted data to centralized corporate repository and propagate to DRHP sections"""
+    
+    # Get or create corporate repository for this project
+    repo = await db.corporate_repository.find_one({"project_id": project_id})
+    
+    if not repo:
+        repo = {
+            "project_id": project_id,
+            "user_id": user_id,
+            "data": {},
+            "field_sources": {},  # Track which module each field came from
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.corporate_repository.insert_one(repo)
+    
+    # Update repository with new data
+    updates = {}
+    field_sources = repo.get("field_sources", {})
+    
+    for field, value in extracted_data.items():
+        if value and str(value).strip():
+            updates[f"data.{field}"] = value
+            field_sources[field] = {
+                "module": module_name,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+    
+    if updates:
+        updates["last_updated"] = datetime.now(timezone.utc).isoformat()
+        updates["field_sources"] = field_sources
+        
+        await db.corporate_repository.update_one(
+            {"project_id": project_id},
+            {"$set": updates}
+        )
+    
+    # Propagate data to relevant DRHP sections
+    for field, value in extracted_data.items():
+        if field in FIELD_TO_DRHP_MAPPING and value:
+            target_sections = FIELD_TO_DRHP_MAPPING[field]
+            
+            for section_name in target_sections:
+                # Find the section
+                section = await db.drhp_sections.find_one({
+                    "project_id": project_id,
+                    "section_name": section_name
+                })
+                
+                if section:
+                    # Add to section's auto-populated data
+                    await db.drhp_sections.update_one(
+                        {"section_id": section["section_id"]},
+                        {
+                            "$set": {
+                                f"auto_populated_data.{field}": value,
+                                f"auto_populated_sources.{field}": module_name,
+                                "last_auto_update": datetime.now(timezone.utc).isoformat()
+                            }
+                        }
+                    )
+
+@api_router.get("/projects/{project_id}/corporate-repository")
+async def get_corporate_repository(project_id: str, user: User = Depends(get_current_user)):
+    """Get centralized corporate repository data for a project"""
+    
+    repo = await db.corporate_repository.find_one(
+        {"project_id": project_id},
+        {"_id": 0}
+    )
+    
+    if not repo:
+        return {
+            "project_id": project_id,
+            "data": {},
+            "field_sources": {},
+            "message": "No data uploaded yet"
+        }
+    
+    return repo
+
+@api_router.post("/projects/{project_id}/corporate-repository/sync")
+async def manual_sync_repository(project_id: str, user: User = Depends(get_current_user)):
+    """Manually trigger sync from corporate repository to all DRHP sections"""
+    
+    repo = await db.corporate_repository.find_one({"project_id": project_id})
+    
+    if not repo or not repo.get("data"):
+        return {"message": "No data to sync", "synced_fields": 0}
+    
+    synced_count = 0
+    data = repo.get("data", {})
+    
+    for field, value in data.items():
+        if field in FIELD_TO_DRHP_MAPPING and value:
+            target_sections = FIELD_TO_DRHP_MAPPING[field]
+            
+            for section_name in target_sections:
+                section = await db.drhp_sections.find_one({
+                    "project_id": project_id,
+                    "section_name": section_name
+                })
+                
+                if section:
+                    await db.drhp_sections.update_one(
+                        {"section_id": section["section_id"]},
+                        {
+                            "$set": {
+                                f"auto_populated_data.{field}": value,
+                                "last_auto_update": datetime.now(timezone.utc).isoformat()
+                            }
+                        }
+                    )
+                    synced_count += 1
+    
+    return {
+        "message": "Sync completed",
+        "synced_fields": synced_count,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
 # ============ MASTER ADMIN CONFIGURATION ============
 
 MASTER_ADMIN_CONFIG = {
