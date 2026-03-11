@@ -559,6 +559,22 @@ Build a complete IPO-readiness platform with:
   - View toggle: "City View" vs "All States"
   - Clicking specific city filters to only that city's professionals
   - All 10 UI tests passed (iteration_10.json)
+- ✅ **Removed Emergent Branding**
+  - Removed "Made with Emergent" badge from bottom-right corner
+  - Updated page title to "IntelliEngine | IPO Readiness Platform"
+  - Updated meta description
+- ✅ **NEW: Centralised Corporate Repository & Document Upload with OCR**
+  - Added "Centralised Corporate Repository" header in Command Center
+  - Added document upload box with OCR in all 5 checklist modules:
+    - Company Data (blue theme)
+    - Promoter Checklist (purple theme)
+    - KMP Checklist (green theme)
+    - Pre-IPO Tracker (orange theme)
+    - Non-DRHP Tracker (indigo theme)
+  - Supports PDF, Word, Excel, JPEG, PNG formats (max 10MB)
+  - Auto-extracts data using Gemini AI OCR
+  - Data syncs automatically to all relevant DRHP modules
+  - New backend endpoints: `/upload-document-ocr`, `/corporate-repository`
 
 ## Testing Status
 - ✅ Backend API tests passed (100%)
