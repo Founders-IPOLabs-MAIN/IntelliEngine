@@ -575,6 +575,15 @@ Build a complete IPO-readiness platform with:
   - Auto-extracts data using Gemini AI OCR
   - Data syncs automatically to all relevant DRHP modules
   - New backend endpoints: `/upload-document-ocr`, `/corporate-repository`
+- ✅ **NEW: DRHP Landing Page & Dashboard Reorganization**
+  - Created new `/drhp` landing page showing "Ongoing DRHP Projects"
+  - Projects displayed as clickable cards with progress indicators
+  - Click project → Command Center
+  - Removed "Your IPO Projects" section from main Dashboard
+  - Enlarged module buttons in Dashboard (2x2 grid fills screen)
+  - Legal Disclaimer & Terms of Use links kept in Dashboard
+  - DRHP Builder module now navigates to `/drhp` landing page
+  - New file: `/app/frontend/src/pages/DRHPLandingPage.jsx`
 
 ## Testing Status
 - ✅ Backend API tests passed (100%)
