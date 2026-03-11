@@ -63,13 +63,58 @@ const CompanyData = ({ user, apiClient }) => {
       const response = await apiClient.post(`/projects/${projectId}/company-data`, {
         data: formData
       });
-      toast.success("Company data saved successfully");
+      toast.success("Company data saved successfully. Data synced to all DRHP modules.");
       setData(prev => ({ ...prev, stats: response.data.stats }));
     } catch (error) {
       console.error("Failed to save:", error);
       toast.error("Failed to save company data");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Handle data extracted from document upload
+  const handleDataExtracted = (extractedData) => {
+    if (!extractedData) return;
+    
+    // Map extracted fields to form sections
+    const fieldMappings = {
+      full_legal_name: ["corporate_identification", "full_legal_name"],
+      cin: ["corporate_identification", "cin"],
+      pan: ["corporate_identification", "pan"],
+      gstin: ["corporate_identification", "gstin"],
+      registered_office_address: ["corporate_identification", "registered_address"],
+      corporate_office_address: ["corporate_identification", "corporate_address"],
+      website: ["corporate_identification", "website"],
+      email: ["corporate_identification", "email"],
+      phone: ["corporate_identification", "phone"],
+      date_of_incorporation: ["corporate_identification", "incorporation_date"],
+      business_description: ["business_details", "business_description"],
+      main_objects: ["business_details", "main_objects"],
+      authorized_capital: ["share_capital", "authorized_capital"],
+      paid_up_capital: ["share_capital", "paid_up_capital"],
+      sector: ["business_details", "sector"],
+      total_revenue: ["financials", "total_revenue"],
+      net_profit: ["financials", "net_profit"]
+    };
+    
+    const newFormData = { ...formData };
+    let fieldsPopulated = 0;
+    
+    Object.entries(extractedData).forEach(([key, value]) => {
+      if (value && fieldMappings[key]) {
+        const [section, field] = fieldMappings[key];
+        if (!newFormData[section]) {
+          newFormData[section] = {};
+        }
+        newFormData[section][field] = value;
+        fieldsPopulated++;
+      }
+    });
+    
+    if (fieldsPopulated > 0) {
+      setFormData(newFormData);
+      toast.success(`${fieldsPopulated} fields auto-populated from document`);
     }
   };
 
