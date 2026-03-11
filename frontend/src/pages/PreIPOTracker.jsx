@@ -96,6 +96,47 @@ const PreIPOTracker = ({ user, apiClient }) => {
         </header>
 
         <div className="p-6">
+          {/* Document Upload Section */}
+          <div className="mb-6">
+            <Card className="bg-gradient-to-r from-orange-50 to-amber-50 border-orange-100">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                    <Upload className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">Quick Upload with OCR</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Upload IPO-related documents (engagement letters, term sheets) and we'll auto-extract the information.
+                      Data syncs to all DRHP modules.
+                    </p>
+                    <DocumentUploader
+                      apiClient={apiClient}
+                      projectId={projectId}
+                      moduleName="pre_ipo_tracker"
+                      onDataExtracted={(extractedData) => {
+                        if (extractedData) {
+                          const newInfo = { ...generalInfo };
+                          Object.entries(extractedData).forEach(([key, value]) => {
+                            if (value) {
+                              if (key.includes('ipo_type')) newInfo.ipo_type = value;
+                              if (key.includes('issue_size')) newInfo.issue_size = value;
+                              if (key.includes('lead_manager') || key.includes('lead')) newInfo.lead_manager = value;
+                              if (key.includes('registrar')) newInfo.registrar = value;
+                            }
+                          });
+                          setGeneralInfo(newInfo);
+                          toast.success("IPO data extracted and populated");
+                        }
+                      }}
+                      compact={true}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <Card className="bg-white border-gray-200 mb-6">
             <CardHeader className="pb-2"><CardTitle className="text-gray-900 text-sm flex items-center gap-2"><Building2 className="w-4 h-4 text-[#1DA1F2]" />General Information</CardTitle></CardHeader>
             <CardContent>
