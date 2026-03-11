@@ -10,7 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
-import { FileCheck, ChevronRight, Loader2, Save, CheckCircle2, Clock, AlertCircle, ArrowLeft } from "lucide-react";
+import DocumentUploader from "@/components/DocumentUploader";
+import { FileCheck, ChevronRight, Loader2, Save, CheckCircle2, Clock, AlertCircle, ArrowLeft, Upload } from "lucide-react";
 
 const NonDRHPTracker = ({ user, apiClient }) => {
   const { projectId } = useParams();
