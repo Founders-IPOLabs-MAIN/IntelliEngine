@@ -149,6 +149,19 @@ const CommandCenter = ({ user, apiClient }) => {
         </header>
 
         <div className="p-6">
+          {/* Centralised Corporate Repository Header */}
+          <div className="mb-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#1DA1F2] to-blue-600 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Centralised Corporate Repository</h2>
+                <p className="text-sm text-gray-500">Upload and manage all corporate data in one place. Data syncs automatically across all DRHP modules.</p>
+              </div>
+            </div>
+          </div>
+
           {/* Data Capture Modules - 5 Checklist Buttons */}
           <div className="grid grid-cols-5 gap-4 mb-6">
             {checklistModules.map((module) => (
