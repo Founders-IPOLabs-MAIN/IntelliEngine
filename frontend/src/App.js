@@ -9,6 +9,7 @@ import LandingPage from "@/pages/LandingPage";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import DRHPBuilder from "@/pages/DRHPBuilder";
+import DRHPLandingPage from "@/pages/DRHPLandingPage";
 import SectionEditor from "@/pages/SectionEditor";
 import CommandCenter from "@/pages/CommandCenter";
 import CompanyData from "@/pages/CompanyData";
