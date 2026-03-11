@@ -1,135 +1,65 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import Sidebar from "@/components/Sidebar";
 import {
   Building2,
   FileText,
   TrendingUp,
   Users,
-  Plus,
-  ArrowRight,
-  Clock,
   CheckCircle2,
-  Loader2,
-  Scale
+  Scale,
+  ArrowRight
 } from "lucide-react";
-
-const SECTORS = [
-  "Technology",
-  "Healthcare",
-  "Financial Services",
-  "Manufacturing",
-  "Consumer Goods",
-  "Energy",
-  "Real Estate",
-  "Telecommunications",
-  "Other"
-];
 
 const Dashboard = ({ user, apiClient }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const projectsSectionRef = useRef(null);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newProject, setNewProject] = useState({ company_name: "", sector: "" });
-  const [creating, setCreating] = useState(false);
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  // Scroll to projects section if hash is #projects
-  useEffect(() => {
-    if (location.hash === '#projects' && projectsSectionRef.current && !loading) {
-      setTimeout(() => {
-        projectsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
-  }, [location.hash, loading]);
-
-  const fetchProjects = async () => {
-    try {
-      const response = await apiClient.get("/projects");
-      setProjects(response.data);
-    } catch (error) {
-      console.error("Failed to fetch projects:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateProject = async () => {
-    if (!newProject.company_name || !newProject.sector) return;
-    
-    setCreating(true);
-    try {
-      const response = await apiClient.post("/projects", newProject);
-      setProjects([...projects, response.data]);
-      setCreateDialogOpen(false);
-      setNewProject({ company_name: "", sector: "" });
-      // Navigate to the Command Center for the new project
-      navigate(`/project/${response.data.project_id}/command-center`);
-    } catch (error) {
-      console.error("Failed to create project:", error);
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const getStageColor = (stage) => {
-    switch (stage) {
-      case "Assessment": return "bg-yellow-100 text-yellow-800";
-      case "Drafting": return "bg-blue-100 text-blue-800";
-      case "Filed": return "bg-green-100 text-green-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
 
   const modules = [
     {
       id: "assessment",
       title: "Free IPO Assessment",
-      description: "AI-powered readiness check with gap analysis",
+      description: "AI-powered readiness check with comprehensive gap analysis and recommendations",
       icon: CheckCircle2,
       color: "text-green-600",
       bgColor: "bg-green-50",
+      hoverBg: "hover:bg-green-50",
+      hoverBorder: "hover:border-green-300",
       path: "/assessment"
     },
     {
       id: "drhp",
       title: "DRHP Builder",
-      description: "End-to-end document generation with version control",
+      description: "End-to-end document generation with Centralised Corporate Repository",
       icon: FileText,
       color: "text-[#1DA1F2]",
-      bgColor: "bg-blue-50"
+      bgColor: "bg-blue-50",
+      hoverBg: "hover:bg-blue-50",
+      hoverBorder: "hover:border-blue-300",
+      path: "/drhp"
     },
     {
       id: "funding",
       title: "IPO Funding",
-      description: "Human + AI powered capital orchestration platform",
+      description: "Human + AI powered capital orchestration platform for your IPO journey",
       icon: TrendingUp,
       color: "text-emerald-600",
       bgColor: "bg-emerald-50",
+      hoverBg: "hover:bg-emerald-50",
+      hoverBorder: "hover:border-emerald-300",
       path: "/funding"
     },
     {
       id: "matchmaker",
       title: "IPO Match Maker",
-      description: "Connect with CAs, CS, CFOs, and experts",
+      description: "Connect with verified CAs, CS, CFOs, Lawyers, and industry experts",
       icon: Users,
       color: "text-orange-600",
       bgColor: "bg-orange-50",
+      hoverBg: "hover:bg-orange-50",
+      hoverBorder: "hover:border-orange-300",
       path: "/matchmaker"
     }
   ];
@@ -138,7 +68,7 @@ const Dashboard = ({ user, apiClient }) => {
     <div className="flex min-h-screen bg-white" data-testid="dashboard-page">
       <Sidebar user={user} apiClient={apiClient} />
       
-      <main className="flex-1 ml-64">
+      <main className="flex-1 ml-64 flex flex-col">
         {/* Header */}
         <header className="sticky top-0 z-10 bg-white border-b border-border px-8 py-4">
           <div className="flex items-center justify-between">
@@ -146,124 +76,59 @@ const Dashboard = ({ user, apiClient }) => {
               <h1 className="text-2xl font-semibold tracking-tight text-black">Dashboard</h1>
               <p className="text-sm text-muted-foreground mt-1">Welcome back, {user?.name || "User"}</p>
             </div>
-            <div className="flex items-center gap-4">
-              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-[#1DA1F2] hover:bg-[#1a8cd8] gap-2" data-testid="create-project-btn">
-                    <Plus className="w-4 h-4" />
-                    New IPO Project
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New IPO Project</DialogTitle>
-                    <DialogDescription>
-                      Start a new IPO project for your company
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="company_name">Company Name</Label>
-                      <Input
-                        id="company_name"
-                        placeholder="Enter company name"
-                        value={newProject.company_name}
-                        onChange={(e) => setNewProject({ ...newProject, company_name: e.target.value })}
-                        data-testid="company-name-input"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="sector">Sector</Label>
-                      <Select
-                        value={newProject.sector}
-                        onValueChange={(value) => setNewProject({ ...newProject, sector: value })}
-                      >
-                        <SelectTrigger data-testid="sector-select">
-                          <SelectValue placeholder="Select sector" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SECTORS.map((sector) => (
-                            <SelectItem key={sector} value={sector}>
-                              {sector}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleCreateProject}
-                      disabled={!newProject.company_name || !newProject.sector || creating}
-                      className="bg-[#1DA1F2] hover:bg-[#1a8cd8]"
-                      data-testid="confirm-create-btn"
-                    >
-                      {creating ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating...</>
-                      ) : (
-                        "Create Project"
-                      )}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={user?.picture} alt={user?.name} />
-                <AvatarFallback className="bg-[#1DA1F2] text-white">
-                  {user?.name?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={user?.picture} alt={user?.name} />
+              <AvatarFallback className="bg-[#1DA1F2] text-white">
+                {user?.name?.charAt(0) || "U"}
+              </AvatarFallback>
+            </Avatar>
           </div>
         </header>
 
-        <div className="p-8 space-y-8">
+        {/* Main Content - Flex grow to fill space */}
+        <div className="flex-1 p-8 flex flex-col">
           {/* Welcome Banner */}
-          <Card className="border border-border bg-gradient-to-r from-white to-gray-50">
-            <CardContent className="p-6">
+          <Card className="border border-border bg-gradient-to-r from-white to-gray-50 mb-6">
+            <CardContent className="p-5">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-[#1DA1F2] rounded-2xl flex items-center justify-center">
-                  <Building2 className="w-8 h-8 text-white" />
+                <div className="w-12 h-12 bg-[#1DA1F2] rounded-2xl flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-black">
+                  <h2 className="text-lg font-semibold tracking-tight text-black">
                     IntelliEngine Platform
                   </h2>
-                  <p className="text-muted-foreground">by IPO Labs - Your complete IPO readiness solution</p>
+                  <p className="text-sm text-muted-foreground">by IPO Labs - Your complete IPO readiness solution</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Modules Grid - 2x2 */}
-          <div>
+          {/* Modules Grid - 2x2 with larger cards */}
+          <div className="flex-1 flex flex-col">
             <h3 className="text-lg font-semibold tracking-tight text-black mb-4">Platform Modules</h3>
-            <div className="grid grid-cols-2 gap-4 max-w-3xl">
+            <div className="grid grid-cols-2 gap-5 flex-1">
               {modules.map((module) => (
                 <Card
                   key={module.id}
-                  className="border border-border cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md"
-                  onClick={() => {
-                    if (module.path) {
-                      navigate(module.path);
-                    } else if (module.id === 'drhp' && projects.length > 0) {
-                      navigate(`/project/${projects[0].project_id}/command-center`);
-                    }
-                  }}
+                  className={`border border-border cursor-pointer transition-all duration-200 ${module.hoverBg} ${module.hoverBorder} hover:shadow-lg group`}
+                  onClick={() => navigate(module.path)}
                   data-testid={`module-${module.id}`}
                 >
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-11 h-11 ${module.bgColor} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                        <module.icon className={`w-5 h-5 ${module.color}`} />
+                  <CardContent className="p-6 h-full flex flex-col">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className={`w-14 h-14 ${module.bgColor} rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
+                        <module.icon className={`w-7 h-7 ${module.color}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-black text-sm">{module.title}</h4>
-                        <p className="text-xs text-muted-foreground mt-0.5">{module.description}</p>
+                        <h4 className="font-semibold text-black text-base mb-1">{module.title}</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{module.description}</p>
                       </div>
+                    </div>
+                    <div className="flex justify-end mt-4">
+                      <span className={`text-sm font-medium ${module.color} flex items-center gap-1 group-hover:gap-2 transition-all`}>
+                        Open Module <ArrowRight className="w-4 h-4" />
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
@@ -271,92 +136,8 @@ const Dashboard = ({ user, apiClient }) => {
             </div>
           </div>
 
-          <Separator />
-
-          {/* Projects Section */}
-          <div ref={projectsSectionRef}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold tracking-tight text-black">Your IPO Projects</h3>
-              {projects.length > 0 && (
-                <Button variant="ghost" className="text-[#1DA1F2] gap-1" onClick={() => setCreateDialogOpen(true)}>
-                  <Plus className="w-4 h-4" />
-                  Add Project
-                </Button>
-              )}
-            </div>
-
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-[#1DA1F2]" />
-              </div>
-            ) : projects.length === 0 ? (
-              <Card className="border border-dashed border-border">
-                <CardContent className="p-12 text-center">
-                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <FileText className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <h4 className="text-lg font-semibold text-black mb-2">No projects yet</h4>
-                  <p className="text-muted-foreground mb-4">Create your first IPO project to get started</p>
-                  <Button
-                    onClick={() => setCreateDialogOpen(true)}
-                    className="bg-[#1DA1F2] hover:bg-[#1a8cd8] gap-2"
-                    data-testid="empty-create-btn"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Create Project
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {projects.map((project) => (
-                  <Card
-                    key={project.project_id}
-                    className="border border-border card-hover cursor-pointer"
-                    onClick={() => navigate(`/project/${project.project_id}/command-center`)}
-                    data-testid={`project-card-${project.project_id}`}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg font-semibold text-black">
-                            {project.company_name}
-                          </CardTitle>
-                          <CardDescription>{project.sector}</CardDescription>
-                        </div>
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStageColor(project.current_stage)}`}>
-                          {project.current_stage}
-                        </span>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div>
-                          <div className="flex items-center justify-between text-sm mb-1">
-                            <span className="text-muted-foreground">Progress</span>
-                            <span className="font-medium text-black">{project.progress_percentage}%</span>
-                          </div>
-                          <Progress value={project.progress_percentage} className="h-2" />
-                        </div>
-                        <div className="flex items-center justify-between pt-2">
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="w-3 h-3" />
-                            <span>Updated {new Date(project.updated_at).toLocaleDateString()}</span>
-                          </div>
-                          <Button variant="ghost" size="sm" className="text-[#1DA1F2] gap-1 h-8 px-2">
-                            Open <ArrowRight className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Legal Links Section */}
-          <Card className="border border-border bg-gray-50">
+          {/* Legal Links Section - Fixed at bottom */}
+          <Card className="border border-border bg-gray-50 mt-6">
             <CardContent className="p-4">
               <div className="flex items-center justify-center gap-8">
                 <Link
