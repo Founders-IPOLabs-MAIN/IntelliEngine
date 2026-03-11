@@ -90,6 +90,37 @@ const NonDRHPTracker = ({ user, apiClient }) => {
         </header>
 
         <div className="p-6">
+          {/* Document Upload Section */}
+          <div className="mb-6">
+            <Card className="bg-gradient-to-r from-indigo-50 to-violet-50 border-indigo-100">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                    <Upload className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">Quick Upload with OCR</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Upload compliance documents (statutory certificates, legal opinions) and we'll auto-extract the information.
+                      Data syncs to all DRHP modules.
+                    </p>
+                    <DocumentUploader
+                      apiClient={apiClient}
+                      projectId={projectId}
+                      moduleName="non_drhp_tracker"
+                      onDataExtracted={(extractedData) => {
+                        if (extractedData) {
+                          toast.success("Compliance data extracted - please review and save");
+                        }
+                      }}
+                      compact={true}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-3">
               <Card className="bg-white border-gray-200 sticky top-6">
