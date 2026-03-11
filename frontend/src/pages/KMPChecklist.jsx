@@ -11,7 +11,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
-import { UserCheck, ChevronRight, Loader2, Save, Plus, Trash2, ArrowLeft, User } from "lucide-react";
+import DocumentUploader from "@/components/DocumentUploader";
+import { UserCheck, ChevronRight, Loader2, Save, Plus, Trash2, ArrowLeft, User, Upload } from "lucide-react";
 
 const KMPChecklist = ({ user, apiClient }) => {
   const { projectId } = useParams();
