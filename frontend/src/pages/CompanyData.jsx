@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
+import DocumentUploader from "@/components/DocumentUploader";
 import {
   Building2,
   ChevronRight,
@@ -16,7 +17,8 @@ import {
   Save,
   CheckCircle2,
   FileText,
-  ArrowLeft
+  ArrowLeft,
+  Upload
 } from "lucide-react";
 
 const CompanyData = ({ user, apiClient }) => {
