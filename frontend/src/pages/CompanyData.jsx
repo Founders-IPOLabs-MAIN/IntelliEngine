@@ -206,6 +206,33 @@ const CompanyData = ({ user, apiClient }) => {
         </header>
 
         <div className="p-6">
+          {/* Document Upload Section */}
+          <div className="mb-6">
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                    <Upload className="w-6 h-6 text-[#1DA1F2]" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">Quick Upload with OCR</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Upload company documents (MOA, AOA, Certificates) and we'll automatically extract and populate the fields below.
+                      Data syncs to all DRHP modules.
+                    </p>
+                    <DocumentUploader
+                      apiClient={apiClient}
+                      projectId={projectId}
+                      moduleName="company_data"
+                      onDataExtracted={handleDataExtracted}
+                      compact={true}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="grid grid-cols-12 gap-6">
             {/* Section Navigation */}
             <div className="col-span-3">
