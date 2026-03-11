@@ -235,6 +235,14 @@ const AppRouter = () => {
         }
       />
       <Route
+        path="/drhp"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <DRHPLandingPage user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/drhp-builder/:projectId/section/:sectionId"
         element={
           <ProtectedRoute>
