@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
+import DocumentUploader from "@/components/DocumentUploader";
 import {
   Users,
   ChevronRight,
@@ -19,7 +20,8 @@ import {
   Plus,
   Trash2,
   ArrowLeft,
-  User
+  User,
+  Upload
 } from "lucide-react";
 
 const PromoterChecklist = ({ user, apiClient }) => {
