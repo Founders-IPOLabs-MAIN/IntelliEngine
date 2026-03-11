@@ -152,6 +152,47 @@ const KMPChecklist = ({ user, apiClient }) => {
           </div>
         </header>
         <div className="p-6">
+          {/* Document Upload Section */}
+          <div className="mb-6">
+            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-100">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                    <Upload className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">Quick Upload with OCR</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Upload KMP documents (appointment letters, ID proofs) and we'll auto-extract the information.
+                      Data syncs to all DRHP modules.
+                    </p>
+                    <DocumentUploader
+                      apiClient={apiClient}
+                      projectId={projectId}
+                      moduleName="kmp_checklist"
+                      onDataExtracted={(extractedData) => {
+                        if (extractedData && activeKMP) {
+                          const newFormData = { ...formData };
+                          Object.entries(extractedData).forEach(([key, value]) => {
+                            if (value) {
+                              if (key.includes('name')) newFormData.personal_info = { ...newFormData.personal_info, legal_name: value };
+                              if (key.includes('din')) newFormData.personal_info = { ...newFormData.personal_info, din: value };
+                              if (key.includes('pan')) newFormData.personal_info = { ...newFormData.personal_info, pan: value };
+                              if (key.includes('designation')) newFormData.professional_profile = { ...newFormData.professional_profile, designation: value };
+                            }
+                          });
+                          setFormData(newFormData);
+                          toast.success("KMP data extracted and populated");
+                        }
+                      }}
+                      compact={true}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {kmps.length === 0 ? (
             <Card className="bg-white border-gray-200"><CardContent className="flex flex-col items-center justify-center py-12"><UserCheck className="w-12 h-12 text-gray-300 mb-4" /><h3 className="text-lg font-medium text-gray-900 mb-2">No KMPs Added</h3><p className="text-gray-500 mb-4">Add your first Key Managerial Personnel</p><Button onClick={handleAddKMP} className="bg-[#1DA1F2]"><Plus className="w-4 h-4 mr-2" />Add KMP</Button></CardContent></Card>
           ) : (
