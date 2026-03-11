@@ -211,6 +211,48 @@ const PromoterChecklist = ({ user, apiClient }) => {
         </header>
 
         <div className="p-6">
+          {/* Document Upload Section */}
+          <div className="mb-6">
+            <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-100">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                    <Upload className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">Quick Upload with OCR</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Upload promoter documents (ID proofs, PAN cards, shareholding docs) and we'll auto-extract the information.
+                      Data syncs to all DRHP modules.
+                    </p>
+                    <DocumentUploader
+                      apiClient={apiClient}
+                      projectId={projectId}
+                      moduleName="promoter_checklist"
+                      onDataExtracted={(extractedData) => {
+                        if (extractedData && activePromoter) {
+                          const newFormData = { ...formData };
+                          Object.entries(extractedData).forEach(([key, value]) => {
+                            if (value) {
+                              if (key.includes('name')) newFormData.personal_info = { ...newFormData.personal_info, full_name: value };
+                              if (key.includes('din')) newFormData.personal_info = { ...newFormData.personal_info, din: value };
+                              if (key.includes('pan')) newFormData.personal_info = { ...newFormData.personal_info, pan: value };
+                              if (key.includes('address')) newFormData.personal_info = { ...newFormData.personal_info, address: value };
+                              if (key.includes('shareholding')) newFormData.shareholding = { ...newFormData.shareholding, percentage: value };
+                            }
+                          });
+                          setFormData(newFormData);
+                          toast.success("Promoter data extracted and populated");
+                        }
+                      }}
+                      compact={true}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {promoters.length === 0 ? (
             <Card className="bg-white border-gray-200">
               <CardContent className="flex flex-col items-center justify-center py-12">
