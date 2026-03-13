@@ -245,6 +245,30 @@ const AppRouter = () => {
         }
       />
       <Route
+        path="/project/:projectId/drhp-section/:sectionId"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <DRHPSection user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/drhp-content/:sectionId"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <DRHPContent user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/drhp-content/:sectionId/:subModuleId"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <DRHPContent user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/drhp-builder/:projectId/section/:sectionId"
         element={
           <ProtectedRoute>
