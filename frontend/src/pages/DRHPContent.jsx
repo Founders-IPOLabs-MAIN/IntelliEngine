@@ -397,72 +397,146 @@ const DRHPContent = ({ user, apiClient }) => {
 
           {/* Tables with Floating Add/Delete */}
           {fieldConfig.tables && fieldConfig.tables.map((tableDef) => (
-            <Card key={tableDef.id} className="mb-6 overflow-visible">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Table className="w-5 h-5 text-[#1DA1F2]" />
-                      {tableDef.title}
-                    </CardTitle>
-                    {tableDef.description && (
-                      <p className="text-sm text-gray-500 mt-1">{tableDef.description}</p>
-                    )}
+            tableDef.isIntroText ? (
+              // Introductory Text Table - Full Width Paragraphs
+              <Card key={tableDef.id} className="mb-6 border-amber-200 bg-amber-50/30">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-amber-600" />
+                        {tableDef.title}
+                        {tableDef.alwaysRequired && (
+                          <Badge variant="outline" className="text-xs bg-amber-100 text-amber-700 border-amber-300 ml-2">
+                            Required
+                          </Badge>
+                        )}
+                      </CardTitle>
+                      {tableDef.description && (
+                        <p className="text-sm text-gray-600 mt-1">{tableDef.description}</p>
+                      )}
+                    </div>
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {(tables[tableDef.id] || []).length} entries
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="overflow-visible">
-                <div className="border border-gray-200 rounded-lg overflow-visible">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-gray-50 border-b border-gray-200">
-                        {tableDef.columns.map((col, colIndex) => (
-                          <th 
-                            key={colIndex} 
-                            className={`px-4 py-3 text-left text-sm font-semibold text-gray-700 ${
-                              colIndex === 0 ? 'w-[30%] border-r border-gray-200' : 'w-[70%]'
-                            }`}
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {(tables[tableDef.id] || []).map((row, rowIndex) => (
+                      <div 
+                        key={rowIndex} 
+                        className="group relative bg-white rounded-lg border border-gray-200 p-4 hover:border-amber-300 transition-colors"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-semibold">
+                            {rowIndex + 1}
+                          </span>
+                          <div className="flex-1">
+                            <AutoExpandTextarea
+                              value={row[0] || ""}
+                              onChange={(value) => handleTableCellChange(tableDef.id, rowIndex, 0, value)}
+                              placeholder="Enter paragraph text..."
+                              className="text-gray-700 leading-relaxed bg-transparent"
+                            />
+                          </div>
+                        </div>
+                        {/* Floating delete button - only show if more than minimum required */}
+                        {(tables[tableDef.id] || []).length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteRow(tableDef.id, rowIndex)}
+                            className="absolute -right-2 -top-2 h-6 w-6 p-0 bg-red-50 hover:bg-red-100 text-red-600 rounded-full shadow-sm border border-red-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Delete paragraph"
                           >
-                            {col}
-                          </th>
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Add Paragraph Button */}
+                  <div className="mt-4 flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddRow(tableDef.id, tableDef.columns, (tables[tableDef.id] || []).length - 1)}
+                      className="gap-2 text-amber-700 border-amber-300 hover:bg-amber-50"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Paragraph
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              // Regular Table with Term-Definition columns
+              <Card key={tableDef.id} className="mb-6 overflow-visible">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Table className="w-5 h-5 text-[#1DA1F2]" />
+                        {tableDef.title}
+                      </CardTitle>
+                      {tableDef.description && (
+                        <p className="text-sm text-gray-500 mt-1">{tableDef.description}</p>
+                      )}
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {(tables[tableDef.id] || []).length} entries
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="overflow-visible">
+                  <div className="border border-gray-200 rounded-lg overflow-visible">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                          {tableDef.columns.map((col, colIndex) => (
+                            <th 
+                              key={colIndex} 
+                              className={`px-4 py-3 text-left text-sm font-semibold text-gray-700 ${
+                                colIndex === 0 ? 'w-[30%] border-r border-gray-200' : 'w-[70%]'
+                              }`}
+                            >
+                              {col}
+                            </th>
+                          ))}
+                          <th className="w-12"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(tables[tableDef.id] || []).map((row, rowIndex) => (
+                          <EditableTableRow
+                            key={rowIndex}
+                            row={row}
+                            rowIndex={rowIndex}
+                            columns={tableDef.columns}
+                            onCellChange={(ri, ci, val) => handleTableCellChange(tableDef.id, ri, ci, val)}
+                            onAddRow={(ri) => handleAddRow(tableDef.id, tableDef.columns, ri)}
+                            onDeleteRow={(ri) => handleDeleteRow(tableDef.id, ri)}
+                            isLast={rowIndex === (tables[tableDef.id] || []).length - 1}
+                          />
                         ))}
-                        <th className="w-12"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(tables[tableDef.id] || []).map((row, rowIndex) => (
-                        <EditableTableRow
-                          key={rowIndex}
-                          row={row}
-                          rowIndex={rowIndex}
-                          columns={tableDef.columns}
-                          onCellChange={(ri, ci, val) => handleTableCellChange(tableDef.id, ri, ci, val)}
-                          onAddRow={(ri) => handleAddRow(tableDef.id, tableDef.columns, ri)}
-                          onDeleteRow={(ri) => handleDeleteRow(tableDef.id, ri)}
-                          isLast={rowIndex === (tables[tableDef.id] || []).length - 1}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                
-                {/* Add Row at Bottom Button */}
-                <div className="mt-3 flex justify-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleAddRow(tableDef.id, tableDef.columns, (tables[tableDef.id] || []).length - 1)}
-                    className="gap-2 text-[#1DA1F2] border-[#1DA1F2] hover:bg-blue-50"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add New Entry
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {/* Add Row at Bottom Button */}
+                  <div className="mt-3 flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddRow(tableDef.id, tableDef.columns, (tables[tableDef.id] || []).length - 1)}
+                      className="gap-2 text-[#1DA1F2] border-[#1DA1F2] hover:bg-blue-50"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add New Entry
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )
           ))}
 
           {/* If no fields or tables defined, show a generic editor */}
