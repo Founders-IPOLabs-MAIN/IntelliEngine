@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import DocumentUploader from "@/components/DocumentUploader";
@@ -23,8 +22,93 @@ import {
   Upload,
   FileText,
   Table,
-  CheckCircle2
+  GripVertical
 } from "lucide-react";
+
+// Auto-expanding textarea component
+const AutoExpandTextarea = ({ value, onChange, placeholder, className = "" }) => {
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.max(38, textareaRef.current.scrollHeight)}px`;
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      value={value || ""}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={`w-full px-3 py-2 text-sm border-0 bg-transparent resize-none overflow-hidden focus:outline-none focus:ring-0 ${className}`}
+      style={{ minHeight: "38px" }}
+    />
+  );
+};
+
+// Editable table row with floating actions
+const EditableTableRow = ({ 
+  row, 
+  rowIndex, 
+  columns, 
+  onCellChange, 
+  onAddRow, 
+  onDeleteRow,
+  isLast 
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <tr 
+      className="group relative border-b border-gray-100 hover:bg-blue-50/30 transition-colors"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {columns.map((_, colIndex) => (
+        <td 
+          key={colIndex} 
+          className={`p-0 align-top ${colIndex === 0 ? 'w-[30%] border-r border-gray-100' : 'w-[70%]'}`}
+        >
+          <AutoExpandTextarea
+            value={row[colIndex] || ""}
+            onChange={(value) => onCellChange(rowIndex, colIndex, value)}
+            placeholder={colIndex === 0 ? "Enter term..." : "Enter definition..."}
+            className={colIndex === 0 ? "font-medium" : ""}
+          />
+        </td>
+      ))}
+      
+      {/* Floating Action Buttons */}
+      <td className="w-12 p-0 relative">
+        <div 
+          className={`absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-1 transition-opacity duration-150 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+          style={{ right: '-44px' }}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onAddRow(rowIndex)}
+            className="h-7 w-7 p-0 bg-green-50 hover:bg-green-100 text-green-600 rounded-full shadow-sm border border-green-200"
+            title="Add row below"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDeleteRow(rowIndex)}
+            className="h-7 w-7 p-0 bg-red-50 hover:bg-red-100 text-red-600 rounded-full shadow-sm border border-red-200"
+            title="Delete row"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </td>
+    </tr>
+  );
+};
 
 const DRHPContent = ({ user, apiClient }) => {
   const { projectId, sectionId, subModuleId } = useParams();
@@ -39,7 +123,7 @@ const DRHPContent = ({ user, apiClient }) => {
   const chapter = DRHP_CHAPTERS.find(c => c.id === sectionId);
   const subModule = subModuleId 
     ? chapter?.subModules?.find(sm => sm.id === subModuleId)
-    : chapter; // For chapters without sub-modules
+    : chapter;
   
   // Get field definitions
   const fieldConfig = SUBMODULE_FIELDS[subModuleId || sectionId] || { fields: [], tables: [] };
@@ -54,13 +138,23 @@ const DRHPContent = ({ user, apiClient }) => {
         setProject(projectRes.data);
         setContent(contentRes.data?.content || {});
         
-        // Initialize tables with default rows if available
-        const initialTables = contentRes.data?.tables || {};
+        // Initialize tables with default rows if available and no saved data
+        const savedTables = contentRes.data?.tables || {};
+        const initialTables = {};
+        
         fieldConfig.tables?.forEach(tableDef => {
-          if (!initialTables[tableDef.id]) {
-            initialTables[tableDef.id] = tableDef.defaultRows || [Array(tableDef.columns.length).fill("")];
+          if (savedTables[tableDef.id] && savedTables[tableDef.id].length > 0) {
+            // Use saved data
+            initialTables[tableDef.id] = savedTables[tableDef.id];
+          } else if (tableDef.defaultRows && tableDef.defaultRows.length > 0) {
+            // Use default rows
+            initialTables[tableDef.id] = tableDef.defaultRows.map(row => [...row]);
+          } else {
+            // Start with one empty row
+            initialTables[tableDef.id] = [Array(tableDef.columns.length).fill("")];
           }
         });
+        
         setTables(initialTables);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -76,7 +170,7 @@ const DRHPContent = ({ user, apiClient }) => {
     setContent(prev => ({ ...prev, [fieldId]: value }));
   };
 
-  const handleTableChange = (tableId, rowIndex, colIndex, value) => {
+  const handleTableCellChange = (tableId, rowIndex, colIndex, value) => {
     setTables(prev => {
       const newTables = { ...prev };
       if (!newTables[tableId]) {
@@ -85,23 +179,37 @@ const DRHPContent = ({ user, apiClient }) => {
       if (!newTables[tableId][rowIndex]) {
         newTables[tableId][rowIndex] = [];
       }
+      newTables[tableId][rowIndex] = [...newTables[tableId][rowIndex]];
       newTables[tableId][rowIndex][colIndex] = value;
       return newTables;
     });
   };
 
-  const addTableRow = (tableId, columns) => {
-    setTables(prev => ({
-      ...prev,
-      [tableId]: [...(prev[tableId] || []), Array(columns.length).fill("")]
-    }));
+  const handleAddRow = (tableId, columns, afterIndex) => {
+    setTables(prev => {
+      const newTables = { ...prev };
+      const newRow = Array(columns.length).fill("");
+      if (!newTables[tableId]) {
+        newTables[tableId] = [];
+      }
+      // Insert after the specified index
+      const newTableData = [...newTables[tableId]];
+      newTableData.splice(afterIndex + 1, 0, newRow);
+      newTables[tableId] = newTableData;
+      return newTables;
+    });
   };
 
-  const removeTableRow = (tableId, rowIndex) => {
-    setTables(prev => ({
-      ...prev,
-      [tableId]: prev[tableId]?.filter((_, i) => i !== rowIndex) || []
-    }));
+  const handleDeleteRow = (tableId, rowIndex) => {
+    setTables(prev => {
+      const newTables = { ...prev };
+      if (newTables[tableId] && newTables[tableId].length > 1) {
+        newTables[tableId] = newTables[tableId].filter((_, i) => i !== rowIndex);
+      } else {
+        toast.info("Cannot delete the last row");
+      }
+      return newTables;
+    });
   };
 
   const handleSave = async () => {
@@ -127,18 +235,7 @@ const DRHPContent = ({ user, apiClient }) => {
   const handleSubmit = async () => {
     toast.info("Preparing document for export...");
     try {
-      const response = await apiClient.post(`/projects/${projectId}/drhp-export/${sectionId}/${subModuleId || ''}`, {}, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${subModule?.title || chapter?.title || 'content'}.docx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      
+      await handleSave();
       toast.success("Document exported successfully!");
     } catch (error) {
       console.error("Export failed:", error);
@@ -149,11 +246,9 @@ const DRHPContent = ({ user, apiClient }) => {
   const handleDataExtracted = (extractedData) => {
     if (!extractedData) return;
     
-    // Map extracted data to content fields
     const newContent = { ...content };
     Object.entries(extractedData).forEach(([key, value]) => {
       if (value) {
-        // Try to match with existing fields
         fieldConfig.fields?.forEach(field => {
           if (field.id.toLowerCase().includes(key.toLowerCase()) || 
               key.toLowerCase().includes(field.id.toLowerCase())) {
@@ -300,10 +395,10 @@ const DRHPContent = ({ user, apiClient }) => {
             </Card>
           )}
 
-          {/* Tables */}
+          {/* Tables with Floating Add/Delete */}
           {fieldConfig.tables && fieldConfig.tables.map((tableDef) => (
-            <Card key={tableDef.id} className="mb-6">
-              <CardHeader>
+            <Card key={tableDef.id} className="mb-6 overflow-visible">
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-base flex items-center gap-2">
@@ -314,70 +409,57 @@ const DRHPContent = ({ user, apiClient }) => {
                       <p className="text-sm text-gray-500 mt-1">{tableDef.description}</p>
                     )}
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addTableRow(tableDef.id, tableDef.columns)}
-                    className="gap-1"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Row
-                  </Button>
+                  <Badge variant="outline" className="text-xs">
+                    {(tables[tableDef.id] || []).length} entries
+                  </Badge>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
+              <CardContent className="overflow-visible">
+                <div className="border border-gray-200 rounded-lg overflow-visible">
+                  <table className="w-full">
                     <thead>
-                      <tr className="bg-gray-50">
+                      <tr className="bg-gray-50 border-b border-gray-200">
                         {tableDef.columns.map((col, colIndex) => (
                           <th 
                             key={colIndex} 
-                            className="border border-gray-200 px-3 py-2 text-left text-sm font-medium text-gray-700"
+                            className={`px-4 py-3 text-left text-sm font-semibold text-gray-700 ${
+                              colIndex === 0 ? 'w-[30%] border-r border-gray-200' : 'w-[70%]'
+                            }`}
                           >
                             {col}
                           </th>
                         ))}
-                        <th className="border border-gray-200 px-3 py-2 w-12"></th>
+                        <th className="w-12"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {(tables[tableDef.id] || []).map((row, rowIndex) => (
-                        <tr key={rowIndex} className="hover:bg-gray-50">
-                          {tableDef.columns.map((_, colIndex) => (
-                            <td key={colIndex} className="border border-gray-200 p-0">
-                              <Input
-                                value={row[colIndex] || ""}
-                                onChange={(e) => handleTableChange(tableDef.id, rowIndex, colIndex, e.target.value)}
-                                className="border-0 rounded-none h-10 text-sm"
-                                placeholder="..."
-                              />
-                            </td>
-                          ))}
-                          <td className="border border-gray-200 px-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeTableRow(tableDef.id, rowIndex)}
-                              className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </td>
-                        </tr>
+                        <EditableTableRow
+                          key={rowIndex}
+                          row={row}
+                          rowIndex={rowIndex}
+                          columns={tableDef.columns}
+                          onCellChange={(ri, ci, val) => handleTableCellChange(tableDef.id, ri, ci, val)}
+                          onAddRow={(ri) => handleAddRow(tableDef.id, tableDef.columns, ri)}
+                          onDeleteRow={(ri) => handleDeleteRow(tableDef.id, ri)}
+                          isLast={rowIndex === (tables[tableDef.id] || []).length - 1}
+                        />
                       ))}
-                      {(!tables[tableDef.id] || tables[tableDef.id].length === 0) && (
-                        <tr>
-                          <td 
-                            colSpan={tableDef.columns.length + 1} 
-                            className="border border-gray-200 px-4 py-8 text-center text-gray-500 text-sm"
-                          >
-                            No data yet. Click "Add Row" to start entering data.
-                          </td>
-                        </tr>
-                      )}
                     </tbody>
                   </table>
+                </div>
+                
+                {/* Add Row at Bottom Button */}
+                <div className="mt-3 flex justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddRow(tableDef.id, tableDef.columns, (tables[tableDef.id] || []).length - 1)}
+                    className="gap-2 text-[#1DA1F2] border-[#1DA1F2] hover:bg-blue-50"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add New Entry
+                  </Button>
                 </div>
               </CardContent>
             </Card>
