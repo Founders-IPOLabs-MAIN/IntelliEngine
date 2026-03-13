@@ -609,6 +609,19 @@ Build a complete IPO-readiness platform with:
     - `GET /api/projects/{id}/drhp-section-progress/{section_id}`
     - `GET/POST /api/projects/{id}/drhp-content/{section_id}`
     - `GET/POST /api/projects/{id}/drhp-content/{section_id}/{sub_module_id}`
+- ✅ **NEW: Definitions & Abbreviations Module with Real DRHP Data**
+  - Pre-populated tables based on actual Groww DRHP filing
+  - 6 categorized tables:
+    - General Terms
+    - Company Related Terms (45+ entries)
+    - Offer Related Terms (55+ entries)
+    - Technical/Industry Terms (33+ entries)
+    - Conventional/General Abbreviations (65+ entries)
+    - Key Performance Indicators
+  - Auto-expanding editable cells that grow with content
+  - Floating add/delete buttons on hover (right side)
+  - Support for blank fields (____) for user input
+  - All table headers and content fully editable
 
 ## Testing Status
 - ✅ Backend API tests passed (100%)
