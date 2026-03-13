@@ -584,6 +584,31 @@ Build a complete IPO-readiness platform with:
   - Legal Disclaimer & Terms of Use links kept in Dashboard
   - DRHP Builder module now navigates to `/drhp` landing page
   - New file: `/app/frontend/src/pages/DRHPLandingPage.jsx`
+- ✅ **NEW: Complete DRHP Chapters Restructure (Based on SEBI ICDR)**
+  - Renamed "Module Progress" to "Main DRHP Chapters"
+  - Created 9 main sections matching Indian DRHP format:
+    - Section I - General (4 sub-modules)
+    - Section II - Risk Factors (direct content)
+    - Section III - Introduction (8 sub-modules)
+    - Section IV - About Our Company (7 sub-modules)
+    - Section V - Financial Information (5 sub-modules)
+    - Section VI - Legal and Other Information (4 sub-modules)
+    - Section VII - Offer Information (4 sub-modules)
+    - Section VIII - Provisions of Articles (direct content)
+    - Section IX - Other Information (2 sub-modules)
+  - Sub-module navigation: Click chapter → Sub-modules page → Content editor
+  - Each module has OCR upload for documents (PDF, Word, Excel, Images)
+  - Tables and fields based on real DRHP examples
+  - "Review" and "Submit" buttons at top and bottom of each page
+  - New files:
+    - `/app/frontend/src/config/drhpChapters.js` (chapter configuration)
+    - `/app/frontend/src/pages/DRHPSection.jsx` (sub-module listing)
+    - `/app/frontend/src/pages/DRHPContent.jsx` (content editor)
+  - New API endpoints:
+    - `GET /api/projects/{id}/drhp-progress`
+    - `GET /api/projects/{id}/drhp-section-progress/{section_id}`
+    - `GET/POST /api/projects/{id}/drhp-content/{section_id}`
+    - `GET/POST /api/projects/{id}/drhp-content/{section_id}/{sub_module_id}`
 
 ## Testing Status
 - ✅ Backend API tests passed (100%)
