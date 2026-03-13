@@ -6,7 +6,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://intelliengine.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://intelliengine-1.preview.emergentagent.com')
 SESSION_TOKEN = "test_session_admin_1771474009344"
 
 @pytest.fixture
