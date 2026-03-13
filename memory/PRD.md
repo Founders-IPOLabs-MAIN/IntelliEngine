@@ -623,6 +623,19 @@ Build a complete IPO-readiness platform with:
   - Support for blank fields (____) for user input
   - All table headers and content fully editable
 
+## Completed in Latest Session (Mar 13, 2026)
+- ✅ **NEW: DRHP Introductory Text Section**
+  - Added "Introductory Text" table above General Terms in Definitions & Abbreviations
+  - Contains 3 standard DRHP paragraphs that must appear in every submission
+  - Paragraphs are editable with auto-expanding textareas
+  - Amber/gold styling to distinguish from term tables
+  - "Required" badge indicates mandatory section
+  - Numbered paragraphs (1, 2, 3) for clarity
+  - Add/Delete paragraph functionality
+  - Files modified:
+    - `/app/frontend/src/config/drhpChapters.js` - Added introductory-text table config
+    - `/app/frontend/src/pages/DRHPContent.jsx` - Added specialized rendering for intro text
+
 ## Testing Status
 - ✅ Backend API tests passed (100%)
 - ✅ Frontend integration tests passed (100%)
