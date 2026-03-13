@@ -1131,6 +1131,180 @@ async def manual_sync_repository(project_id: str, user: User = Depends(get_curre
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
+# ============ DRHP CHAPTERS AND CONTENT ENDPOINTS ============
+
+@api_router.get("/projects/{project_id}/drhp-progress")
+async def get_drhp_progress(project_id: str, user: User = Depends(get_current_user)):
+    """Get progress for all DRHP chapters"""
+    progress = {}
+    
+    # Get all content records for this project
+    cursor = db.drhp_content.find({"project_id": project_id}, {"_id": 0})
+    content_list = await cursor.to_list(length=100)
+    
+    # Calculate progress per section
+    for content in content_list:
+        section_id = content.get("section_id")
+        if section_id:
+            if section_id not in progress:
+                progress[section_id] = {"total_fields": 0, "filled_fields": 0, "percent": 0}
+            
+            # Count filled fields
+            for key, value in content.get("content", {}).items():
+                progress[section_id]["total_fields"] += 1
+                if value and str(value).strip():
+                    progress[section_id]["filled_fields"] += 1
+            
+            # Count table rows
+            for table_id, rows in content.get("tables", {}).items():
+                progress[section_id]["total_fields"] += len(rows)
+                filled_rows = sum(1 for row in rows if any(cell and str(cell).strip() for cell in row))
+                progress[section_id]["filled_fields"] += filled_rows
+    
+    # Calculate percentages
+    for section_id in progress:
+        total = progress[section_id]["total_fields"]
+        filled = progress[section_id]["filled_fields"]
+        progress[section_id]["percent"] = int((filled / total * 100) if total > 0 else 0)
+    
+    return progress
+
+@api_router.get("/projects/{project_id}/drhp-section-progress/{section_id}")
+async def get_drhp_section_progress(project_id: str, section_id: str, user: User = Depends(get_current_user)):
+    """Get progress for sub-modules within a DRHP section"""
+    progress = {}
+    
+    # Get all content records for this section
+    cursor = db.drhp_content.find({
+        "project_id": project_id,
+        "section_id": section_id
+    }, {"_id": 0})
+    content_list = await cursor.to_list(length=50)
+    
+    for content in content_list:
+        sub_module_id = content.get("sub_module_id", "main")
+        if sub_module_id not in progress:
+            progress[sub_module_id] = {"total_fields": 0, "filled_fields": 0, "percent": 0}
+        
+        # Count fields
+        for key, value in content.get("content", {}).items():
+            progress[sub_module_id]["total_fields"] += 1
+            if value and str(value).strip():
+                progress[sub_module_id]["filled_fields"] += 1
+        
+        # Count table rows
+        for table_id, rows in content.get("tables", {}).items():
+            progress[sub_module_id]["total_fields"] += max(1, len(rows))
+            filled_rows = sum(1 for row in rows if any(cell and str(cell).strip() for cell in row))
+            progress[sub_module_id]["filled_fields"] += filled_rows
+    
+    # Calculate percentages
+    for sub_id in progress:
+        total = progress[sub_id]["total_fields"]
+        filled = progress[sub_id]["filled_fields"]
+        progress[sub_id]["percent"] = int((filled / total * 100) if total > 0 else 0)
+    
+    return progress
+
+@api_router.get("/projects/{project_id}/drhp-content/{section_id}")
+@api_router.get("/projects/{project_id}/drhp-content/{section_id}/{sub_module_id}")
+async def get_drhp_content(
+    project_id: str, 
+    section_id: str, 
+    sub_module_id: str = None,
+    user: User = Depends(get_current_user)
+):
+    """Get DRHP content for a section or sub-module"""
+    
+    query = {
+        "project_id": project_id,
+        "section_id": section_id
+    }
+    if sub_module_id:
+        query["sub_module_id"] = sub_module_id
+    
+    content = await db.drhp_content.find_one(query, {"_id": 0})
+    
+    if not content:
+        return {
+            "project_id": project_id,
+            "section_id": section_id,
+            "sub_module_id": sub_module_id,
+            "content": {},
+            "tables": {}
+        }
+    
+    return content
+
+@api_router.post("/projects/{project_id}/drhp-content/{section_id}")
+@api_router.post("/projects/{project_id}/drhp-content/{section_id}/{sub_module_id}")
+async def save_drhp_content(
+    project_id: str,
+    section_id: str,
+    sub_module_id: str = None,
+    data: dict = None,
+    user: User = Depends(get_current_user)
+):
+    """Save DRHP content for a section or sub-module"""
+    
+    if not data:
+        data = {}
+    
+    content_data = data.get("content", {})
+    tables_data = data.get("tables", {})
+    
+    query = {
+        "project_id": project_id,
+        "section_id": section_id
+    }
+    if sub_module_id:
+        query["sub_module_id"] = sub_module_id
+    
+    now = datetime.now(timezone.utc)
+    
+    update_data = {
+        "project_id": project_id,
+        "section_id": section_id,
+        "sub_module_id": sub_module_id,
+        "content": content_data,
+        "tables": tables_data,
+        "updated_by": user.user_id,
+        "updated_at": now.isoformat()
+    }
+    
+    result = await db.drhp_content.update_one(
+        query,
+        {
+            "$set": update_data,
+            "$setOnInsert": {"created_at": now.isoformat()}
+        },
+        upsert=True
+    )
+    
+    return {
+        "message": "Content saved successfully",
+        "project_id": project_id,
+        "section_id": section_id,
+        "sub_module_id": sub_module_id
+    }
+
+@api_router.post("/projects/{project_id}/drhp-export/{section_id}")
+@api_router.post("/projects/{project_id}/drhp-export/{section_id}/{sub_module_id}")
+async def export_drhp_section(
+    project_id: str,
+    section_id: str,
+    sub_module_id: str = None,
+    user: User = Depends(get_current_user)
+):
+    """Export DRHP section content as Word document (placeholder)"""
+    # This is a placeholder - full implementation would use python-docx
+    return {
+        "message": "Export feature coming soon",
+        "project_id": project_id,
+        "section_id": section_id,
+        "sub_module_id": sub_module_id
+    }
+
 # ============ MASTER ADMIN CONFIGURATION ============
 
 MASTER_ADMIN_CONFIG = {
