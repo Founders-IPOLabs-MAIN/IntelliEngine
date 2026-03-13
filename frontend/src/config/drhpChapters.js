@@ -258,6 +258,19 @@ export const SUBMODULE_FIELDS = {
   "definitions-abbreviations": {
     tables: [
       {
+        id: "introductory-text",
+        title: "Introductory Text",
+        columns: ["Content"],
+        description: "Standard introductory paragraphs for Definitions and Abbreviations section",
+        isIntroText: true,
+        alwaysRequired: true,
+        defaultRows: [
+          ["This Draft Red Herring Prospectus uses certain definitions and abbreviations which, unless the context otherwise indicates or implies, or unless otherwise specified, shall have the meaning as provided below. References to any legislation, act, regulation, rule, guideline, policy, circular, notification, direction or clarification shall be to such legislation, act, regulation, rule, guideline, policy, circular, notification, direction or clarification as amended, updated, supplemented, re-enacted or modified, from time to time, and any reference to a statutory provision shall include any subordinate legislation made, from time to time, under such provision."],
+          ["The words and expressions used in this Draft Red Herring Prospectus but not defined herein shall have, to the extent applicable, the same meaning ascribed to such terms in the SEBI Act, SEBI ICDR Regulations, the Companies Act, the SCRA, the Depositories Act and the rules and regulations made thereunder. Further, the Offer related terms used but not defined in this Draft Red Herring Prospectus shall have the meaning ascribed to such terms under the General Information Document."],
+          ["Notwithstanding the foregoing, the terms used in \"Industry Overview\", \"Statement of Special Tax Benefits\", \"Financial Information\", \"Basis for Offer Price\", \"History and Certain Corporate Matters\", \"Financial Indebtedness\", \"Outstanding Litigation and Material Developments\", \"Offer Procedure\", \"Key Regulations and Policies\", and \"Main Provision of the Articles of Association\" on pages _________ and _______ respectively, shall have the meaning ascribed specifically to such terms in the relevant sections."]
+        ]
+      },
+      {
         id: "general-terms",
         title: "General Terms",
         columns: ["Term", "Definition"],
