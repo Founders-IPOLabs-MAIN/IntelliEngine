@@ -645,17 +645,13 @@ Build a complete IPO-readiness platform with:
   - All table headers and content fully editable
 
 ## Completed in Latest Session (Mar 13, 2026)
-- ✅ **NEW: DRHP Introductory Text Section**
-  - Added "Introductory Text" table above General Terms in Definitions & Abbreviations
-  - Contains 3 standard DRHP paragraphs that must appear in every submission
-  - Paragraphs are editable with auto-expanding textareas
-  - Amber/gold styling to distinguish from term tables
-  - "Required" badge indicates mandatory section
-  - Numbered paragraphs (1, 2, 3) for clarity
-  - Add/Delete paragraph functionality
-  - Files modified:
-    - `/app/frontend/src/config/drhpChapters.js` - Added introductory-text table config
-    - `/app/frontend/src/pages/DRHPContent.jsx` - Added specialized rendering for intro text
+- ✅ **DRHP Introductory Text Section** - Added standard paragraphs above General Terms
+- ✅ **Landing Page Updates** - New headline, sub-headline, 5 bullet points
+- ✅ **Security Hardening** - File upload (5MB limit), rate limiting, input sanitization, content moderation
+- ✅ **Matchmaker Route Fix** - Fixed critical route ordering bug preventing draft save/load
+  - Issue: GET /api/matchmaker/professionals/draft was being matched by /{professional_id} route
+  - Fix: Moved /draft routes BEFORE /{professional_id} route
+  - All 23 tests pass (17 backend + 6 frontend)
 
 ## Testing Status
 - ✅ Backend API tests passed (100%)
