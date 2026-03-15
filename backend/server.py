@@ -6,15 +6,19 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorGridFSBucket
 from bson import ObjectId
 import os
 import logging
+import re
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import uuid
 from datetime import datetime, timezone, timedelta
 import httpx
 import io
 import asyncio
 import resend
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -36,8 +40,13 @@ MASTER_ADMIN_EMAIL = os.environ.get('MASTER_ADMIN_EMAIL', 'ronraj2312@gmail.com'
 if RESEND_API_KEY and RESEND_API_KEY != 're_placeholder_key':
     resend.api_key = RESEND_API_KEY
 
+# ============ RATE LIMITING ============
+limiter = Limiter(key_func=get_remote_address)
+
 # Create the main app
 app = FastAPI(title="IntelliEngine API", version="1.0.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -48,6 +57,236 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# ============ FILE UPLOAD SECURITY ============
+
+# Maximum file size: 5MB
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB in bytes
+
+# Allowed file types by context
+ALLOWED_FILE_TYPES = {
+    "document": {
+        "extensions": {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".csv"},
+        "mime_types": {
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-powerpoint",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "text/plain",
+            "text/csv"
+        }
+    },
+    "image": {
+        "extensions": {".jpg", ".jpeg", ".png", ".gif", ".webp"},
+        "mime_types": {
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp"
+        }
+    },
+    "ocr_document": {
+        "extensions": {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png"},
+        "mime_types": {
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "image/jpeg",
+            "image/png"
+        }
+    },
+    "profile_picture": {
+        "extensions": {".jpg", ".jpeg", ".png", ".webp"},
+        "mime_types": {
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        }
+    },
+    "id_document": {
+        "extensions": {".pdf", ".jpg", ".jpeg", ".png"},
+        "mime_types": {
+            "application/pdf",
+            "image/jpeg",
+            "image/png"
+        }
+    }
+}
+
+# Blocked file types (never allowed)
+BLOCKED_EXTENSIONS = {
+    ".zip", ".rar", ".7z", ".tar", ".gz", ".exe", ".dll", ".bat", ".cmd", 
+    ".sh", ".ps1", ".js", ".vbs", ".jar", ".msi", ".dmg", ".app", ".iso"
+}
+
+def sanitize_filename(filename: str, uploader_name: Optional[str] = None) -> str:
+    """
+    Sanitize filename to prevent path traversal and create standardized naming.
+    Format: {uploader_name}_{original_filename}_{timestamp}
+    """
+    # Remove path components
+    filename = os.path.basename(filename)
+    
+    # Get extension
+    name, ext = os.path.splitext(filename)
+    
+    # Remove special characters, keep only alphanumeric, dash, underscore
+    name = re.sub(r'[^\w\-]', '_', name)
+    
+    # Truncate if too long
+    name = name[:50]
+    
+    # Add uploader name if provided
+    if uploader_name:
+        safe_uploader = re.sub(r'[^\w\-]', '_', uploader_name)[:20]
+        name = f"{safe_uploader}_{name}"
+    
+    # Add timestamp for uniqueness
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    
+    return f"{name}_{timestamp}{ext.lower()}"
+
+def validate_file_type(filename: str, content_type: str, context: str = "document") -> Tuple[bool, str]:
+    """
+    Validate file type against allowed types for the given context.
+    Returns (is_valid, error_message)
+    """
+    ext = os.path.splitext(filename)[1].lower()
+    
+    # Check blocked extensions first
+    if ext in BLOCKED_EXTENSIONS:
+        return False, f"File type '{ext}' is not allowed. ZIP, executable, and archive files are blocked for security reasons."
+    
+    # Get allowed types for context
+    allowed = ALLOWED_FILE_TYPES.get(context, ALLOWED_FILE_TYPES["document"])
+    
+    # Validate extension
+    if ext not in allowed["extensions"]:
+        allowed_list = ", ".join(sorted(allowed["extensions"]))
+        return False, f"Invalid file type '{ext}'. Allowed types for {context}: {allowed_list}"
+    
+    # Validate MIME type
+    if content_type not in allowed["mime_types"]:
+        return False, f"Invalid content type '{content_type}'. The file extension doesn't match its content."
+    
+    return True, ""
+
+def validate_file_size(content: bytes) -> Tuple[bool, str]:
+    """
+    Validate file size against maximum allowed.
+    Returns (is_valid, error_message)
+    """
+    size_mb = len(content) / (1024 * 1024)
+    
+    if len(content) > MAX_FILE_SIZE:
+        return False, f"File size ({size_mb:.2f}MB) exceeds the maximum allowed size of 5MB. Please compress or reduce the file size."
+    
+    # Warning for files approaching limit (>4MB)
+    if len(content) > 4 * 1024 * 1024:
+        logger.warning(f"Large file upload: {size_mb:.2f}MB (approaching 5MB limit)")
+    
+    return True, ""
+
+async def scan_image_for_explicit_content(content: bytes, content_type: str) -> Tuple[bool, str]:
+    """
+    Scan image for nudity/explicit content using AI.
+    Returns (is_safe, warning_message)
+    """
+    # Only scan images
+    if not content_type.startswith("image/"):
+        return True, ""
+    
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+        
+        api_key = os.environ.get("EMERGENT_LLM_KEY")
+        if not api_key:
+            logger.warning("EMERGENT_LLM_KEY not configured - skipping content moderation")
+            return True, ""
+        
+        chat = LlmChat(
+            api_key=api_key,
+            model="gemini-2.5-flash",
+            system_message="You are a content moderation system. Analyze the image and respond with ONLY 'SAFE' or 'UNSAFE'. Mark as UNSAFE if the image contains: nudity, explicit sexual content, violence, gore, illegal content, or inappropriate material for a professional business platform."
+        )
+        
+        import base64
+        file_content = FileContentWithMimeType(
+            content=base64.b64encode(content).decode("utf-8"),
+            mime_type=content_type
+        )
+        
+        response = await asyncio.to_thread(
+            chat.send_message,
+            UserMessage(
+                text="Analyze this image for explicit or inappropriate content. Respond with ONLY 'SAFE' or 'UNSAFE'.",
+                files=[file_content]
+            )
+        )
+        
+        result = response.text.strip().upper()
+        
+        if "UNSAFE" in result:
+            logger.warning(f"Explicit content detected in uploaded image")
+            return False, "This image has been flagged as potentially containing inappropriate content. Such files are not allowed and will be deleted. Please upload appropriate professional content only."
+        
+        return True, ""
+        
+    except Exception as e:
+        logger.error(f"Content moderation scan failed: {e}")
+        # Fail open but log the issue
+        return True, ""
+
+async def validate_upload(
+    file: UploadFile,
+    content: bytes,
+    context: str = "document",
+    uploader_name: Optional[str] = None,
+    scan_content: bool = True
+) -> Tuple[str, List[str]]:
+    """
+    Comprehensive file validation.
+    Returns (sanitized_filename, list_of_warnings)
+    """
+    warnings = []
+    
+    # 1. Validate file size
+    size_valid, size_error = validate_file_size(content)
+    if not size_valid:
+        raise HTTPException(status_code=400, detail=size_error)
+    
+    # 2. Validate file type
+    type_valid, type_error = validate_file_type(file.filename, file.content_type, context)
+    if not type_valid:
+        raise HTTPException(status_code=400, detail=type_error)
+    
+    # 3. Scan for explicit content (images only)
+    if scan_content and file.content_type.startswith("image/"):
+        is_safe, content_warning = await scan_image_for_explicit_content(content, file.content_type)
+        if not is_safe:
+            raise HTTPException(status_code=400, detail=content_warning)
+    
+    # 4. Sanitize filename
+    sanitized_name = sanitize_filename(file.filename, uploader_name)
+    
+    # Add warning about content policy
+    if file.content_type.startswith("image/"):
+        warnings.append("Note: All uploaded images are scanned for inappropriate content. Files violating our content policy will be deleted.")
+    
+    return sanitized_name, warnings
+
+def sanitize_regex_input(pattern: str) -> str:
+    """
+    Sanitize user input for use in MongoDB $regex queries.
+    Escapes special regex characters to prevent ReDoS attacks.
+    """
+    # Escape special regex metacharacters
+    return re.escape(pattern)
 
 # ============ EMAIL NOTIFICATION FUNCTIONS ============
 
