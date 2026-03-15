@@ -1853,10 +1853,12 @@ async def get_all_professionals(
     if city:
         query["locations"] = city
     if search:
+        # Sanitize search input to prevent ReDoS attacks
+        safe_search = sanitize_regex_input(search)
         query["$or"] = [
-            {"name": {"$regex": search, "$options": "i"}},
-            {"agency_name": {"$regex": search, "$options": "i"}},
-            {"expertise_tags": {"$regex": search, "$options": "i"}}
+            {"name": {"$regex": safe_search, "$options": "i"}},
+            {"agency_name": {"$regex": safe_search, "$options": "i"}},
+            {"expertise_tags": {"$regex": safe_search, "$options": "i"}}
         ]
     
     skip = (page - 1) * limit
