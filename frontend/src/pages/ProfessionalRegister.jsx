@@ -1047,9 +1047,7 @@ const ProfessionalRegister = ({ user, apiClient }) => {
                 <Button
                   size="sm"
                   onClick={() => {
-                    console.log("Next clicked, currentStep:", currentStep, "formData:", formData);
                     const isValid = validateStep(currentStep);
-                    console.log("Validation result:", isValid);
                     
                     if (isValid) {
                       setCurrentStep(s => s + 1);
