@@ -563,14 +563,15 @@ async def get_current_user(request: Request) -> User:
 # ============ AUTH ENDPOINTS ============
 
 @api_router.post("/auth/session")
-async def process_session(request: SessionRequest, response: Response):
+@limiter.limit("10/minute")
+async def process_session(request: Request, session_request: SessionRequest, response: Response):
     """Process session_id from Emergent OAuth and create session"""
     # REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
     try:
-        async with httpx.AsyncClient() as client:
-            auth_response = await client.get(
+        async with httpx.AsyncClient() as http_client:
+            auth_response = await http_client.get(
                 "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
-                headers={"X-Session-ID": request.session_id}
+                headers={"X-Session-ID": session_request.session_id}
             )
             
             if auth_response.status_code != 200:
