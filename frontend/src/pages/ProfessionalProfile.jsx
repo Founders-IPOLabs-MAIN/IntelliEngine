@@ -158,6 +158,16 @@ const ProfessionalProfile = ({ user, apiClient }) => {
       return;
     }
     
+    if (reviewStatus.has_reviewed) {
+      toast.error("You have already reviewed this professional");
+      return;
+    }
+    
+    if (reviewStatus.is_own_profile) {
+      toast.error("You cannot review your own profile");
+      return;
+    }
+    
     setSubmitting(true);
     try {
       await apiClient.post(`/matchmaker/professionals/${professionalId}/review`, {
@@ -166,10 +176,11 @@ const ProfessionalProfile = ({ user, apiClient }) => {
       });
       toast.success("Review submitted successfully!");
       setShowReviewDialog(false);
+      setReviewStatus({ ...reviewStatus, has_reviewed: true, can_review: false });
       fetchProfessional(); // Refresh to show new review
     } catch (error) {
-      console.error("Failed to submit review:", error);
-      toast.error("Failed to submit review");
+      const errorMessage = error.response?.data?.detail || "Failed to submit review";
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }
