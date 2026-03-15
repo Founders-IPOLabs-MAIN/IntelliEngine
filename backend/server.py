@@ -1701,6 +1701,7 @@ class ProfessionalCreate(BaseModel):
     agency_name: Optional[str] = None
     email: str
     mobile: str
+    linkedin_url: Optional[str] = None  # LinkedIn profile URL
     locations: List[str] = []
     years_experience: int = 0
     professional_summary: Optional[str] = None
@@ -1727,6 +1728,7 @@ class ProfessionalCreate(BaseModel):
 class ProfessionalUpdate(BaseModel):
     name: Optional[str] = None
     agency_name: Optional[str] = None
+    linkedin_url: Optional[str] = None  # LinkedIn profile URL
     locations: Optional[List[str]] = None
     years_experience: Optional[int] = None
     professional_summary: Optional[str] = None
