@@ -321,7 +321,7 @@ const DocumentUploader = ({
         </div>
         
         <p className="text-xs text-gray-500 text-center">
-          Supports PDF, Word, Excel, JPEG, PNG (Max 10MB)
+          Supports PDF, Word, Excel, JPEG, PNG (Max 5MB) • ZIP files blocked
         </p>
       </div>
     );
