@@ -649,9 +649,14 @@ Build a complete IPO-readiness platform with:
 - ✅ **Landing Page Updates** - New headline, sub-headline, 5 bullet points
 - ✅ **Security Hardening** - File upload (5MB limit), rate limiting, input sanitization, content moderation
 - ✅ **Matchmaker Route Fix** - Fixed critical route ordering bug preventing draft save/load
-  - Issue: GET /api/matchmaker/professionals/draft was being matched by /{professional_id} route
-  - Fix: Moved /draft routes BEFORE /{professional_id} route
-  - All 23 tests pass (17 backend + 6 frontend)
+- ✅ **LinkedIn Integration** - Added LinkedIn URL field to professional registration (optional)
+  - LinkedIn button next to name (blue when linked, gray when not)
+  - LinkedIn shown in Contact Information section
+- ✅ **Review System Fix** - One review per user per professional
+  - Duplicate review prevention with clear error message
+  - Self-review prevention
+  - New endpoint: GET /api/matchmaker/professionals/{id}/review-status
+  - Star rating clickable in review dialog
 
 ## Testing Status
 - ✅ Backend API tests passed (100%)
