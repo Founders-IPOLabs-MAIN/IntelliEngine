@@ -93,27 +93,33 @@ const LandingPage = () => {
         <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           
           {/* Left Side - Power Hero */}
-          <div className="space-y-6">
-            {/* Brand Intro */}
-            <p className="text-sm font-semibold tracking-[0.1em] uppercase bg-gradient-to-r from-[#003366] to-[#00D1FF] bg-clip-text text-transparent">
-              WELCOME TO IPO LABS
-            </p>
-            
-            {/* Headline */}
+          <div className="space-y-5">
+            {/* Headline - Moved up, no welcome text */}
             <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#003366] leading-tight" style={{fontFamily: "'General Sans', sans-serif"}}>
-              Building India's Truly Democratic IPO Platform
+              Building a Democratic IPO Ecosystem
             </h1>
             
-            {/* Utility Description - 3 Bullet Points */}
+            {/* Sub-headline */}
+            <p className="text-gray-600 text-base lg:text-lg leading-relaxed">
+              Empowering ambitious companies across India, including Tier 2, 3 & 4 cities, to easily build SEBI approved, NSE/BSE worthy DRHP's, get real-time access to top IPO Subject Matter Experts, raise Growth or IPO Capital and meet "Talent to Hire" across India and the globe.
+            </p>
+            
+            {/* Utility Description - 5 Bullet Points */}
             <div className="border-l-4 border-[#00D1FF] pl-4 py-3 bg-white/50 rounded-r-lg space-y-2">
               <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">BUILD:</strong> End-to-End DRHP & RHP in a Safe, Version Controlled Environment
+                <strong className="text-[#003366]">BUILD:</strong> End-to-End DRHP's in a Safe, Version Controlled Platform.
               </p>
               <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">RAISE:</strong> Pre-IPO, Post-IPO or Bridge Funding with support of our expert Funding Team
+                <strong className="text-[#003366]">COLLABORATE:</strong> with multiple teams across India, track progress real-time, and manage every step with minute detail.
+              </p>
+              <p className="text-gray-700 text-sm leading-relaxed">
+                <strong className="text-[#003366]">RAISE:</strong> Funds for Pre-IPO, Post-IPO or Bridge Rounds, with personalised support of our expert Funding Team.
               </p>
               <p className="text-gray-700 text-sm leading-relaxed">
                 <strong className="text-[#003366]">HIRE:</strong> Experienced & SEBI Registered Experts like CA, CS, Auditors, Ind. Directors, CFO, Merchant Bankers...
+              </p>
+              <p className="text-gray-700 text-sm leading-relaxed">
+                <strong className="text-[#003366]">MATCHMAKING:</strong> Experts can join our platform of Subject Matter Experts to connect to "New Clients", win New Projects, offer consulting and grow your IPO Consulting Business.
               </p>
             </div>
             
