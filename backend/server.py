@@ -1905,6 +1905,87 @@ async def get_all_professionals(
         "total_pages": (total + limit - 1) // limit
     }
 
+# ============ PROFESSIONAL DRAFT ENDPOINTS ============
+# NOTE: Draft routes must be defined BEFORE /{professional_id} to avoid route conflict
+
+class ProfessionalDraftModel(BaseModel):
+    draft_id: Optional[str] = None
+    current_step: int = 1
+    data: dict = {}
+
+@api_router.post("/matchmaker/professionals/draft")
+async def save_professional_draft_route(
+    draft_data: ProfessionalDraftModel,
+    user: User = Depends(get_current_user)
+):
+    """Save or update a professional registration draft"""
+    now = datetime.now(timezone.utc)
+    
+    if draft_data.draft_id:
+        # Update existing draft
+        result = await db.professional_drafts.update_one(
+            {"draft_id": draft_data.draft_id, "user_id": user.user_id},
+            {
+                "$set": {
+                    "current_step": draft_data.current_step,
+                    "data": draft_data.data,
+                    "updated_at": now.isoformat()
+                }
+            }
+        )
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Draft not found")
+        return {"draft_id": draft_data.draft_id, "message": "Draft updated", "updated_at": now.isoformat()}
+    else:
+        # Create new draft
+        draft_id = f"draft_{uuid.uuid4().hex[:12]}"
+        draft_doc = {
+            "draft_id": draft_id,
+            "user_id": user.user_id,
+            "current_step": draft_data.current_step,
+            "data": draft_data.data,
+            "created_at": now.isoformat(),
+            "updated_at": now.isoformat()
+        }
+        
+        # Delete any existing draft for this user first
+        await db.professional_drafts.delete_many({"user_id": user.user_id})
+        await db.professional_drafts.insert_one(draft_doc)
+        
+        return {"draft_id": draft_id, "message": "Draft created", "updated_at": now.isoformat()}
+
+@api_router.get("/matchmaker/professionals/draft")
+async def get_user_draft_route(user: User = Depends(get_current_user)):
+    """Get the current user's professional registration draft"""
+    draft = await db.professional_drafts.find_one(
+        {"user_id": user.user_id},
+        {"_id": 0}
+    )
+    if not draft:
+        raise HTTPException(status_code=404, detail="No draft found")
+    return draft
+
+@api_router.get("/matchmaker/professionals/draft/{draft_id}")
+async def get_draft_by_id_route(draft_id: str, user: User = Depends(get_current_user)):
+    """Get a specific draft by ID"""
+    draft = await db.professional_drafts.find_one(
+        {"draft_id": draft_id, "user_id": user.user_id},
+        {"_id": 0}
+    )
+    if not draft:
+        raise HTTPException(status_code=404, detail="Draft not found")
+    return draft
+
+@api_router.delete("/matchmaker/professionals/draft/{draft_id}")
+async def delete_draft_route(draft_id: str, user: User = Depends(get_current_user)):
+    """Delete a draft"""
+    result = await db.professional_drafts.delete_one(
+        {"draft_id": draft_id, "user_id": user.user_id}
+    )
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Draft not found")
+    return {"message": "Draft deleted"}
+
 @api_router.get("/matchmaker/professionals/{professional_id}")
 async def get_professional(professional_id: str):
     """Get a specific professional profile"""
