@@ -55,7 +55,7 @@ const LandingPage = () => {
     {
       id: "matchmaking",
       title: "MatchMaking Platform",
-      description: 'Consult or Hire "The Best" IPO Experts',
+      description: "Join our Expert Network & Grow Your Business",
       icon: Users,
       path: "/login?module=matchmaker",
       iconBg: "bg-purple-100",
