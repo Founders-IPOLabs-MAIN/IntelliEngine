@@ -542,58 +542,71 @@ const ProfessionalProfile = ({ user, apiClient }) => {
                     <Star className="w-5 h-5 text-[#1DA1F2]" />
                     Reviews ({professional.ratings_count})
                   </CardTitle>
-                  <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" data-testid="write-review-btn">Write a Review</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Write a Review</DialogTitle>
-                        <DialogDescription>Share your experience with {professional.name}</DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label>Rating</Label>
-                          <div className="flex gap-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                onClick={() => setReviewData({ ...reviewData, rating: star })}
-                                className="p-1"
-                              >
-                                <Star
-                                  className={`w-8 h-8 ${star <= reviewData.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
-                                />
-                              </button>
-                            ))}
+                  {reviewStatus.can_review ? (
+                    <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" data-testid="write-review-btn">Write a Review</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Write a Review</DialogTitle>
+                          <DialogDescription>Share your experience with {professional.name}</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label>Rating</Label>
+                            <div className="flex gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                  key={star}
+                                  onClick={() => setReviewData({ ...reviewData, rating: star })}
+                                  className="p-1 hover:scale-110 transition-transform"
+                                  data-testid={`star-rating-${star}`}
+                                >
+                                  <Star
+                                    className={`w-8 h-8 ${star <= reviewData.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300 hover:text-yellow-200"}`}
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                            <p className="text-sm text-muted-foreground">Click to select rating: {reviewData.rating} star{reviewData.rating !== 1 ? 's' : ''}</p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Your Name</Label>
+                            <Input
+                              value={reviewData.reviewer_name}
+                              onChange={(e) => setReviewData({ ...reviewData, reviewer_name: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Your Review *</Label>
+                            <Textarea
+                              placeholder="Share your experience..."
+                              rows={4}
+                              value={reviewData.review_text}
+                              onChange={(e) => setReviewData({ ...reviewData, review_text: e.target.value })}
+                            />
                           </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label>Your Name</Label>
-                          <Input
-                            value={reviewData.reviewer_name}
-                            onChange={(e) => setReviewData({ ...reviewData, reviewer_name: e.target.value })}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Your Review *</Label>
-                          <Textarea
-                            placeholder="Share your experience..."
-                            rows={4}
-                            value={reviewData.review_text}
-                            onChange={(e) => setReviewData({ ...reviewData, review_text: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowReviewDialog(false)}>Cancel</Button>
-                        <Button onClick={handleSubmitReview} disabled={submitting} className="bg-[#1DA1F2] hover:bg-[#1a8cd8]">
-                          {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                          Submit Review
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setShowReviewDialog(false)}>Cancel</Button>
+                          <Button onClick={handleSubmitReview} disabled={submitting} className="bg-[#1DA1F2] hover:bg-[#1a8cd8]">
+                            {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                            Submit Review
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  ) : reviewStatus.has_reviewed ? (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      You've reviewed
+                    </Badge>
+                  ) : reviewStatus.is_own_profile ? (
+                    <Badge variant="outline" className="bg-gray-50 text-gray-500">
+                      Your profile
+                    </Badge>
+                  ) : null}
                 </CardHeader>
                 <CardContent>
                   {professional.reviews?.length > 0 ? (
