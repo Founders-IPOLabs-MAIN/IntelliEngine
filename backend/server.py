@@ -5565,12 +5565,41 @@ async def health_check():
 # Include the router in the main app
 app.include_router(api_router)
 
+# ============ SECURITY MIDDLEWARE ============
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Add essential security headers to all responses"""
+    response = await call_next(request)
+    # Prevent MIME type sniffing
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    # Prevent clickjacking
+    response.headers["X-Frame-Options"] = "DENY"
+    # XSS protection (legacy browsers)
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    # Referrer policy
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # Permissions policy (disable sensitive features)
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    return response
+
+# CORS Configuration - Use explicit origins in production
+# Set CORS_ORIGINS in .env to comma-separated list of allowed origins
+# Example: CORS_ORIGINS=https://intelliengine.com,https://app.intelliengine.com
+cors_origins = os.environ.get('CORS_ORIGINS', '').split(',')
+# Filter out empty strings and strip whitespace
+cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
+# If no origins specified, allow all (development only - NOT for production)
+if not cors_origins or cors_origins == ['*']:
+    logger.warning("⚠️ SECURITY WARNING: CORS is set to allow all origins. Configure CORS_ORIGINS for production!")
+    cors_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=cors_origins,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Session-ID"],
 )
 
 @app.on_event("shutdown")
