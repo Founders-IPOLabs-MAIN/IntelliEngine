@@ -4322,19 +4322,23 @@ async def update_user_profile(
     return {"message": "Profile updated successfully"}
 
 @api_router.post("/account/profile-picture")
+@limiter.limit("5/minute")
 async def upload_profile_picture(
+    request: Request,
     file: UploadFile = File(...),
     user: User = Depends(get_current_user)
 ):
-    """Upload profile picture to GridFS"""
-    # Validate file type
-    if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Only image files are allowed")
-    
-    # Max file size: 5MB
+    """Upload profile picture to GridFS with security validation"""
     content = await file.read()
-    if len(content) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File size must be less than 5MB")
+    
+    # Validate and sanitize the upload with content moderation
+    sanitized_filename, warnings = await validate_upload(
+        file=file,
+        content=content,
+        context="profile_picture",
+        uploader_name=user.name,
+        scan_content=True  # Scan for explicit content
+    )
     
     # Delete existing profile picture if exists
     existing_user = await db.users.find_one({"user_id": user.user_id})
@@ -4344,14 +4348,15 @@ async def upload_profile_picture(
         except:
             pass
     
-    # Upload to GridFS
+    # Upload to GridFS with sanitized filename
     file_id = await fs_bucket.upload_from_stream(
-        f"profile_{user.user_id}_{file.filename}",
+        sanitized_filename,
         io.BytesIO(content),
         metadata={
             "user_id": user.user_id,
             "content_type": file.content_type,
-            "type": "profile_picture"
+            "type": "profile_picture",
+            "original_filename": file.filename
         }
     )
     
@@ -4368,7 +4373,10 @@ async def upload_profile_picture(
     
     await log_audit_action(user.user_id, "update", "account", "Updated profile picture")
     
-    return {"message": "Profile picture uploaded", "picture_url": picture_url}
+    response = {"message": "Profile picture uploaded", "picture_url": picture_url}
+    if warnings:
+        response["warnings"] = warnings
+    return response
 
 @api_router.get("/account/profile-picture/{file_id}")
 async def get_profile_picture(file_id: str):
