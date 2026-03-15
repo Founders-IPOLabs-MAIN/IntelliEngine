@@ -661,6 +661,24 @@ const ProfessionalProfile = ({ user, apiClient }) => {
                       </div>
                     </div>
                   )}
+                  {professional.linkedin_url && (
+                    <a 
+                      href={professional.linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+                    >
+                      <div className="w-10 h-10 bg-[#0A66C2]/10 rounded-lg flex items-center justify-center">
+                        <LinkedInIcon className="w-5 h-5 text-[#0A66C2]" filled />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground">LinkedIn</p>
+                        <p className="font-medium text-[#0A66C2] flex items-center gap-1">
+                          View Profile <ExternalLink className="w-3 h-3" />
+                        </p>
+                      </div>
+                    </a>
+                  )}
                 </CardContent>
               </Card>
 
