@@ -175,8 +175,7 @@ const ProfessionalRegister = ({ user, apiClient }) => {
         toast.info("Loaded your saved draft");
       }
     } catch (error) {
-      // No draft found, that's okay
-      console.log("No existing draft found");
+      // No draft found, that's okay - silent fail
     }
   };
 
