@@ -82,6 +82,7 @@ const ProfessionalProfile = ({ user, apiClient }) => {
 
   useEffect(() => {
     fetchProfessional();
+    fetchReviewStatus();
   }, [professionalId]);
 
   const fetchProfessional = async () => {
@@ -89,11 +90,19 @@ const ProfessionalProfile = ({ user, apiClient }) => {
       const response = await apiClient.get(`/matchmaker/professionals/${professionalId}`);
       setProfessional(response.data);
     } catch (error) {
-      console.error("Failed to fetch professional:", error);
       toast.error("Professional not found");
       navigate("/matchmaker");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchReviewStatus = async () => {
+    try {
+      const response = await apiClient.get(`/matchmaker/professionals/${professionalId}/review-status`);
+      setReviewStatus(response.data);
+    } catch (error) {
+      // Silent fail - assume can review
     }
   };
 
