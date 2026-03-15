@@ -55,6 +55,7 @@ const ProfessionalProfile = ({ user, apiClient }) => {
   const [showConsultDialog, setShowConsultDialog] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [reviewStatus, setReviewStatus] = useState({ can_review: true, has_reviewed: false, is_own_profile: false });
   
   // Form states
   const [enquiryData, setEnquiryData] = useState({
