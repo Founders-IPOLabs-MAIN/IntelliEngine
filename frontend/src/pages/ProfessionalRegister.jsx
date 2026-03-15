@@ -1064,14 +1064,35 @@ const ProfessionalRegister = ({ user, apiClient }) => {
                   </>
                 )}
               </Button>
+
+              {/* Back Button - visible from step 2 onwards */}
+              {currentStep > 1 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    // Auto-save before going back
+                    await handleSaveDraft();
+                    setCurrentStep(s => s - 1);
+                  }}
+                  disabled={saving}
+                  className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                  data-testid="back-step-btn"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1" />
+                  Back
+                </Button>
+              )}
             
               {currentStep < 5 ? (
                 <Button
                   size="sm"
-                  onClick={() => {
+                  onClick={async () => {
                     const isValid = validateStep(currentStep);
                     
                     if (isValid) {
+                      // Auto-save before going to next step
+                      await handleSaveDraft();
                       setCurrentStep(s => s + 1);
                     } else {
                       // Show specific error messages for each step
