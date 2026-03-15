@@ -420,7 +420,11 @@ const DocumentUploader = ({
                 <span className="px-2 py-1 bg-gray-100 rounded">Excel</span>
                 <span className="px-2 py-1 bg-gray-100 rounded">JPEG/PNG</span>
               </div>
-              <p className="text-xs text-gray-400">Maximum file size: 10MB</p>
+              <p className="text-xs text-gray-400">Maximum file size: 5MB • ZIP files blocked</p>
+              <p className="text-xs text-amber-500 mt-1 flex items-center justify-center gap-1">
+                <ShieldAlert className="w-3 h-3" />
+                Images scanned for inappropriate content
+              </p>
             </div>
           )}
         </div>
