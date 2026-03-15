@@ -14,7 +14,9 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  ShieldAlert,
+  Ban
 } from "lucide-react";
 
 // File type icons mapping
@@ -41,7 +43,13 @@ const SUPPORTED_TYPES = [
   "image/webp"
 ];
 
+// Blocked file types
+const BLOCKED_EXTENSIONS = [".zip", ".rar", ".7z", ".exe", ".dll", ".bat", ".sh", ".jar", ".msi"];
+
 const ACCEPTED_EXTENSIONS = ".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp";
+
+// Max file size: 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const DocumentUploader = ({ 
   onDataExtracted, 
@@ -80,16 +88,70 @@ const DocumentUploader = ({
   };
 
   const validateAndUpload = (file) => {
-    // Check file type
-    if (!SUPPORTED_TYPES.includes(file.type)) {
-      toast.error("Unsupported file type. Please upload PDF, Word, Excel, or Image files.");
+    // Check for blocked extensions
+    const ext = "." + file.name.split(".").pop().toLowerCase();
+    if (BLOCKED_EXTENSIONS.includes(ext)) {
+      toast.error(
+        <div className="flex items-start gap-2">
+          <Ban className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">File type blocked</p>
+            <p className="text-sm text-gray-600">ZIP, executable, and archive files are not allowed for security reasons.</p>
+          </div>
+        </div>,
+        { duration: 5000 }
+      );
       return;
     }
 
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("File too large. Maximum size is 10MB.");
+    // Check file type
+    if (!SUPPORTED_TYPES.includes(file.type)) {
+      toast.error(
+        <div className="flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Unsupported file type</p>
+            <p className="text-sm text-gray-600">Please upload PDF, Word, Excel, or Image files only.</p>
+          </div>
+        </div>,
+        { duration: 4000 }
+      );
       return;
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > MAX_FILE_SIZE) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      toast.error(
+        <div className="flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">File too large ({sizeMB}MB)</p>
+            <p className="text-sm text-gray-600">Maximum file size is 5MB. Please compress or reduce the file size.</p>
+          </div>
+        </div>,
+        { duration: 5000 }
+      );
+      return;
+    }
+
+    // Warning for files approaching limit (>4MB)
+    if (file.size > 4 * 1024 * 1024) {
+      toast.warning("Large file detected. Upload may take longer.", { duration: 3000 });
+    }
+
+    // Show content moderation notice for images
+    if (file.type.startsWith("image/")) {
+      toast.info(
+        <div className="flex items-start gap-2">
+          <ShieldAlert className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Content Moderation</p>
+            <p className="text-sm text-gray-600">Images are scanned for inappropriate content. Violations may result in account suspension.</p>
+          </div>
+        </div>,
+        { duration: 4000 }
+      );
     }
 
     setUploadedFile(file);
@@ -123,6 +185,13 @@ const DocumentUploader = ({
       clearInterval(progressInterval);
       setProgress(100);
 
+      // Show warnings if any
+      if (response.data.warnings && response.data.warnings.length > 0) {
+        response.data.warnings.forEach(warning => {
+          toast.info(warning, { duration: 5000 });
+        });
+      }
+
       if (response.data.extracted_data) {
         setExtractedData(response.data.extracted_data);
         onDataExtracted?.(response.data.extracted_data);
@@ -131,8 +200,47 @@ const DocumentUploader = ({
         toast.info("Document uploaded. Manual data entry may be required.");
       }
     } catch (error) {
-      console.error("Failed to process document:", error);
-      toast.error("Failed to process document. Please try again or enter data manually.");
+      // Handle specific error messages from server
+      const errorMessage = error.response?.data?.detail || "Failed to process document. Please try again.";
+      
+      if (errorMessage.includes("inappropriate") || errorMessage.includes("explicit")) {
+        toast.error(
+          <div className="flex items-start gap-2">
+            <ShieldAlert className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold">Content Policy Violation</p>
+              <p className="text-sm text-gray-600">{errorMessage}</p>
+            </div>
+          </div>,
+          { duration: 6000 }
+        );
+      } else if (errorMessage.includes("size") || errorMessage.includes("5MB")) {
+        toast.error(
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold">File Size Error</p>
+              <p className="text-sm text-gray-600">{errorMessage}</p>
+            </div>
+          </div>,
+          { duration: 5000 }
+        );
+      } else if (errorMessage.includes("type") || errorMessage.includes("blocked")) {
+        toast.error(
+          <div className="flex items-start gap-2">
+            <Ban className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold">File Type Error</p>
+              <p className="text-sm text-gray-600">{errorMessage}</p>
+            </div>
+          </div>,
+          { duration: 5000 }
+        );
+      } else {
+        toast.error(errorMessage);
+      }
+      
+      clearFile();
     } finally {
       setProcessing(false);
     }
