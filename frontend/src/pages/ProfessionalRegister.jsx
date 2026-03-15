@@ -372,7 +372,6 @@ const ProfessionalRegister = ({ user, apiClient }) => {
         const hasLocations = formData.locations && formData.locations.length > 0;
         const hasExperience = formData.years_experience !== "" && formData.years_experience !== null && formData.years_experience !== undefined;
         const hasExpertise = formData.expertise_tags && formData.expertise_tags.length >= 1;
-        console.log("Step 3 validation:", { hasLocations, hasExperience, hasExpertise, locations: formData.locations, experience: formData.years_experience, expertise: formData.expertise_tags });
         return hasLocations && hasExperience && hasExpertise;
       case 4:
         // Documents validation
