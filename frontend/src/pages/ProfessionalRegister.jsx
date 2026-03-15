@@ -1051,7 +1051,7 @@ const ProfessionalRegister = ({ user, apiClient }) => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleSaveDraft}
+                onClick={() => handleSaveDraft(false)}
                 disabled={saving}
                 className="border-green-500 text-green-600 hover:bg-green-50"
               >
