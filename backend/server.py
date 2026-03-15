@@ -1070,7 +1070,9 @@ FIELD_TO_DRHP_MAPPING = {
 }
 
 @api_router.post("/projects/{project_id}/upload-document-ocr")
+@limiter.limit("10/minute")
 async def upload_and_extract_data(
+    request: Request,
     project_id: str,
     file: UploadFile = File(...),
     module_name: str = "company_data",
@@ -1081,15 +1083,25 @@ async def upload_and_extract_data(
     
     content = await file.read()
     
-    # Store in GridFS
+    # Validate and sanitize the upload
+    sanitized_filename, warnings = await validate_upload(
+        file=file,
+        content=content,
+        context="ocr_document",
+        uploader_name=user.name,
+        scan_content=True
+    )
+    
+    # Store in GridFS with sanitized filename
     gridfs_id = await fs_bucket.upload_from_stream(
-        file.filename,
+        sanitized_filename,
         io.BytesIO(content),
         metadata={
             "user_id": user.user_id,
             "project_id": project_id,
             "module_name": module_name,
-            "content_type": file.content_type
+            "content_type": file.content_type,
+            "original_filename": file.filename
         }
     )
     
@@ -1102,7 +1114,8 @@ async def upload_and_extract_data(
         "user_id": user.user_id,
         "project_id": project_id,
         "module_name": module_name,
-        "filename": file.filename,
+        "filename": sanitized_filename,
+        "original_filename": file.filename,
         "content_type": file.content_type,
         "gridfs_id": str(gridfs_id),
         "ocr_text": None,
