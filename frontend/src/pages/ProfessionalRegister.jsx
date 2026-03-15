@@ -1074,8 +1074,8 @@ const ProfessionalRegister = ({ user, apiClient }) => {
                   variant="outline"
                   size="sm"
                   onClick={async () => {
-                    // Auto-save before going back
-                    await handleSaveDraft();
+                    // Auto-save silently before going back
+                    await handleSaveDraft(true);
                     setCurrentStep(s => s - 1);
                   }}
                   disabled={saving}
@@ -1094,8 +1094,8 @@ const ProfessionalRegister = ({ user, apiClient }) => {
                     const isValid = validateStep(currentStep);
                     
                     if (isValid) {
-                      // Auto-save before going to next step
-                      await handleSaveDraft();
+                      // Auto-save silently before going to next step
+                      await handleSaveDraft(true);
                       setCurrentStep(s => s + 1);
                     } else {
                       // Show specific error messages for each step
