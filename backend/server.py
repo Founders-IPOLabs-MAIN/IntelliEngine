@@ -1681,6 +1681,7 @@ class Professional(BaseModel):
     certifications: List[dict] = []
     sebi_registration: Optional[str] = None
     ca_cs_membership: Optional[str] = None
+    linkedin_url: Optional[str] = None  # LinkedIn profile URL
     services: List[dict] = []
     pricing_model: Optional[str] = None  # hourly/fixed/negotiable
     hourly_rate: Optional[int] = None
