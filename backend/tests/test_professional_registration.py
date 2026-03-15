@@ -99,20 +99,22 @@ class TestProfessionalRegistration:
         response = self.session.get(f"{BASE_URL}/api/matchmaker/categories")
         assert response.status_code == 200, f"Failed to get categories: {response.text}"
         data = response.json()
-        assert len(data) > 0, "No categories returned"
-        category_ids = [c['id'] for c in data]
+        categories = data.get("categories", data) if isinstance(data, dict) else data
+        assert len(categories) > 0, "No categories returned"
+        category_ids = [c['id'] for c in categories]
         for cat in TEST_CATEGORIES:
             assert cat in category_ids, f"Category {cat} not found"
-        print(f"✓ Categories endpoint working - {len(data)} categories")
+        print(f"✓ Categories endpoint working - {len(categories)} categories")
     
     def test_get_cities(self):
         """Test GET /api/matchmaker/cities"""
         response = self.session.get(f"{BASE_URL}/api/matchmaker/cities")
         assert response.status_code == 200, f"Failed to get cities: {response.text}"
         data = response.json()
-        assert len(data) > 0, "No cities returned"
-        assert "Mumbai" in data, "Mumbai not in cities list"
-        print(f"✓ Cities endpoint working - {len(data)} cities")
+        cities = data.get("cities", data) if isinstance(data, dict) else data
+        assert len(cities) > 0, "No cities returned"
+        assert "Mumbai" in cities, "Mumbai not in cities list"
+        print(f"✓ Cities endpoint working - {len(cities)} cities")
     
     def test_get_expertise_tags(self):
         """Test GET /api/matchmaker/expertise-tags"""
