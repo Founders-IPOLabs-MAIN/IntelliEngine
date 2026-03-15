@@ -822,24 +822,36 @@ async def update_section(
 # ============ DOCUMENT ENDPOINTS ============
 
 @api_router.post("/documents/upload")
+@limiter.limit("20/minute")
 async def upload_document(
+    request: Request,
     file: UploadFile = File(...),
     project_id: Optional[str] = None,
     section_id: Optional[str] = None,
     user: User = Depends(get_current_user)
 ):
-    """Upload a document to GridFS"""
+    """Upload a document to GridFS with security validation"""
     content = await file.read()
     
-    # Store in GridFS
+    # Validate and sanitize the upload
+    sanitized_filename, warnings = await validate_upload(
+        file=file,
+        content=content,
+        context="document",
+        uploader_name=user.name,
+        scan_content=True
+    )
+    
+    # Store in GridFS with sanitized filename
     gridfs_id = await fs_bucket.upload_from_stream(
-        file.filename,
+        sanitized_filename,
         io.BytesIO(content),
         metadata={
             "user_id": user.user_id,
             "project_id": project_id,
             "section_id": section_id,
-            "content_type": file.content_type
+            "content_type": file.content_type,
+            "original_filename": file.filename
         }
     )
     
@@ -852,7 +864,8 @@ async def upload_document(
         "user_id": user.user_id,
         "project_id": project_id,
         "section_id": section_id,
-        "filename": file.filename,
+        "filename": sanitized_filename,
+        "original_filename": file.filename,
         "content_type": file.content_type,
         "gridfs_id": str(gridfs_id),
         "ocr_text": None,
@@ -874,7 +887,11 @@ async def upload_document(
         del doc_record["_id"]
     doc_record["created_at"] = now
     
-    return Document(**doc_record)
+    response_data = Document(**doc_record).model_dump()
+    if warnings:
+        response_data["warnings"] = warnings
+    
+    return response_data
 
 @api_router.get("/documents/{document_id}/download")
 async def download_document(document_id: str, user: User = Depends(get_current_user)):
