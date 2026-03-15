@@ -822,6 +822,32 @@ async def update_section(
 
 # ============ DOCUMENT ENDPOINTS ============
 
+@api_router.get("/upload-requirements")
+async def get_upload_requirements():
+    """Get file upload requirements and restrictions"""
+    return {
+        "max_file_size_mb": 5,
+        "max_file_size_bytes": MAX_FILE_SIZE,
+        "allowed_types": {
+            context: {
+                "extensions": list(config["extensions"]),
+                "mime_types": list(config["mime_types"])
+            }
+            for context, config in ALLOWED_FILE_TYPES.items()
+        },
+        "blocked_extensions": list(BLOCKED_EXTENSIONS),
+        "content_moderation": {
+            "enabled": True,
+            "scans_for": ["nudity", "explicit_content", "violence", "inappropriate_material"],
+            "warning": "All uploaded images are scanned for inappropriate content. Files violating our content policy will be rejected and may result in account suspension."
+        },
+        "filename_policy": {
+            "format": "{uploader_name}_{original_filename}_{timestamp}.{ext}",
+            "sanitization": "Special characters removed, path components stripped",
+            "max_length": 100
+        }
+    }
+
 @api_router.post("/documents/upload")
 @limiter.limit("20/minute")
 async def upload_document(
