@@ -2524,6 +2524,39 @@ async def add_review(
     
     return {"message": "Review added successfully", "review": review}
 
+@api_router.get("/matchmaker/professionals/{professional_id}/review-status")
+async def get_review_status(
+    professional_id: str,
+    user: User = Depends(get_current_user)
+):
+    """Check if current user has already reviewed this professional"""
+    professional = await db.professionals.find_one(
+        {"professional_id": professional_id},
+        {"reviews": 1, "user_id": 1, "_id": 0}
+    )
+    
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional not found")
+    
+    # Check if this is the user's own profile
+    is_own_profile = professional.get("user_id") == user.user_id
+    
+    # Check if user has already reviewed
+    has_reviewed = False
+    user_review = None
+    for review in professional.get("reviews", []):
+        if review.get("user_id") == user.user_id:
+            has_reviewed = True
+            user_review = review
+            break
+    
+    return {
+        "has_reviewed": has_reviewed,
+        "is_own_profile": is_own_profile,
+        "can_review": not has_reviewed and not is_own_profile,
+        "user_review": user_review
+    }
+
 @api_router.post("/matchmaker/enquiry")
 async def send_enquiry(
     enquiry_data: EnquiryCreate,
