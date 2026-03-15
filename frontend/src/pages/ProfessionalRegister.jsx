@@ -120,6 +120,7 @@ const ProfessionalRegister = ({ user, apiClient }) => {
     agency_name: "",
     email: user?.email || "",
     mobile: "",
+    linkedin_url: "",
     locations: [],
     years_experience: "",
     professional_summary: "",
