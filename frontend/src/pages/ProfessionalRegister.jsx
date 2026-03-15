@@ -214,7 +214,7 @@ const ProfessionalRegister = ({ user, apiClient }) => {
   };
 
   // Save draft function
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = async (silent = false) => {
     setSaving(true);
     try {
       const payload = {
@@ -226,10 +226,13 @@ const ProfessionalRegister = ({ user, apiClient }) => {
       const response = await apiClient.post("/matchmaker/professionals/draft", payload);
       setDraftId(response.data.draft_id);
       setLastSaved(new Date());
-      toast.success("Draft saved successfully!");
+      if (!silent) {
+        toast.success("Draft saved successfully!");
+      }
     } catch (error) {
-      console.error("Failed to save draft:", error);
-      toast.error("Failed to save draft. Please try again.");
+      if (!silent) {
+        toast.error("Failed to save draft. Please try again.");
+      }
     } finally {
       setSaving(false);
     }
