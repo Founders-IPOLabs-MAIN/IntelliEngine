@@ -267,6 +267,29 @@ const ProfessionalProfile = ({ user, apiClient }) => {
                             VERIFIED
                           </Badge>
                         )}
+                        {/* LinkedIn Button */}
+                        {professional.linkedin_url ? (
+                          <a
+                            href={professional.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#0A66C2] hover:bg-[#004182] text-white text-sm font-medium transition-colors"
+                            data-testid="linkedin-button"
+                          >
+                            <LinkedInIcon className="w-4 h-4" filled />
+                            <span className="hidden sm:inline">LinkedIn</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-200 text-gray-500 text-sm cursor-not-allowed"
+                            title="LinkedIn profile not linked"
+                            data-testid="linkedin-button-disabled"
+                          >
+                            <LinkedInIcon className="w-4 h-4" filled />
+                            <span className="hidden sm:inline">LinkedIn</span>
+                          </span>
+                        )}
                       </div>
                       {professional.agency_name && (
                         <p className="text-lg text-muted-foreground flex items-center gap-2">
