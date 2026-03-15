@@ -2470,7 +2470,7 @@ async def add_review(
     review_data: ReviewCreate,
     user: User = Depends(get_current_user)
 ):
-    """Add a review for a professional"""
+    """Add a review for a professional (one review per user per professional)"""
     professional = await db.professionals.find_one(
         {"professional_id": professional_id},
         {"_id": 0}
@@ -2478,6 +2478,22 @@ async def add_review(
     
     if not professional:
         raise HTTPException(status_code=404, detail="Professional not found")
+    
+    # Check if user has already reviewed this professional
+    existing_reviews = professional.get("reviews", [])
+    for existing_review in existing_reviews:
+        if existing_review.get("user_id") == user.user_id:
+            raise HTTPException(
+                status_code=400, 
+                detail="You have already reviewed this professional. Each user can only submit one review per professional."
+            )
+    
+    # Prevent self-review
+    if professional.get("user_id") == user.user_id:
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot review your own profile"
+        )
     
     review = {
         "review_id": f"rev_{uuid.uuid4().hex[:12]}",
