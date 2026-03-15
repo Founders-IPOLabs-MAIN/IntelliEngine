@@ -6,7 +6,7 @@
 **Platform Type:** Cloud-hosted & secure IPO-readiness platform  
 **Target Market:** Indian market  
 **Date Started:** Feb 17, 2026
-**Last Updated:** Feb 28, 2026
+**Last Updated:** Mar 13, 2026
 
 ## Original Problem Statement
 Build a complete IPO-readiness platform with:
@@ -42,6 +42,27 @@ Build a complete IPO-readiness platform with:
 - [x] Click-wrap agreement for professional registration
 - [x] Command Center Dashboard
 - [x] Data Capture Modules (Company Data, Promoter, KMP, Pre-IPO Tracker)
+
+## Security Features (Mar 13, 2026)
+- [x] **File Upload Security:**
+  - 5MB max file size limit
+  - File type whitelist by context (document, image, profile_picture, id_document)
+  - MIME type verification
+  - Blocked dangerous extensions (ZIP, EXE, RAR, etc.)
+  - AI content moderation for images (nudity/explicit detection)
+  - Filename sanitization (path traversal prevention)
+- [x] **Rate Limiting:**
+  - Auth: 10/minute
+  - Document upload: 20/minute
+  - Profile picture: 5/minute
+  - OCR upload: 10/minute
+- [x] **Security Headers:**
+  - X-Content-Type-Options, X-Frame-Options, X-XSS-Protection
+  - Referrer-Policy, Permissions-Policy
+- [x] **Input Sanitization:**
+  - Regex escape for search queries (ReDoS prevention)
+- [x] **CORS:** Explicit origin configuration
+- [x] **Dependencies:** All CVEs patched
 
 ## Tech Stack
 - **Frontend:** React 19, Tailwind CSS, ShadCN UI, Lucide Icons
