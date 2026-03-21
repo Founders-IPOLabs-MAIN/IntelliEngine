@@ -658,6 +658,41 @@ Build a complete IPO-readiness platform with:
   - New endpoint: GET /api/matchmaker/professionals/{id}/review-status
   - Star rating clickable in review dialog
 
+## Completed in Latest Session (Mar 21, 2026)
+- ✅ **DRHP Output Module - Word-like Editor** (NEW MAJOR FEATURE)
+  - Built using TipTap rich-text editor library
+  - Full MS Word-style toolbar with:
+    - Bold, Italic, Underline, Strikethrough formatting
+    - Superscript and Subscript
+    - Text color and highlight with color picker
+    - Text alignment (Left, Center, Right, Justify)
+    - Headings dropdown (Normal, H1, H2, H3)
+    - Bullet and Numbered lists
+    - Block Quote and Code Block
+    - Table insertion with full CRUD (add/delete rows/columns, merge/split cells)
+    - Link and Image insertion dialogs
+    - Horizontal line
+    - Undo/Redo
+  - Two tabs: SME Board DRHP and Main Board DRHP
+  - Default DRHP templates pre-populated based on SEBI ICDR format
+  - Auto-save every 30 seconds
+  - Export buttons (Word, PDF, Print) - MOCKED, actual generation pending
+  - Print preview opens new window with formatted content
+  - Navigation from Command Center "DRHP Output" module button
+  - New files:
+    - `/app/frontend/src/pages/DRHPOutput.jsx` (1300+ lines)
+  - New API endpoints:
+    - `GET /api/projects/{project_id}/drhp-output` - Load saved content
+    - `POST /api/projects/{project_id}/drhp-output` - Save content
+    - `POST /api/projects/{project_id}/drhp-output/export` - Export (MOCKED)
+  - TipTap packages installed:
+    - @tiptap/react, @tiptap/pm, @tiptap/starter-kit
+    - @tiptap/extension-table, @tiptap/extension-image, @tiptap/extension-link
+    - @tiptap/extension-placeholder, @tiptap/extension-text-style
+    - @tiptap/extension-color, @tiptap/extension-underline
+    - @tiptap/extension-text-align, @tiptap/extension-highlight
+    - @tiptap/extension-superscript, @tiptap/extension-subscript
+
 ## Testing Status
 - ✅ Backend API tests passed (100%)
 - ✅ Frontend integration tests passed (100%)
@@ -665,3 +700,6 @@ Build a complete IPO-readiness platform with:
 - ✅ Browse All Professionals page - PASS (after fix)
 - ✅ Master Admin Approval workflow - PASS
 - ✅ Toast notifications - PASS (after sonner fix)
+- ✅ **DRHP Output Editor - 100% tests passed** (iteration_13.json)
+  - 7/7 Backend API tests
+  - 25/25 Frontend UI tests
