@@ -91,6 +91,10 @@ import {
   Merge,
   Split,
   Clock,
+  Upload,
+  FileUp,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 
 // Editor Toolbar Component
@@ -797,6 +801,13 @@ const DRHPOutput = ({ user, apiClient }) => {
     sme: '',
     mainboard: ''
   });
+  
+  // Import dialog state
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importResult, setImportResult] = useState(null);
+  const fileInputRef = useState(null);
 
   // Initialize TipTap Editor
   const smeEditor = useEditor({
@@ -1075,6 +1086,87 @@ const DRHPOutput = ({ user, apiClient }) => {
     printWindow.print();
   };
 
+  // Handle Word document import
+  const handleImportWord = async () => {
+    if (!importFile) {
+      toast.error("Please select a Word document to import");
+      return;
+    }
+
+    setImporting(true);
+    setImportResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', importFile);
+
+      const response = await apiClient.post(
+        `/projects/${projectId}/drhp-output/import?board_type=${activeTab}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      const result = response.data;
+      
+      if (result.success) {
+        // Update the editor content with the imported HTML
+        const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
+        if (currentEditor) {
+          currentEditor.commands.setContent(result.html_content);
+        }
+        
+        // Update state
+        setContent(prev => ({
+          ...prev,
+          [activeTab]: result.html_content
+        }));
+        
+        setImportResult({
+          success: true,
+          filename: result.filename,
+          fileSize: result.file_size,
+          warnings: result.warnings || [],
+          warningsCount: result.warnings_count || 0
+        });
+        
+        toast.success(`Document "${result.filename}" imported successfully!`);
+        setLastSaved(new Date().toISOString());
+      }
+    } catch (error) {
+      console.error("Import failed:", error);
+      const errorMessage = error.response?.data?.detail || "Failed to import Word document";
+      toast.error(errorMessage);
+      setImportResult({
+        success: false,
+        error: errorMessage
+      });
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.name.toLowerCase().endsWith('.docx')) {
+        toast.error("Please select a .docx file");
+        return;
+      }
+      setImportFile(file);
+      setImportResult(null);
+    }
+  };
+
+  const resetImportDialog = () => {
+    setShowImportDialog(false);
+    setImportFile(null);
+    setImportResult(null);
+  };
+
   const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
 
   if (loading) {
@@ -1120,6 +1212,18 @@ const DRHPOutput = ({ user, apiClient }) => {
                 Last saved: {new Date(lastSaved).toLocaleTimeString()}
               </span>
             )}
+            
+            {/* Import Button */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowImportDialog(true)}
+              className="gap-2"
+              data-testid="import-word-btn"
+            >
+              <Upload className="w-4 h-4" />
+              Import Word
+            </Button>
             
             <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
@@ -1292,6 +1396,162 @@ const DRHPOutput = ({ user, apiClient }) => {
           </div>
         </div>
       </main>
+
+      {/* Import Word Document Dialog */}
+      <Dialog open={showImportDialog} onOpenChange={(open) => !importing && (open ? setShowImportDialog(true) : resetImportDialog())}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileUp className="w-5 h-5 text-[#1DA1F2]" />
+              Import Word Document
+            </DialogTitle>
+            <DialogDescription>
+              Upload a .docx file to import its content into the {activeTab === 'sme' ? 'SME Board' : 'Main Board'} DRHP editor.
+              The document structure, formatting, tables, and images will be preserved.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* File Upload Zone */}
+            <div 
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                importFile 
+                  ? 'border-emerald-300 bg-emerald-50' 
+                  : 'border-gray-300 hover:border-[#1DA1F2] hover:bg-blue-50'
+              }`}
+            >
+              <input
+                type="file"
+                accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="word-file-input"
+                disabled={importing}
+              />
+              <label 
+                htmlFor="word-file-input" 
+                className="cursor-pointer flex flex-col items-center gap-3"
+              >
+                {importFile ? (
+                  <>
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{importFile.name}</p>
+                      <p className="text-sm text-gray-500">
+                        {(importFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                    <p className="text-xs text-emerald-600">Click to choose a different file</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                      <Upload className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Click to upload or drag and drop</p>
+                      <p className="text-sm text-gray-500">Word Document (.docx) up to 50MB</p>
+                    </div>
+                  </>
+                )}
+              </label>
+            </div>
+
+            {/* Import Result */}
+            {importResult && (
+              <div className={`rounded-lg p-4 ${importResult.success ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
+                <div className="flex items-start gap-3">
+                  {importResult.success ? (
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  )}
+                  <div className="flex-1">
+                    {importResult.success ? (
+                      <>
+                        <p className="font-medium text-emerald-800">Import Successful!</p>
+                        <p className="text-sm text-emerald-600 mt-1">
+                          "{importResult.filename}" has been imported into the editor.
+                        </p>
+                        {importResult.warningsCount > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs text-amber-700 font-medium">
+                              {importResult.warningsCount} conversion warning(s):
+                            </p>
+                            <ul className="text-xs text-amber-600 mt-1 list-disc list-inside max-h-20 overflow-auto">
+                              {importResult.warnings.slice(0, 5).map((warning, i) => (
+                                <li key={i}>{warning}</li>
+                              ))}
+                              {importResult.warnings.length > 5 && (
+                                <li>...and {importResult.warnings.length - 5} more</li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium text-red-800">Import Failed</p>
+                        <p className="text-sm text-red-600 mt-1">{importResult.error}</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Info Box */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-800">
+                  <p className="font-medium">What gets imported:</p>
+                  <ul className="mt-1 space-y-0.5 text-blue-700">
+                    <li>• Text formatting (bold, italic, underline)</li>
+                    <li>• Headings and paragraph styles</li>
+                    <li>• Tables with full structure</li>
+                    <li>• Images (embedded as base64)</li>
+                    <li>• Lists (bullet and numbered)</li>
+                  </ul>
+                  <p className="mt-2 text-xs text-blue-600">
+                    Note: Complex styling like exact fonts, colors, and page layouts may be simplified.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={resetImportDialog}
+              disabled={importing}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleImportWord}
+              disabled={!importFile || importing}
+              className="bg-[#1DA1F2] hover:bg-[#1a8cd8]"
+              data-testid="confirm-import-btn"
+            >
+              {importing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Importing...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Import Document
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

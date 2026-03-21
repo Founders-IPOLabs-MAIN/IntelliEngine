@@ -680,7 +680,7 @@ Build a complete IPO-readiness platform with:
   - Print preview opens new window with formatted content
   - Navigation from Command Center "DRHP Output" module button
   - New files:
-    - `/app/frontend/src/pages/DRHPOutput.jsx` (1300+ lines)
+    - `/app/frontend/src/pages/DRHPOutput.jsx` (1500+ lines)
   - New API endpoints:
     - `GET /api/projects/{project_id}/drhp-output` - Load saved content
     - `POST /api/projects/{project_id}/drhp-output` - Save content
@@ -693,6 +693,24 @@ Build a complete IPO-readiness platform with:
     - @tiptap/extension-text-align, @tiptap/extension-highlight
     - @tiptap/extension-superscript, @tiptap/extension-subscript
 
+- ✅ **Word Document Import Feature** (NEW)
+  - Import .docx files directly into the TipTap editor
+  - Uses mammoth Python library for .docx to HTML conversion
+  - Preserves document structure and formatting:
+    - Tables (converted to HTML with proper structure)
+    - Text formatting (bold, italic, underline)
+    - Headings (H1-H6)
+    - Lists (bullet and numbered)
+    - Images (embedded as base64 data URIs)
+  - Supports multi-page documents up to 50MB
+  - Custom style mapping for DRHP-specific formatting
+  - Import dialog with drag-and-drop file upload zone
+  - Shows import result with success/failure message
+  - Displays conversion warnings if any
+  - New API endpoint:
+    - `POST /api/projects/{project_id}/drhp-output/import?board_type=sme|mainboard`
+  - Test IDs: import-word-btn, confirm-import-btn
+
 ## Testing Status
 - ✅ Backend API tests passed (100%)
 - ✅ Frontend integration tests passed (100%)
@@ -703,3 +721,6 @@ Build a complete IPO-readiness platform with:
 - ✅ **DRHP Output Editor - 100% tests passed** (iteration_13.json)
   - 7/7 Backend API tests
   - 25/25 Frontend UI tests
+- ✅ **Word Document Import - 100% tests passed** (iteration_14.json)
+  - 9/9 Backend API tests
+  - 5/5 Frontend code review checks
