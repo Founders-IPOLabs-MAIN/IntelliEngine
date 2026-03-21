@@ -37,6 +37,7 @@ import AssessmentWizard from "@/pages/AssessmentWizard";
 import AssessmentResults from "@/pages/AssessmentResults";
 import AdminCenter from "@/pages/AdminCenter";
 import AccountDetails from "@/pages/AccountDetails";
+import DRHPOutput from "@/pages/DRHPOutput";
 
 // Components
 import Footer from "@/components/Footer";
@@ -417,6 +418,14 @@ const AppRouter = () => {
         element={
           <ProtectedRoute>
             {({ user, apiClient }) => <AccountDetails user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/drhp-output"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <DRHPOutput user={user} apiClient={apiClient} />}
           </ProtectedRoute>
         }
       />

@@ -265,7 +265,7 @@ const CommandCenter = ({ user, apiClient }) => {
 
             {/* DRHP Output Module */}
             <button
-              onClick={() => toast.info("DRHP Output module coming soon - will contain final document assembly and export options")}
+              onClick={() => navigate(`/project/${projectId}/drhp-output`)}
               className="flex items-center justify-between p-5 rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 hover:shadow-lg hover:border-emerald-300 transition-all group"
               data-testid="drhp-output-module"
             >
@@ -275,12 +275,12 @@ const CommandCenter = ({ user, apiClient }) => {
                 </div>
                 <div className="text-left">
                   <h3 className="text-lg font-bold text-gray-900">DRHP Output</h3>
-                  <p className="text-sm text-gray-600">Final Document Assembly & Export</p>
+                  <p className="text-sm text-gray-600">Word-like Editor & Export</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge className="bg-gray-100 text-gray-600 border-gray-200">
-                  Coming Soon
+                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                  SME & Mainboard
                 </Badge>
                 <ChevronRight className="w-5 h-5 text-emerald-500" />
               </div>

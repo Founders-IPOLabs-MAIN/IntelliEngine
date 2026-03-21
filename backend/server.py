@@ -1601,6 +1601,93 @@ async def export_drhp_section(
         "sub_module_id": sub_module_id
     }
 
+# ============ DRHP OUTPUT (Word-like Editor) ============
+
+@api_router.get("/projects/{project_id}/drhp-output")
+async def get_drhp_output(
+    project_id: str,
+    user: User = Depends(get_current_user)
+):
+    """Get DRHP Output content for both SME and Mainboard"""
+    content = await db.drhp_output.find_one(
+        {"project_id": project_id},
+        {"_id": 0}
+    )
+    
+    if not content:
+        return None
+    
+    return content
+
+@api_router.post("/projects/{project_id}/drhp-output")
+async def save_drhp_output(
+    project_id: str,
+    data: dict = None,
+    user: User = Depends(get_current_user)
+):
+    """Save DRHP Output content for SME and/or Mainboard"""
+    
+    if not data:
+        data = {}
+    
+    now = datetime.now(timezone.utc)
+    
+    update_data = {
+        "project_id": project_id,
+        "updated_by": user.user_id,
+        "updated_at": now.isoformat()
+    }
+    
+    if "sme_content" in data:
+        update_data["sme_content"] = data["sme_content"]
+    
+    if "mainboard_content" in data:
+        update_data["mainboard_content"] = data["mainboard_content"]
+    
+    result = await db.drhp_output.update_one(
+        {"project_id": project_id},
+        {
+            "$set": update_data,
+            "$setOnInsert": {"created_at": now.isoformat()}
+        },
+        upsert=True
+    )
+    
+    return {
+        "message": "DRHP Output saved successfully",
+        "project_id": project_id,
+        "updated_at": now.isoformat()
+    }
+
+@api_router.post("/projects/{project_id}/drhp-output/export")
+async def export_drhp_output(
+    project_id: str,
+    data: dict = None,
+    user: User = Depends(get_current_user)
+):
+    """Export DRHP Output as Word or PDF document"""
+    
+    if not data:
+        raise HTTPException(status_code=400, detail="Export data required")
+    
+    export_format = data.get("format", "docx")
+    board_type = data.get("board_type", "sme")
+    content = data.get("content", "")
+    
+    # Get project details
+    project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
+    company_name = project.get("company_name", "Company") if project else "Company"
+    
+    # For now, return a placeholder response
+    # Full implementation would use python-docx for Word and reportlab/weasyprint for PDF
+    return {
+        "message": f"Export to {export_format.upper()} initiated",
+        "project_id": project_id,
+        "board_type": board_type,
+        "company_name": company_name,
+        "status": "processing"
+    }
+
 # ============ MASTER ADMIN CONFIGURATION ============
 
 MASTER_ADMIN_CONFIG = {

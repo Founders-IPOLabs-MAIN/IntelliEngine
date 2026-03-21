@@ -77,7 +77,7 @@ All responses now include:
 ### 5. CORS Locked Down
 
 ```python
-CORS_ORIGINS="https://intelliengine-1.preview.emergentagent.com"
+CORS_ORIGINS="https://word-editor-test.preview.emergentagent.com"
 ```
 
 ### 6. Dependencies Updated
