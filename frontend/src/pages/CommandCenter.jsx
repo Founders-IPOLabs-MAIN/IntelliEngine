@@ -216,7 +216,7 @@ const CommandCenter = ({ user, apiClient }) => {
           </div>
 
           {/* Data Capture Modules - 5 Checklist Buttons */}
-          <div className="grid grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-5 gap-4 mb-8">
             {checklistModules.map((module) => (
               <button
                 key={module.id}
@@ -237,70 +237,121 @@ const CommandCenter = ({ user, apiClient }) => {
             ))}
           </div>
 
-          {/* Main DRHP Chapters */}
-          <Card className="border border-gray-200 bg-white">
-            <CardHeader className="pb-3 border-b border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-[#1DA1F2]" />
-                    Main DRHP Chapters
-                  </CardTitle>
-                  <p className="text-sm text-gray-500 mt-1">Click any chapter to view sub-modules or edit content</p>
+          {/* Two Main Sections: DRHP Chapters & DRHP Output */}
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            {/* DRHP Chapters Module */}
+            <button
+              onClick={() => setShowDRHPChapters(!showDRHPChapters)}
+              className="flex items-center justify-between p-5 rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 hover:shadow-lg hover:border-indigo-300 transition-all group"
+              data-testid="drhp-chapters-module"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                  <BookOpen className="w-7 h-7 text-white" />
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-gray-500">{completedChapters}/{totalChapters} Chapters Complete</span>
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-gray-900">DRHP Chapters</h3>
+                  <p className="text-sm text-gray-600">9 Sections • {completedChapters}/{totalChapters} Complete</p>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-3 gap-4">
-                {DRHP_CHAPTERS.map((chapter) => {
-                  const Icon = CHAPTER_ICONS[chapter.id] || FileText;
-                  const colors = CHAPTER_COLORS[chapter.id] || { bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200" };
-                  const { status, percent } = getChapterStatus(chapter.id);
-                  
-                  return (
-                    <button
-                      key={chapter.id}
-                      onClick={() => handleChapterClick(chapter)}
-                      className={`p-4 rounded-xl border-2 ${colors.border} ${colors.bg} hover:shadow-md transition-all text-left group relative overflow-hidden`}
-                      data-testid={`chapter-${chapter.id}`}
-                    >
-                      {/* Progress bar at top */}
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200">
-                        <div 
-                          className={`h-full transition-all ${status === "Complete" ? 'bg-green-500' : status === "In Progress" ? 'bg-blue-500' : 'bg-amber-500'}`}
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                      
-                      <div className="flex items-start justify-between mb-3 mt-1">
-                        <div className={`w-10 h-10 ${colors.bg} border ${colors.border} rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform`}>
-                          <Icon className={`w-5 h-5 ${colors.text}`} />
+              <div className="flex items-center gap-2">
+                <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200">
+                  {Math.round((completedChapters / totalChapters) * 100)}% Done
+                </Badge>
+                <ChevronRight className={`w-5 h-5 text-indigo-500 transition-transform ${showDRHPChapters ? 'rotate-90' : ''}`} />
+              </div>
+            </button>
+
+            {/* DRHP Output Module */}
+            <button
+              onClick={() => toast.info("DRHP Output module coming soon - will contain final document assembly and export options")}
+              className="flex items-center justify-between p-5 rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 hover:shadow-lg hover:border-emerald-300 transition-all group"
+              data-testid="drhp-output-module"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                  <Download className="w-7 h-7 text-white" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-gray-900">DRHP Output</h3>
+                  <p className="text-sm text-gray-600">Final Document Assembly & Export</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-gray-100 text-gray-600 border-gray-200">
+                  Coming Soon
+                </Badge>
+                <ChevronRight className="w-5 h-5 text-emerald-500" />
+              </div>
+            </button>
+          </div>
+
+          {/* DRHP Chapters Expanded Section */}
+          {showDRHPChapters && (
+            <Card className="border border-indigo-200 bg-white mb-6" data-testid="drhp-chapters-expanded">
+              <CardHeader className="pb-3 border-b border-indigo-100 bg-indigo-50/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                      <BookOpen className="w-5 h-5 text-indigo-600" />
+                      DRHP Chapters
+                    </CardTitle>
+                    <p className="text-sm text-gray-500 mt-1">Click any chapter to view sub-modules or edit content</p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-500">{completedChapters}/{totalChapters} Chapters Complete</span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-3 gap-4">
+                  {DRHP_CHAPTERS.map((chapter) => {
+                    const Icon = CHAPTER_ICONS[chapter.id] || FileText;
+                    const colors = CHAPTER_COLORS[chapter.id] || { bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200" };
+                    const { status, percent } = getChapterStatus(chapter.id);
+                    
+                    return (
+                      <button
+                        key={chapter.id}
+                        onClick={() => handleChapterClick(chapter)}
+                        className={`p-4 rounded-xl border-2 ${colors.border} ${colors.bg} hover:shadow-md transition-all text-left group relative overflow-hidden`}
+                        data-testid={`chapter-${chapter.id}`}
+                      >
+                        {/* Progress bar at top */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200">
+                          <div 
+                            className={`h-full transition-all ${status === "Complete" ? 'bg-green-500' : status === "In Progress" ? 'bg-blue-500' : 'bg-amber-500'}`}
+                            style={{ width: `${percent}%` }}
+                          />
                         </div>
-                        <Badge className={`text-[10px] px-1.5 py-0.5 ${getStatusColor(status)}`}>
-                          {status}
-                        </Badge>
-                      </div>
-                      
-                      <div className="mb-2">
-                        <p className="text-xs font-medium text-gray-500 mb-1">Section {chapter.number}</p>
-                        <p className="text-sm font-semibold text-gray-900">{chapter.title}</p>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">
-                          {chapter.hasSubModules ? `${chapter.subModules.length} Sub-modules` : 'Direct Content'}
-                        </span>
-                        <ArrowRight className={`w-4 h-4 ${colors.text} opacity-0 group-hover:opacity-100 transition-opacity`} />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+                        
+                        <div className="flex items-start justify-between mb-3 mt-1">
+                          <div className={`w-10 h-10 ${colors.bg} border ${colors.border} rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                            <Icon className={`w-5 h-5 ${colors.text}`} />
+                          </div>
+                          <Badge className={`text-[10px] px-1.5 py-0.5 ${getStatusColor(status)}`}>
+                            {status}
+                          </Badge>
+                        </div>
+                        
+                        <div className="mb-2">
+                          <p className="text-xs font-medium text-gray-500 mb-1">Section {chapter.number}</p>
+                          <p className="text-sm font-semibold text-gray-900">{chapter.title}</p>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">
+                            {chapter.hasSubModules ? `${chapter.subModules.length} Sub-modules` : 'Direct Content'}
+                          </span>
+                          <ArrowRight className={`w-4 h-4 ${colors.text} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
     </div>
