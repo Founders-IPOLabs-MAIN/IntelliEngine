@@ -60,6 +60,7 @@ const CommandCenter = ({ user, apiClient }) => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [chapterProgress, setChapterProgress] = useState({});
+  const [showDRHPChapters, setShowDRHPChapters] = useState(true); // Default to expanded
 
   const fetchData = useCallback(async () => {
     try {
