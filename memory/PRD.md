@@ -711,6 +711,19 @@ Build a complete IPO-readiness platform with:
     - `POST /api/projects/{project_id}/drhp-output/import?board_type=sme|mainboard`
   - Test IDs: import-word-btn, confirm-import-btn
 
+- ✅ **Direct Upload DOCX Button** (UPDATE - Mar 21, 2026)
+  - Added prominent "Upload DOCX" button in header toolbar
+  - Direct file input trigger - no dialog needed
+  - Validates file type (.docx only) and size (50MB max) on frontend
+  - Shows upload progress toast during import
+  - Success/error toast notifications
+  - Enhanced CSS for better Word formatting preservation:
+    - TOC styles, list paragraphs, document titles
+    - Page break markers for multi-page documents
+    - Table styling matching Word defaults
+  - Moved "Submit for Review" button to bottom of the page
+  - Test IDs: upload-docx-btn, submit-for-review-btn
+
 ## Testing Status
 - ✅ Backend API tests passed (100%)
 - ✅ Frontend integration tests passed (100%)
@@ -724,3 +737,6 @@ Build a complete IPO-readiness platform with:
 - ✅ **Word Document Import - 100% tests passed** (iteration_14.json)
   - 9/9 Backend API tests
   - 5/5 Frontend code review checks
+- ✅ **Direct Upload DOCX Feature - 100% tests passed** (iteration_15.json)
+  - 13/13 Backend API tests
+  - 6/6 Frontend UI tests
