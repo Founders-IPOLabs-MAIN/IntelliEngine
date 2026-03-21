@@ -1161,6 +1161,77 @@ const DRHPOutput = ({ user, apiClient }) => {
     }
   };
 
+  // Direct upload handler - immediately uploads and imports the file
+  const handleDirectUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file extension - only .docx allowed
+    if (!file.name.toLowerCase().endsWith('.docx')) {
+      toast.error("Only Word documents (.docx) are allowed. Please select a valid file.");
+      e.target.value = ''; // Reset input
+      return;
+    }
+    
+    // Validate file size - max 50MB
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(`File too large. Maximum size is 50MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+      e.target.value = '';
+      return;
+    }
+
+    setImporting(true);
+    toast.info(`Uploading "${file.name}"... This may take a moment for large documents.`);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await apiClient.post(
+        `/projects/${projectId}/drhp-output/import?board_type=${activeTab}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      const result = response.data;
+      
+      if (result.success) {
+        // Update the editor content with the imported HTML
+        const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
+        if (currentEditor) {
+          currentEditor.commands.setContent(result.html_content);
+        }
+        
+        // Update state
+        setContent(prev => ({
+          ...prev,
+          [activeTab]: result.html_content
+        }));
+        
+        setLastSaved(new Date().toISOString());
+        
+        // Show success with warning count if any
+        if (result.warnings_count > 0) {
+          toast.success(`Document imported successfully! (${result.warnings_count} minor formatting adjustments made)`);
+        } else {
+          toast.success(`Document "${file.name}" imported successfully with full formatting preserved!`);
+        }
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      const errorMessage = error.response?.data?.detail || "Failed to upload Word document";
+      toast.error(errorMessage);
+    } finally {
+      setImporting(false);
+      e.target.value = ''; // Reset input for next upload
+    }
+  };
+
   const resetImportDialog = () => {
     setShowImportDialog(false);
     setImportFile(null);
@@ -1213,16 +1284,34 @@ const DRHPOutput = ({ user, apiClient }) => {
               </span>
             )}
             
-            {/* Import Button */}
+            {/* Direct Upload Button - triggers file input directly */}
+            <input
+              type="file"
+              accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={handleDirectUpload}
+              className="hidden"
+              id="direct-upload-input"
+              disabled={importing}
+            />
             <Button 
-              variant="outline" 
+              variant="default"
               size="sm" 
-              onClick={() => setShowImportDialog(true)}
-              className="gap-2"
-              data-testid="import-word-btn"
+              onClick={() => document.getElementById('direct-upload-input').click()}
+              className="gap-2 bg-[#1DA1F2] hover:bg-[#1a8cd8]"
+              data-testid="upload-docx-btn"
+              disabled={importing}
             >
-              <Upload className="w-4 h-4" />
-              Import Word
+              {importing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <FileUp className="w-4 h-4" />
+                  Upload DOCX
+                </>
+              )}
             </Button>
             
             <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
@@ -1254,11 +1343,6 @@ const DRHPOutput = ({ user, apiClient }) => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            
-            <Button className="bg-emerald-600 hover:bg-emerald-700" size="sm" onClick={handleSave}>
-              <Eye className="w-4 h-4 mr-2" />
-              Submit for Review
-            </Button>
           </div>
         </header>
 
@@ -1385,6 +1469,83 @@ const DRHPOutput = ({ user, apiClient }) => {
                 .selectedCell {
                   background-color: #e3f2fd;
                 }
+                /* Enhanced Word document formatting preservation */
+                .ProseMirror .document-title {
+                  text-align: center;
+                  font-size: 18pt;
+                  font-weight: bold;
+                }
+                .ProseMirror .toc-heading {
+                  font-size: 14pt;
+                  font-weight: bold;
+                  margin-top: 20px;
+                }
+                .ProseMirror .toc-1 {
+                  margin-left: 0;
+                  font-weight: normal;
+                }
+                .ProseMirror .toc-2 {
+                  margin-left: 20px;
+                }
+                .ProseMirror .toc-3 {
+                  margin-left: 40px;
+                }
+                .ProseMirror .list-paragraph {
+                  margin-left: 36px;
+                }
+                .ProseMirror em.intense {
+                  font-weight: bold;
+                  font-style: italic;
+                }
+                .ProseMirror blockquote.intense {
+                  border-left-width: 4px;
+                  border-left-color: #1DA1F2;
+                  background-color: #f0f9ff;
+                }
+                .ProseMirror .reference {
+                  color: #666;
+                  font-size: 10pt;
+                }
+                .ProseMirror .page-break {
+                  border: none;
+                  border-top: 2px dashed #ccc;
+                  margin: 40px 0;
+                  page-break-after: always;
+                }
+                /* Preserve exact spacing from Word */
+                .ProseMirror p + p {
+                  margin-top: 0;
+                }
+                .ProseMirror strong {
+                  font-weight: bold;
+                }
+                .ProseMirror em {
+                  font-style: italic;
+                }
+                .ProseMirror u {
+                  text-decoration: underline;
+                }
+                .ProseMirror s {
+                  text-decoration: line-through;
+                }
+                /* Table styling matching Word defaults */
+                .ProseMirror table.drhp-table {
+                  border-collapse: collapse;
+                  width: 100%;
+                  margin: 16px 0;
+                  font-size: 11pt;
+                }
+                .ProseMirror table.drhp-table th,
+                .ProseMirror table.drhp-table td {
+                  border: 1px solid #000;
+                  padding: 6px 10px;
+                  vertical-align: top;
+                }
+                .ProseMirror table.drhp-table th {
+                  background-color: #f0f0f0;
+                  font-weight: bold;
+                  text-align: left;
+                }
               `}</style>
               
               {activeTab === 'sme' ? (
@@ -1392,6 +1553,19 @@ const DRHPOutput = ({ user, apiClient }) => {
               ) : (
                 <EditorContent editor={mainboardEditor} data-testid="mainboard-editor" />
               )}
+            </div>
+            
+            {/* Submit for Review Button - Bottom of Page */}
+            <div className="mt-6 flex justify-center">
+              <Button 
+                className="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 text-base shadow-lg"
+                size="lg"
+                onClick={handleSave}
+                data-testid="submit-for-review-btn"
+              >
+                <Eye className="w-5 h-5 mr-2" />
+                Submit for Review
+              </Button>
             </div>
           </div>
         </div>
