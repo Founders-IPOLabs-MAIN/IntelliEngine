@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Table } from '@tiptap/extension-table';
@@ -792,10 +792,13 @@ const getDefaultDRHPContent = (boardType) => {
 const DRHPOutput = ({ user, apiClient }) => {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const boardFromUrl = searchParams.get('board');
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [project, setProject] = useState(null);
-  const [activeTab, setActiveTab] = useState('sme');
+  const [activeTab, setActiveTab] = useState(boardFromUrl === 'mainboard' ? 'mainboard' : 'sme');
   const [lastSaved, setLastSaved] = useState(null);
   const [content, setContent] = useState({
     sme: '',
