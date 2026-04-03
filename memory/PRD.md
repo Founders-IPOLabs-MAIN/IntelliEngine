@@ -734,6 +734,30 @@ Build a complete IPO-readiness platform with:
   - CommandCenter.jsx reduced from ~360 lines to ~220 lines
   - Test IDs: drhp-output-mainboard, drhp-output-sme
 
+- ✅ **SEBI-Specific DRHP Import Pipeline** (NEW - Major Refactoring)
+  - Replaced mammoth library with custom python-docx based parser
+  - New file: `/app/backend/drhp_import.py` with two classes:
+    - **DRHPDocumentParser**: Full SEBI formatting preservation
+    - **DRHPImageExtractor**: Stores images as separate GridFS files
+  - Preserves SEBI-specific formatting:
+    - Paragraph styles (DRHP Section, DRHP Clause, Risk Factor, Legal, Disclaimer)
+    - Numbered clause hierarchies with SEBI numbering format
+    - Custom indentation (left, right, first-line indent)
+    - Text alignment (left, center, right, justify)
+    - Hyperlinks and internal bookmarks
+    - Table structures with proper styling
+    - Character formatting (bold, italic, underline, superscript, subscript, colors)
+    - Page breaks and spacing
+  - Images stored as separate files in GridFS (not inline base64)
+  - New endpoint: `GET /api/projects/{project_id}/drhp-images/{image_id}`
+  - Comprehensive CSS for SEBI styling (~200 lines):
+    - .drhp-title, .drhp-h1 through .drhp-h6
+    - .drhp-clause, .drhp-sub-clause
+    - .drhp-risk-factor, .drhp-legal, .drhp-disclaimer
+    - .drhp-toc-1 through .drhp-toc-4
+    - .drhp-numbered-list, .drhp-bullet-list with levels
+    - .drhp-table, .drhp-image, .drhp-link, .drhp-page-break
+
 ## Testing Status
 - ✅ Backend API tests passed (100%)
 - ✅ Frontend integration tests passed (100%)
@@ -752,3 +776,5 @@ Build a complete IPO-readiness platform with:
   - 6/6 Frontend UI tests
 - ✅ **Command Center UI Reorganization - 100% tests passed** (iteration_16.json)
   - 10/10 Frontend UI tests
+- ✅ **SEBI-Specific DRHP Import - 100% tests passed** (iteration_17.json)
+  - 20/20 Backend API tests (including 2 bug fixes by testing agent)
