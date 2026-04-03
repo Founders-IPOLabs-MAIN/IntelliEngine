@@ -24,6 +24,7 @@ from slowapi.errors import RateLimitExceeded
 
 # Import DRHP document parser
 from drhp_import import DRHPDocumentParser, DRHPImageExtractor
+from drhp_export import DRHPWordExporter, DRHPPDFExporter
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -1670,28 +1671,73 @@ async def export_drhp_output(
     data: dict = None,
     user: User = Depends(get_current_user)
 ):
-    """Export DRHP Output as Word or PDF document"""
+    """
+    Export DRHP Output as Word (.docx) or PDF document.
+    Preserves SEBI-specific formatting including:
+    - Paragraph styles and hierarchies
+    - Numbered clause structures
+    - Custom indentation and text alignment
+    - Tables and lists
+    - Hyperlinks
+    """
     
     if not data:
         raise HTTPException(status_code=400, detail="Export data required")
     
-    export_format = data.get("format", "docx")
+    export_format = data.get("format", "docx").lower()
     board_type = data.get("board_type", "sme")
     content = data.get("content", "")
+    
+    if export_format not in ["docx", "pdf"]:
+        raise HTTPException(status_code=400, detail="Invalid export format. Use 'docx' or 'pdf'.")
     
     # Get project details
     project = await db.projects.find_one({"project_id": project_id}, {"_id": 0})
     company_name = project.get("company_name", "Company") if project else "Company"
     
-    # For now, return a placeholder response
-    # Full implementation would use python-docx for Word and reportlab/weasyprint for PDF
-    return {
-        "message": f"Export to {export_format.upper()} initiated",
-        "project_id": project_id,
-        "board_type": board_type,
-        "company_name": company_name,
-        "status": "processing"
-    }
+    # If no content provided, try to get from database
+    if not content:
+        saved_output = await db.drhp_output.find_one({"project_id": project_id}, {"_id": 0})
+        if saved_output:
+            content_field = "sme_content" if board_type == "sme" else "mainboard_content"
+            content = saved_output.get(content_field, "")
+    
+    if not content:
+        raise HTTPException(status_code=400, detail="No content to export. Please provide content or save the document first.")
+    
+    try:
+        if export_format == "docx":
+            # Export to Word
+            exporter = DRHPWordExporter(content, company_name, board_type)
+            file_bytes = exporter.export()
+            
+            filename = f"DRHP_{board_type.upper()}_{company_name.replace(' ', '_')}.docx"
+            media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            
+        else:  # PDF
+            # Export to PDF
+            exporter = DRHPPDFExporter(content, company_name, board_type)
+            file_bytes = exporter.export()
+            
+            filename = f"DRHP_{board_type.upper()}_{company_name.replace(' ', '_')}.pdf"
+            media_type = "application/pdf"
+        
+        # Return file as streaming response
+        return StreamingResponse(
+            io.BytesIO(file_bytes),
+            media_type=media_type,
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Content-Length": str(len(file_bytes))
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error exporting DRHP: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to export DRHP document: {str(e)}"
+        )
 
 @api_router.post("/projects/{project_id}/drhp-output/import")
 async def import_drhp_word(
