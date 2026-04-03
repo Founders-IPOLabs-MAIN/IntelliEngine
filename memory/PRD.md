@@ -758,6 +758,25 @@ Build a complete IPO-readiness platform with:
     - .drhp-numbered-list, .drhp-bullet-list with levels
     - .drhp-table, .drhp-image, .drhp-link, .drhp-page-break
 
+- ✅ **Word/PDF Export with SEBI Formatting** (NEW - P0 Complete)
+  - New file: `/app/backend/drhp_export.py` with two classes:
+    - **DRHPWordExporter**: Converts HTML to Word with SEBI styles
+      - Uses python-docx + BeautifulSoup for HTML parsing
+      - Preserves headings, tables, lists, formatting
+      - Proper SEBI paragraph styles and indentation
+      - Generates .docx with Times New Roman font, 1" margins
+    - **DRHPPDFExporter**: Generates PDF using WeasyPrint
+      - Print-optimized CSS with @page rules
+      - A4 page size with proper margins
+      - Header/footer with company name and page numbers
+      - Full SEBI CSS styles embedded
+  - Updated export endpoint: `POST /api/projects/{project_id}/drhp-output/export`
+    - Parameters: format (docx/pdf), board_type (sme/mainboard), content (HTML)
+    - Returns StreamingResponse with proper Content-Disposition header
+    - Falls back to saved content if none provided
+    - Filename: `DRHP_{BOARD_TYPE}_{Company_Name}.docx/pdf`
+  - New dependencies: beautifulsoup4, weasyprint
+
 ## Testing Status
 - ✅ Backend API tests passed (100%)
 - ✅ Frontend integration tests passed (100%)
@@ -778,3 +797,5 @@ Build a complete IPO-readiness platform with:
   - 10/10 Frontend UI tests
 - ✅ **SEBI-Specific DRHP Import - 100% tests passed** (iteration_17.json)
   - 20/20 Backend API tests (including 2 bug fixes by testing agent)
+- ✅ **Word/PDF Export - 100% tests passed** (iteration_18.json)
+  - 16/16 Backend API tests
