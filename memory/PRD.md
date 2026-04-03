@@ -763,7 +763,7 @@ Build a complete IPO-readiness platform with:
     - **DRHPWordExporter**: Converts HTML to Word with SEBI styles
       - Uses python-docx + BeautifulSoup for HTML parsing
       - Preserves headings, tables, lists, formatting
-      - Proper SEBI paragraph styles and indentation
+      - **Proper clickable hyperlinks** using OOXML manipulation
       - Generates .docx with Times New Roman font, 1" margins
     - **DRHPPDFExporter**: Generates PDF using WeasyPrint
       - Print-optimized CSS with @page rules
@@ -776,6 +776,26 @@ Build a complete IPO-readiness platform with:
     - Falls back to saved content if none provided
     - Filename: `DRHP_{BOARD_TYPE}_{Company_Name}.docx/pdf`
   - New dependencies: beautifulsoup4, weasyprint
+
+- ✅ **Tested with Actual SEBI DRHP Document** (P1 Complete - Mar 21, 2026)
+  - Tested with real 4.8MB SEBI DRHP document
+  - All formatting preserved:
+    - **140 hyperlinks** (12 mailto, 56 http/https, 72 internal bookmarks)
+    - **336 tables** with fixed layout, 100% width, word-wrap
+    - **54 images** extracted to GridFS
+    - **618 headings** (236 h1, 334 h2, 48 h3)
+    - 10pt Times New Roman font
+  - Fixed hyperlink processing to handle hyperlinks as sibling elements of runs
+  - Tables constrained to page boundaries with:
+    - `table-layout: fixed`
+    - `max-width: 100%`
+    - `word-wrap: break-word`
+    - `overflow-x: hidden`
+  - Internal bookmarks preserved as anchor links (#_bookmark)
+  - Added SEBI-specific CSS classes:
+    - `.drhp-table-para` for table paragraph style
+    - Enhanced `.drhp-list-para` with proper indentation (54px left, -18px text-indent)
+  - Test report: `/app/test_reports/iteration_19.json` - 26/26 tests passed
 
 ## Testing Status
 - ✅ Backend API tests passed (100%)
@@ -799,3 +819,6 @@ Build a complete IPO-readiness platform with:
   - 20/20 Backend API tests (including 2 bug fixes by testing agent)
 - ✅ **Word/PDF Export - 100% tests passed** (iteration_18.json)
   - 16/16 Backend API tests
+- ✅ **SEBI Document Testing - 100% tests passed** (iteration_19.json)
+  - 26/26 Backend tests with actual 4.8MB SEBI document
+  - Verified: 140 hyperlinks, 336 tables, 54 images, 618 headings
