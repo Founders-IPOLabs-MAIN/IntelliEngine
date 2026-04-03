@@ -306,17 +306,58 @@ class DRHPWordExporter:
             run.underline = True
     
     def _process_link(self, element, para):
-        """Process hyperlink elements."""
+        """Process hyperlink elements with actual clickable links."""
         text = element.get_text()
-        # href = element.get('href', '')  # Reserved for future hyperlink implementation
+        href = element.get('href', '')
         
-        # Add as blue underlined text
-        run = para.add_run(text)
-        run.font.color.rgb = RGBColor(0x1D, 0xA1, 0xF2)  # Blue
-        run.underline = True
+        if href:
+            # Add actual clickable hyperlink
+            self._add_hyperlink(para, href, text)
+        else:
+            # Add as blue underlined text without link
+            run = para.add_run(text)
+            run.font.color.rgb = RGBColor(0x1D, 0xA1, 0xF2)  # Blue
+            run.underline = True
+    
+    def _add_hyperlink(self, para, url: str, text: str):
+        """Add a clickable hyperlink to a paragraph."""
+        # This creates an actual hyperlink in the Word document
+        # using low-level OOXML manipulation
         
-        # Add actual hyperlink (requires more complex XML manipulation)
-        # For now, just style it as a link
+        part = para.part
+        r_id = part.relate_to(url, 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink', is_external=True)
+        
+        # Create the hyperlink element
+        hyperlink = OxmlElement('w:hyperlink')
+        hyperlink.set(qn('r:id'), r_id)
+        
+        # Create a new run with the hyperlink text
+        new_run = OxmlElement('w:r')
+        
+        # Add run properties for blue underlined text
+        rPr = OxmlElement('w:rPr')
+        
+        # Underline
+        u = OxmlElement('w:u')
+        u.set(qn('w:val'), 'single')
+        rPr.append(u)
+        
+        # Blue color
+        color = OxmlElement('w:color')
+        color.set(qn('w:val'), '1DA1F2')
+        rPr.append(color)
+        
+        new_run.append(rPr)
+        
+        # Add the text
+        text_elem = OxmlElement('w:t')
+        text_elem.text = text
+        new_run.append(text_elem)
+        
+        hyperlink.append(new_run)
+        
+        # Append to paragraph
+        para._p.append(hyperlink)
     
     def _process_table(self, element):
         """Process table elements."""

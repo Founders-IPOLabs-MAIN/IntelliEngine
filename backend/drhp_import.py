@@ -67,6 +67,9 @@ SEBI_STYLE_MAP = {
     'Quote': {'tag': 'blockquote', 'class': 'drhp-quote'},
     'Intense Quote': {'tag': 'blockquote', 'class': 'drhp-quote-intense'},
     
+    # Table styles
+    'Table Paragraph': {'tag': 'p', 'class': 'drhp-table-para'},
+    
     # Default
     'Normal': {'tag': 'p', 'class': 'drhp-normal'},
     'Body Text': {'tag': 'p', 'class': 'drhp-body'},
@@ -138,137 +141,165 @@ class DRHPDocumentParser:
     def _get_css_styles(self) -> str:
         """Return CSS styles for DRHP document formatting."""
         return '''<style>
+/* DRHP Document Container - Legal Size (8.5 x 14 in) */
 .drhp-document {
     font-family: 'Times New Roman', Times, serif;
-    font-size: 12pt;
-    line-height: 1.5;
+    font-size: 10pt;
+    line-height: 1.4;
     color: #000;
+    max-width: 100%;
+    overflow-x: hidden;
+    word-wrap: break-word;
 }
 
-/* Title and Headings */
+/* Title and Headings - SEBI Standard 10pt Bold */
 .drhp-title {
-    font-size: 18pt;
+    font-size: 12pt;
     font-weight: bold;
     text-align: center;
-    margin: 24px 0 16px 0;
+    margin: 16px 0 12px 0;
     text-transform: uppercase;
 }
 .drhp-h1, .drhp-section {
-    font-size: 16pt;
+    font-size: 10pt;
     font-weight: bold;
-    margin: 20px 0 12px 0;
+    margin: 14px 0 8px 0;
     page-break-after: avoid;
 }
 .drhp-h2, .drhp-subsection {
-    font-size: 14pt;
+    font-size: 10pt;
     font-weight: bold;
-    margin: 16px 0 10px 0;
+    margin: 12px 0 6px 0;
     page-break-after: avoid;
 }
-.drhp-h3 { font-size: 13pt; font-weight: bold; margin: 14px 0 8px 0; }
-.drhp-h4 { font-size: 12pt; font-weight: bold; margin: 12px 0 6px 0; }
-.drhp-h5 { font-size: 11pt; font-weight: bold; margin: 10px 0 4px 0; }
-.drhp-h6 { font-size: 10pt; font-weight: bold; margin: 8px 0 4px 0; }
+.drhp-h3 { 
+    font-size: 10pt; 
+    font-weight: bold; 
+    font-style: italic;
+    margin: 10px 0 6px 0; 
+}
+.drhp-h4 { font-size: 10pt; font-weight: bold; margin: 8px 0 4px 0; }
+.drhp-h5 { font-size: 10pt; font-weight: bold; margin: 6px 0 4px 0; }
+.drhp-h6 { font-size: 10pt; font-weight: bold; margin: 6px 0 4px 0; }
 
 /* SEBI Specific Clause Styles */
 .drhp-clause {
-    margin: 8px 0;
+    margin: 6px 0;
     text-align: justify;
 }
 .drhp-sub-clause {
-    margin: 6px 0 6px 36px;
+    margin: 4px 0 4px 24px;
     text-align: justify;
 }
 .drhp-para {
-    margin: 8px 0;
+    margin: 6px 0;
     text-align: justify;
 }
 
 /* Legal and Risk Styles */
 .drhp-legal {
     font-style: italic;
-    margin: 12px 0;
-    padding: 10px;
-    border-left: 3px solid #333;
+    margin: 8px 0;
+    padding: 8px;
+    border-left: 2px solid #333;
     background: #f9f9f9;
 }
 .drhp-disclaimer {
-    font-size: 10pt;
+    font-size: 9pt;
     color: #444;
-    margin: 10px 0;
-    padding: 8px;
+    margin: 8px 0;
+    padding: 6px;
     border: 1px solid #ccc;
     background: #fafafa;
 }
 .drhp-risk-factor {
-    margin: 10px 0 10px 20px;
-    padding-left: 10px;
+    margin: 8px 0 8px 16px;
+    padding-left: 8px;
     border-left: 2px solid #d00;
 }
 .drhp-material-contract {
-    margin: 8px 0;
-    padding: 8px;
+    margin: 6px 0;
+    padding: 6px;
     background: #f5f5f5;
 }
 
 /* TOC Styles */
 .drhp-toc-heading {
-    font-size: 14pt;
+    font-size: 10pt;
     font-weight: bold;
-    margin: 20px 0 12px 0;
+    margin: 14px 0 8px 0;
     text-transform: uppercase;
 }
-.drhp-toc-1 { margin: 4px 0 4px 0; }
-.drhp-toc-2 { margin: 2px 0 2px 24px; }
-.drhp-toc-3 { margin: 2px 0 2px 48px; }
-.drhp-toc-4 { margin: 2px 0 2px 72px; }
+.drhp-toc-1 { margin: 3px 0 3px 0; }
+.drhp-toc-2 { margin: 2px 0 2px 18px; }
+.drhp-toc-3 { margin: 2px 0 2px 36px; }
+.drhp-toc-4 { margin: 2px 0 2px 54px; }
 
-/* List Styles */
-.drhp-list-para { margin: 4px 0; }
+/* List Styles - SEBI DRHP Standard */
+.drhp-list-para { 
+    margin: 4px 0 4px 54px;
+    text-indent: -18px;
+}
 .drhp-list-number { margin: 4px 0; }
 .drhp-list-bullet { margin: 4px 0; }
 
 /* Quote Styles */
 .drhp-quote {
-    margin: 16px 40px;
-    padding: 12px 20px;
-    border-left: 4px solid #666;
+    margin: 12px 30px;
+    padding: 8px 16px;
+    border-left: 3px solid #666;
     font-style: italic;
     background: #f9f9f9;
 }
 .drhp-quote-intense {
-    margin: 16px 40px;
-    padding: 12px 20px;
-    border-left: 4px solid #1DA1F2;
+    margin: 12px 30px;
+    padding: 8px 16px;
+    border-left: 3px solid #1DA1F2;
     font-style: italic;
     background: #f0f9ff;
     font-weight: 500;
 }
 
-/* Body Text */
+/* Body Text - SEBI Standard */
 .drhp-normal, .drhp-body {
-    margin: 8px 0;
+    margin: 6px 0;
     text-align: justify;
+    font-size: 10pt;
 }
-.drhp-body-2 { margin: 6px 0 6px 24px; }
-.drhp-body-3 { margin: 6px 0 6px 48px; }
+.drhp-body-2 { margin: 4px 0 4px 18px; }
+.drhp-body-3 { margin: 4px 0 4px 36px; }
 
-/* Table Styles */
+/* Table Paragraph Style */
+.drhp-table-para {
+    margin: 2px 0;
+    text-align: center;
+    font-size: 9pt;
+}
+
+/* Table Styles - CONSTRAINED TO PAGE WIDTH */
 .drhp-table {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed;
     border-collapse: collapse;
-    margin: 16px 0;
-    font-size: 11pt;
+    margin: 12px 0;
+    font-size: 9pt;
+    overflow: hidden;
+    word-wrap: break-word;
 }
 .drhp-table th, .drhp-table td {
     border: 1px solid #000;
-    padding: 8px 10px;
+    padding: 4px 6px;
     vertical-align: top;
     text-align: left;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 200px;
 }
 .drhp-table th {
     background-color: #f0f0f0;
     font-weight: bold;
+    text-align: center;
 }
 .drhp-table tr:nth-child(even) td {
     background-color: #fafafa;
@@ -278,13 +309,13 @@ class DRHPDocumentParser:
 .drhp-numbered-list {
     list-style: none;
     padding-left: 0;
-    margin: 8px 0;
+    margin: 6px 0;
     counter-reset: item;
 }
 .drhp-numbered-list > li {
     counter-increment: item;
-    margin: 6px 0;
-    padding-left: 40px;
+    margin: 4px 0;
+    padding-left: 30px;
     position: relative;
 }
 .drhp-numbered-list > li::before {
@@ -300,16 +331,16 @@ class DRHPDocumentParser:
 /* Bullet Lists */
 .drhp-bullet-list {
     list-style: disc;
-    margin: 8px 0 8px 40px;
+    margin: 6px 0 6px 30px;
 }
-.drhp-bullet-list.level-2 { list-style: circle; margin-left: 60px; }
-.drhp-bullet-list.level-3 { list-style: square; margin-left: 80px; }
+.drhp-bullet-list.level-2 { list-style: circle; margin-left: 45px; }
+.drhp-bullet-list.level-3 { list-style: square; margin-left: 60px; }
 
-/* Image Styles */
+/* Image Styles - CONSTRAINED */
 .drhp-image {
     max-width: 100%;
     height: auto;
-    margin: 12px 0;
+    margin: 8px 0;
     display: block;
 }
 .drhp-image-center { margin-left: auto; margin-right: auto; }
@@ -456,137 +487,150 @@ class DRHPDocumentParser:
         return f'{list_close_html}<{tag}{class_attr}{style_attr}>{content_html}</{tag}>'
     
     def _process_runs(self, para: Paragraph) -> str:
-        """Process all runs in a paragraph preserving character formatting."""
+        """Process all runs and hyperlinks in a paragraph preserving character formatting."""
         html_parts = []
+        p_element = para._element
         
-        for run in para.runs:
-            text = self._escape_html(run.text)
-            if not text:
-                continue
+        # Iterate over all children in order (runs and hyperlinks)
+        for child in p_element:
+            tag_name = child.tag.split('}')[-1] if '}' in child.tag else child.tag
             
-            # Build inline styles for the run
-            run_styles = []
-            tags_open = []
-            tags_close = []
-            
+            if tag_name == 'r':  # Regular run
+                run_html = self._process_run_element(child)
+                if run_html:
+                    html_parts.append(run_html)
+            elif tag_name == 'hyperlink':  # Hyperlink
+                link_html = self._process_hyperlink_element(child)
+                if link_html:
+                    html_parts.append(link_html)
+        
+        return ''.join(html_parts)
+    
+    def _process_run_element(self, r_element) -> str:
+        """Process a single run element."""
+        # Get text from all w:t elements
+        text_parts = []
+        for t in r_element.findall('.//' + qn('w:t')):
+            if t.text:
+                text_parts.append(t.text)
+        
+        text = ''.join(text_parts)
+        if not text:
+            return ''
+        
+        text = self._escape_html(text)
+        
+        # Get run properties
+        rPr = r_element.find(qn('w:rPr'))
+        
+        # Build formatting tags
+        tags_open = []
+        tags_close = []
+        run_styles = []
+        
+        if rPr is not None:
             # Bold
-            if run.bold:
+            bold = rPr.find(qn('w:b'))
+            if bold is not None and bold.get(qn('w:val'), 'true') != 'false':
                 tags_open.append('<strong>')
                 tags_close.insert(0, '</strong>')
             
             # Italic
-            if run.italic:
+            italic = rPr.find(qn('w:i'))
+            if italic is not None and italic.get(qn('w:val'), 'true') != 'false':
                 tags_open.append('<em>')
                 tags_close.insert(0, '</em>')
             
             # Underline
-            if run.underline:
-                tags_open.append('<u>')
-                tags_close.insert(0, '</u>')
+            underline = rPr.find(qn('w:u'))
+            if underline is not None:
+                u_val = underline.get(qn('w:val'), 'single')
+                if u_val != 'none':
+                    tags_open.append('<u>')
+                    tags_close.insert(0, '</u>')
             
             # Strikethrough
-            if run.font.strike:
+            strike = rPr.find(qn('w:strike'))
+            if strike is not None and strike.get(qn('w:val'), 'true') != 'false':
                 tags_open.append('<s>')
                 tags_close.insert(0, '</s>')
             
-            # Subscript
-            if run.font.subscript:
-                tags_open.append('<sub>')
-                tags_close.insert(0, '</sub>')
-            
             # Superscript
-            if run.font.superscript:
-                tags_open.append('<sup>')
-                tags_close.insert(0, '</sup>')
+            vert_align = rPr.find(qn('w:vertAlign'))
+            if vert_align is not None:
+                va_val = vert_align.get(qn('w:val'))
+                if va_val == 'superscript':
+                    tags_open.append('<sup>')
+                    tags_close.insert(0, '</sup>')
+                elif va_val == 'subscript':
+                    tags_open.append('<sub>')
+                    tags_close.insert(0, '</sub>')
             
             # Font size
-            if run.font.size:
-                size_pt = run.font.size.pt
-                run_styles.append(f'font-size: {size_pt}pt')
+            sz = rPr.find(qn('w:sz'))
+            if sz is not None:
+                size_val = sz.get(qn('w:val'))
+                if size_val:
+                    size_pt = int(size_val) / 2  # Half-points to points
+                    run_styles.append(f'font-size: {size_pt}pt')
             
             # Font color
-            if run.font.color and run.font.color.rgb:
-                color = str(run.font.color.rgb)
-                run_styles.append(f'color: #{color}')
-            
-            # Font name
-            if run.font.name:
-                run_styles.append(f'font-family: "{run.font.name}", serif')
+            color = rPr.find(qn('w:color'))
+            if color is not None:
+                color_val = color.get(qn('w:val'))
+                if color_val and color_val != 'auto':
+                    run_styles.append(f'color: #{color_val}')
             
             # Highlight
-            if run.font.highlight_color:
-                # Map highlight colors
-                highlight_map = {
-                    'YELLOW': '#ffff00',
-                    'GREEN': '#00ff00',
-                    'CYAN': '#00ffff',
-                    'MAGENTA': '#ff00ff',
-                    'BLUE': '#0000ff',
-                    'RED': '#ff0000',
-                    'DARK_BLUE': '#000080',
-                    'DARK_CYAN': '#008080',
-                    'DARK_GREEN': '#008000',
-                    'DARK_MAGENTA': '#800080',
-                    'DARK_RED': '#800000',
-                    'DARK_YELLOW': '#808000',
-                    'GRAY_25': '#c0c0c0',
-                    'GRAY_50': '#808080',
-                    'BLACK': '#000000',
+            highlight = rPr.find(qn('w:highlight'))
+            if highlight is not None:
+                hl_val = highlight.get(qn('w:val'))
+                highlight_colors = {
+                    'yellow': '#ffff00', 'green': '#00ff00', 'cyan': '#00ffff',
+                    'magenta': '#ff00ff', 'blue': '#0000ff', 'red': '#ff0000',
+                    'darkBlue': '#000080', 'darkCyan': '#008080', 'darkGreen': '#008000',
+                    'darkMagenta': '#800080', 'darkRed': '#800000', 'darkYellow': '#808000',
+                    'lightGray': '#c0c0c0', 'darkGray': '#808080', 'black': '#000000'
                 }
-                hl_name = str(run.font.highlight_color).split('.')[-1]
-                hl_color = highlight_map.get(hl_name, '#ffff00')
-                run_styles.append(f'background-color: {hl_color}')
-            
-            # Build the run HTML
-            style_attr = f' style="{"; ".join(run_styles)}"' if run_styles else ''
-            
-            if style_attr:
-                html_parts.append(f'{"".join(tags_open)}<span{style_attr}>{text}</span>{"".join(tags_close)}')
-            else:
-                html_parts.append(f'{"".join(tags_open)}{text}{"".join(tags_close)}')
+                if hl_val in highlight_colors:
+                    run_styles.append(f'background-color: {highlight_colors[hl_val]}')
         
-        # Also check for hyperlinks in the paragraph
-        result = ''.join(html_parts)
-        result = self._process_hyperlinks_in_paragraph(para, result)
+        # Build HTML
+        style_attr = f' style="{"; ".join(run_styles)}"' if run_styles else ''
         
-        return result
+        if style_attr:
+            return f'{"".join(tags_open)}<span{style_attr}>{text}</span>{"".join(tags_close)}'
+        else:
+            return f'{"".join(tags_open)}{text}{"".join(tags_close)}'
+    
+    def _process_hyperlink_element(self, hl_element) -> str:
+        """Process a hyperlink element."""
+        r_id = hl_element.get(qn('r:id'))
+        anchor = hl_element.get(qn('w:anchor'))
+        
+        # Get the text and formatting from runs inside the hyperlink
+        content_parts = []
+        for r in hl_element.findall('.//' + qn('w:r')):
+            run_html = self._process_run_element(r)
+            if run_html:
+                content_parts.append(run_html)
+        
+        content = ''.join(content_parts)
+        if not content:
+            return ''
+        
+        # Build the link
+        if r_id and r_id in self.hyperlinks:
+            url = self.hyperlinks[r_id]
+            return f'<a href="{self._escape_html(url)}" class="drhp-link" target="_blank">{content}</a>'
+        elif anchor:
+            return f'<a href="#{self._escape_html(anchor)}" class="drhp-bookmark">{content}</a>'
+        else:
+            return content
     
     def _process_hyperlinks_in_paragraph(self, para: Paragraph, current_html: str) -> str:
-        """Process hyperlinks within a paragraph."""
-        try:
-            p_element = para._element
-            
-            # Find all hyperlink elements
-            hyperlinks = p_element.findall('.//' + qn('w:hyperlink'))
-            
-            for hl in hyperlinks:
-                r_id = hl.get(qn('r:id'))
-                anchor = hl.get(qn('w:anchor'))
-                
-                # Get the text content of the hyperlink
-                hl_text = ''
-                for t in hl.findall('.//' + qn('w:t')):
-                    if t.text:
-                        hl_text += t.text
-                
-                if not hl_text:
-                    continue
-                
-                # Build the link
-                if r_id and r_id in self.hyperlinks:
-                    url = self.hyperlinks[r_id]
-                    link_html = f'<a href="{self._escape_html(url)}" class="drhp-link" target="_blank">{self._escape_html(hl_text)}</a>'
-                elif anchor:
-                    link_html = f'<a href="#{self._escape_html(anchor)}" class="drhp-bookmark">{self._escape_html(hl_text)}</a>'
-                else:
-                    link_html = self._escape_html(hl_text)
-                
-                # Replace the text in current HTML
-                current_html = current_html.replace(self._escape_html(hl_text), link_html, 1)
-        
-        except Exception as e:
-            self.warnings.append(f"Error processing hyperlinks: {str(e)}")
-        
+        """Process hyperlinks within a paragraph - DEPRECATED, handled in _process_runs."""
+        # This method is no longer used since hyperlinks are processed inline
         return current_html
     
     def _get_numbering_info(self, p_element) -> Optional[Dict]:
