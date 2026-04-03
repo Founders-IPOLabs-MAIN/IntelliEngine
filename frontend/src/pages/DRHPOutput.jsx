@@ -1133,10 +1133,13 @@ const DRHPOutput = ({ user, apiClient }) => {
           filename: result.filename,
           fileSize: result.file_size,
           warnings: result.warnings || [],
-          warningsCount: result.warnings_count || 0
+          warningsCount: result.warnings_count || 0,
+          imagesCount: result.images_count || 0
         });
         
-        toast.success(`Document "${result.filename}" imported successfully!`);
+        // Show success message with image count if any
+        const imageMsg = result.images_count > 0 ? ` (${result.images_count} images extracted)` : '';
+        toast.success(`DRHP document "${result.filename}" imported with full SEBI formatting preserved!${imageMsg}`);
         setLastSaved(new Date().toISOString());
       }
     } catch (error) {
@@ -1218,12 +1221,10 @@ const DRHPOutput = ({ user, apiClient }) => {
         
         setLastSaved(new Date().toISOString());
         
-        // Show success with warning count if any
-        if (result.warnings_count > 0) {
-          toast.success(`Document imported successfully! (${result.warnings_count} minor formatting adjustments made)`);
-        } else {
-          toast.success(`Document "${file.name}" imported successfully with full formatting preserved!`);
-        }
+        // Show success with image and warning count
+        const imageMsg = result.images_count > 0 ? `, ${result.images_count} images` : '';
+        const warningMsg = result.warnings_count > 0 ? ` (${result.warnings_count} minor notes)` : '';
+        toast.success(`DRHP document imported with full SEBI formatting preserved!${imageMsg}${warningMsg}`);
       }
     } catch (error) {
       console.error("Upload failed:", error);

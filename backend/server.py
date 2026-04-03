@@ -16,11 +16,14 @@ import httpx
 import io
 import asyncio
 import resend
-import mammoth
+from docx import Document as DocxDocument
 import base64
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+
+# Import DRHP document parser
+from drhp_import import DRHPDocumentParser, DRHPImageExtractor
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -1699,11 +1702,17 @@ async def import_drhp_word(
 ):
     """
     Import a Word document (.docx) into the DRHP Output editor.
-    Converts the document to HTML while preserving formatting, tables, and images.
-    Supports multi-page documents.
+    Uses python-docx for full SEBI-specific formatting preservation:
+    - Paragraph styles and hierarchies
+    - Numbered clause structures (SEBI format)
+    - Custom indentation and text alignment
+    - Hyperlinks and bookmarks
+    - Images stored as separate files (not inline base64)
+    
+    Supports multi-page documents up to 50MB.
     """
     
-    # Validate file type
+    # Validate file type - ONLY .docx allowed
     if not file.filename.lower().endswith('.docx'):
         raise HTTPException(
             status_code=400, 
@@ -1730,98 +1739,45 @@ async def import_drhp_word(
                 detail=f"File too large. Maximum size is 50MB. Your file is {len(file_content) / (1024*1024):.1f}MB"
             )
         
-        # Create a BytesIO object for mammoth
+        # Parse the document using our SEBI-specific parser
+        parser = DRHPDocumentParser(file_content, project_id, board_type)
+        html_content, parsed_images, warnings = parser.parse()
+        
+        # Extract and store images as separate files
         docx_buffer = io.BytesIO(file_content)
+        doc = DocxDocument(docx_buffer)
+        image_extractor = DRHPImageExtractor(doc, project_id, board_type, db, fs_bucket)
+        stored_images = await image_extractor.extract_and_store_images()
         
-        # Custom style mapping for better formatting preservation
-        style_map = """
-        p[style-name='Title'] => h1.document-title:fresh
-        p[style-name='Heading 1'] => h1:fresh
-        p[style-name='Heading 2'] => h2:fresh
-        p[style-name='Heading 3'] => h3:fresh
-        p[style-name='Heading 4'] => h4:fresh
-        p[style-name='Heading 5'] => h5:fresh
-        p[style-name='Heading 6'] => h6:fresh
-        p[style-name='List Paragraph'] => p.list-paragraph:fresh
-        p[style-name='Quote'] => blockquote:fresh
-        p[style-name='Intense Quote'] => blockquote.intense:fresh
-        r[style-name='Strong'] => strong
-        r[style-name='Emphasis'] => em
-        r[style-name='Intense Emphasis'] => em.intense
-        r[style-name='Book Title'] => cite
-        r[style-name='Subtle Reference'] => span.reference
-        p[style-name='TOC Heading'] => h2.toc-heading:fresh
-        p[style-name='TOC 1'] => p.toc-1:fresh
-        p[style-name='TOC 2'] => p.toc-2:fresh
-        p[style-name='TOC 3'] => p.toc-3:fresh
-        p[style-name='Normal'] => p:fresh
-        b => strong
-        i => em
-        u => u
-        strike => s
-        """
+        # Replace any image placeholders in HTML with actual URLs
+        for img in stored_images:
+            # Replace image references with URLs
+            # The parser includes images with rel_id references
+            html_content = html_content.replace(
+                f'src="embedded:{img["rel_id"]}"',
+                f'src="{img["url"]}"'
+            )
         
-        # Function to handle images - convert to base64 data URIs
-        def convert_image(image):
-            with image.open() as image_bytes:
-                encoded = base64.b64encode(image_bytes.read()).decode('utf-8')
-                content_type = image.content_type or 'image/png'
-                return {"src": f"data:{content_type};base64,{encoded}"}
-        
-        # Convert docx to HTML using mammoth
-        result = mammoth.convert_to_html(
-            docx_buffer,
-            style_map=style_map,
-            convert_image=mammoth.images.img_element(convert_image)
-        )
-        
-        html_content = result.value
-        messages = result.messages
-        
-        # Log any conversion warnings
-        for message in messages:
-            logger.warning(f"Mammoth conversion warning: {message}")
-        
-        # Post-process HTML to improve TipTap compatibility
-        # 1. Ensure tables have proper structure
-        html_content = html_content.replace('<table>', '<table class="drhp-table">')
-        
-        # 2. Convert empty paragraphs to proper spacing
-        html_content = html_content.replace('<p></p>', '<p>&nbsp;</p>')
-        
-        # 3. Handle page breaks (common in multi-page documents)
-        html_content = html_content.replace(
-            '<p style="page-break-before: always">',
-            '<hr class="page-break"><p>'
-        )
-        
-        # 4. Clean up excessive whitespace
-        html_content = re.sub(r'\n\s*\n', '\n', html_content)
-        
-        # 5. Ensure proper text alignment is preserved
-        # Mammoth doesn't preserve text-align, so we add it back for centered content
-        html_content = re.sub(
-            r'<p class="document-title">(.*?)</p>',
-            r'<p style="text-align: center;" class="document-title">\1</p>',
-            html_content
-        )
-        
-        # Save the imported content to the database
+        # Save the imported content and image references to the database
         now = datetime.now(timezone.utc)
         content_field = "sme_content" if board_type == "sme" else "mainboard_content"
+        images_field = f"{board_type}_images"
         
         await db.drhp_output.update_one(
             {"project_id": project_id},
             {
                 "$set": {
                     content_field: html_content,
+                    images_field: stored_images,
                     "updated_by": user.user_id,
                     "updated_at": now.isoformat(),
                     f"{board_type}_import_info": {
                         "filename": file.filename,
                         "imported_at": now.isoformat(),
                         "file_size": len(file_content),
-                        "warnings_count": len(messages)
+                        "warnings_count": len(warnings),
+                        "images_count": len(stored_images),
+                        "parser": "python-docx-sebi"
                     }
                 },
                 "$setOnInsert": {"created_at": now.isoformat()}
@@ -1831,23 +1787,62 @@ async def import_drhp_word(
         
         return {
             "success": True,
-            "message": "Word document imported successfully",
+            "message": "DRHP document imported with full SEBI formatting preserved",
             "html_content": html_content,
             "board_type": board_type,
             "filename": file.filename,
             "file_size": len(file_content),
-            "warnings": [str(m) for m in messages],
-            "warnings_count": len(messages)
+            "images": stored_images,
+            "images_count": len(stored_images),
+            "warnings": warnings,
+            "warnings_count": len(warnings)
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error importing Word document: {str(e)}")
+        logger.error(f"Error importing DRHP document: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to import Word document: {str(e)}"
+            detail=f"Failed to import DRHP document: {str(e)}"
         )
+
+
+@api_router.get("/projects/{project_id}/drhp-images/{image_id}")
+async def get_drhp_image(
+    project_id: str,
+    image_id: str,
+    user: User = Depends(get_current_user)
+):
+    """
+    Retrieve a DRHP document image stored in GridFS.
+    """
+    try:
+        file_id = ObjectId(image_id)
+        
+        # Get file info
+        grid_out = await fs_bucket.open_download_stream(file_id)
+        
+        # Verify the image belongs to this project
+        if grid_out.metadata.get("project_id") != project_id:
+            raise HTTPException(status_code=403, detail="Image not found for this project")
+        
+        # Read the image data
+        image_data = await grid_out.read()
+        content_type = grid_out.metadata.get("content_type", "image/png")
+        
+        return Response(
+            content=image_data,
+            media_type=content_type,
+            headers={
+                "Cache-Control": "public, max-age=31536000",
+                "Content-Disposition": f"inline; filename={grid_out.filename}"
+            }
+        )
+    
+    except Exception as e:
+        logger.error(f"Error retrieving DRHP image: {str(e)}")
+        raise HTTPException(status_code=404, detail="Image not found")
 
 # ============ MASTER ADMIN CONFIGURATION ============
 
