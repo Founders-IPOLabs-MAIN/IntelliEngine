@@ -724,6 +724,16 @@ Build a complete IPO-readiness platform with:
   - Moved "Submit for Review" button to bottom of the page
   - Test IDs: upload-docx-btn, submit-for-review-btn
 
+- ✅ **Command Center UI Reorganization** (UPDATE - Mar 21, 2026)
+  - Removed entire DRHP Chapters module and all sub-modules
+  - Added two separate DRHP Output buttons:
+    - **Main Board DRHP**: Blue styling, Landmark icon, "NSE / BSE" badge
+    - **SME Board DRHP**: Green styling, Building2 icon, "SME Platform" badge
+  - Each button navigates to DRHP Output with board type query parameter
+  - DRHP Output page reads URL param and auto-selects correct tab
+  - CommandCenter.jsx reduced from ~360 lines to ~220 lines
+  - Test IDs: drhp-output-mainboard, drhp-output-sme
+
 ## Testing Status
 - ✅ Backend API tests passed (100%)
 - ✅ Frontend integration tests passed (100%)
@@ -740,3 +750,5 @@ Build a complete IPO-readiness platform with:
 - ✅ **Direct Upload DOCX Feature - 100% tests passed** (iteration_15.json)
   - 13/13 Backend API tests
   - 6/6 Frontend UI tests
+- ✅ **Command Center UI Reorganization - 100% tests passed** (iteration_16.json)
+  - 10/10 Frontend UI tests
