@@ -25,7 +25,8 @@ import {
   Brain,
   Download,
   Share2,
-  RefreshCw
+  RefreshCw,
+  Shield
 } from "lucide-react";
 
 const AssessmentResults = ({ user, apiClient }) => {
@@ -72,6 +73,7 @@ const AssessmentResults = ({ user, apiClient }) => {
         calculators: calculators,
         eligibility: results.eligibility || apiData.eligibility,
         readiness: results.readiness || apiData.readiness,
+        governance: results.governance || apiData.governance,
         valuation_summary: valuation_summary || {
           average_valuation: 0,
           suggested_price_band: { low: 0, high: 0 }
@@ -129,7 +131,7 @@ const AssessmentResults = ({ user, apiClient }) => {
     return null;
   }
 
-  const { calculators, eligibility, readiness, valuation_summary, ai_analysis, company_info } = data;
+  const { calculators, eligibility, readiness, valuation_summary, ai_analysis, company_info, governance } = data;
 
   return (
     <div className="flex min-h-screen bg-gray-50" data-testid="assessment-results-page">
@@ -428,6 +430,97 @@ const AssessmentResults = ({ user, apiClient }) => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Governance/Compliance Score */}
+          {governance && governance.total > 0 && (
+            <Card className="border border-border mb-8" data-testid="governance-results-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-600" />
+                  Governance & Compliance Score
+                </CardTitle>
+                <CardDescription>
+                  {governance.positive_count} of {governance.total} areas compliant
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-6 mb-6">
+                  <div className="relative w-24 h-24">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="48" cy="48" r="40" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+                      <circle
+                        cx="48" cy="48" r="40" fill="none"
+                        stroke={governance.score >= 75 ? '#22c55e' : governance.score >= 50 ? '#f59e0b' : '#ef4444'}
+                        strokeWidth="8" strokeLinecap="round"
+                        strokeDasharray={`${(governance.score / 100) * 251} 251`}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-xl font-bold">{governance.score}</span>
+                      <span className="text-[10px] text-muted-foreground">/100</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 grid grid-cols-3 gap-4">
+                    <div className="bg-green-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-green-700">{governance.positive_count}</p>
+                      <p className="text-xs text-green-600">Compliant</p>
+                    </div>
+                    <div className="bg-red-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-red-600">{governance.negative_count}</p>
+                      <p className="text-xs text-red-500">Gaps Found</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-gray-700">{governance.total}</p>
+                      <p className="text-xs text-gray-500">Total Checks</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-700">
+                    <strong>Weightage:</strong> Governance contributes 40% to the overall IPO Readiness Score.
+                    {governance.negative_count > 0 && (
+                      <span> {governance.negative_count} governance area{governance.negative_count > 1 ? 's need' : ' needs'} attention before proceeding with IPO filing.</span>
+                    )}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Readiness Score Breakdown */}
+          {readiness.financial_score !== undefined && governance && governance.total > 0 && (
+            <Card className="border border-border mb-8" data-testid="score-breakdown-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-green-600" />
+                  Score Breakdown
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1.5">
+                      <span className="font-medium text-black">Financial Readiness (60% weight)</span>
+                      <span className="font-bold">{readiness.financial_score}/100</span>
+                    </div>
+                    <Progress value={readiness.financial_score} className="h-3" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1.5">
+                      <span className="font-medium text-black">Governance & Compliance (40% weight)</span>
+                      <span className="font-bold">{readiness.governance_score}/100</span>
+                    </div>
+                    <Progress value={readiness.governance_score} className="h-3" />
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between text-sm">
+                    <span className="font-semibold text-black">Blended IPO Readiness Score</span>
+                    <span className="font-bold text-lg">{readiness.score}/100</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* AI Analysis */}
           <Card className="border border-border mb-8">

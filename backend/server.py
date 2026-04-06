@@ -3757,6 +3757,7 @@ class IPOAssessmentRequest(BaseModel):
     balance_sheet: AssessmentBalanceSheet
     projections: AssessmentProjections
     market_data: AssessmentMarketData
+    governance_compliance: dict = {}  # {question_id: "yes"/"no"}
     issue_type: str = "fresh"  # fresh / ofs / both
     dilution_percent: float = 25.0
 
@@ -3975,7 +3976,55 @@ def check_sebi_eligibility(data: IPOAssessmentRequest, unit: str) -> dict:
             "eligible": passed_count == len(checks)
         }
 
-def determine_readiness_status(eligibility: dict, pe_valuation: dict, dcf_valuation: dict, fcfe: dict) -> dict:
+# Governance question positive answer mapping
+GOVERNANCE_POSITIVE_ANSWERS = {
+    "gc_1": "yes", "gc_2": "no", "gc_3": "no", "gc_4": "no", "gc_5": "yes",
+    "gc_6": "no", "gc_7": "yes", "gc_8": "yes", "gc_9": "no", "gc_10": "yes",
+    "gc_11": "yes", "gc_12": "yes", "gc_13": "yes", "gc_14": "yes", "gc_15": "yes",
+    "gc_16": "yes", "gc_17": "yes", "gc_18": "yes", "gc_19": "yes", "gc_20": "yes",
+    "gc_21": "no", "gc_22": "yes", "gc_23": "yes", "gc_24": "yes", "gc_25": "yes",
+    "gc_26": "yes", "gc_27": "yes", "gc_28": "yes", "gc_29": "yes", "gc_30": "yes",
+    "gc_31": "yes", "gc_32": "yes", "gc_33": "yes", "gc_34": "yes", "gc_35": "no",
+    "gc_36": "no", "gc_37": "no", "gc_38": "no", "gc_39": "yes", "gc_40": "yes",
+    "gc_41": "no", "gc_42": "no", "gc_43": "yes", "gc_44": "no", "gc_45": "yes",
+    "gc_46": "no", "gc_47": "yes", "gc_48": "yes", "gc_49": "yes", "gc_50": "no",
+    "gc_51": "no", "gc_52": "yes", "gc_53": "no", "gc_54": "yes", "gc_55": "yes",
+}
+
+def calculate_governance_score(answers: dict) -> dict:
+    """Calculate governance/compliance score from Yes/No answers"""
+    if not answers:
+        return {"score": 0, "total": 55, "positive_count": 0, "negative_count": 0, "unanswered": 55}
+    
+    positive_count = 0
+    negative_count = 0
+    total_answered = 0
+    flagged_items = []
+    
+    for qid, expected in GOVERNANCE_POSITIVE_ANSWERS.items():
+        user_answer = answers.get(qid)
+        if user_answer is None:
+            continue
+        total_answered += 1
+        if user_answer == expected:
+            positive_count += 1
+        else:
+            negative_count += 1
+            flagged_items.append(qid)
+    
+    total_questions = len(GOVERNANCE_POSITIVE_ANSWERS)
+    score = round((positive_count / total_questions) * 100) if total_questions > 0 else 0
+    
+    return {
+        "score": score,
+        "total": total_questions,
+        "positive_count": positive_count,
+        "negative_count": negative_count,
+        "unanswered": total_questions - total_answered,
+        "flagged_items": flagged_items
+    }
+
+def determine_readiness_status(eligibility: dict, pe_valuation: dict, dcf_valuation: dict, fcfe: dict, governance: dict = None) -> dict:
     """Determine overall IPO readiness status"""
     issues = []
     
@@ -4016,35 +4065,62 @@ def determine_readiness_status(eligibility: dict, pe_valuation: dict, dcf_valuat
     critical_issues = [i for i in issues if i["severity"] == "critical"]
     warning_issues = [i for i in issues if i["severity"] == "warning"]
     
+    # Base financial score
     if len(critical_issues) == 0 and len(warning_issues) == 0:
         status = "ready"
         status_label = "IPO Ready"
         status_message = "Your company meets all SEBI criteria and financial benchmarks for an IPO!"
-        score = 90
+        financial_score = 90
     elif len(critical_issues) == 0 and len(warning_issues) <= 2:
         status = "ready"
         status_label = "IPO Ready (with minor concerns)"
         status_message = "Your company is eligible for IPO with some areas to address."
-        score = 75
+        financial_score = 75
     elif len(critical_issues) <= 1:
         status = "planning_required"
         status_label = "Requires 1-2 Years Planning"
         status_message = "You're on the path to IPO! Focus on addressing the identified gaps."
-        score = 50
+        financial_score = 50
     else:
         status = "not_eligible"
         status_label = "Not Yet Eligible"
         status_message = "Your company needs to strengthen its financials before considering an IPO."
-        score = 25
+        financial_score = 25
+    
+    # Blend governance score (60% financial, 40% governance)
+    governance_score = governance.get("score", 0) if governance else 0
+    if governance and governance.get("total", 0) > 0:
+        score = round(financial_score * 0.6 + governance_score * 0.4)
+        # Governance can downgrade status
+        if governance_score < 40:
+            issues.append({
+                "type": "governance",
+                "severity": "critical",
+                "description": f"Governance score critically low ({governance_score}/100) - Major compliance gaps need immediate attention"
+            })
+            if status == "ready":
+                status = "planning_required"
+                status_label = "Requires Governance Improvements"
+                status_message = "Financial metrics are strong but governance gaps need to be addressed before IPO."
+        elif governance_score < 65:
+            issues.append({
+                "type": "governance",
+                "severity": "warning",
+                "description": f"Governance score moderate ({governance_score}/100) - Several compliance areas need improvement"
+            })
+    else:
+        score = financial_score
     
     return {
         "status": status,
         "status_label": status_label,
         "status_message": status_message,
         "score": score,
+        "financial_score": financial_score,
+        "governance_score": governance_score,
         "issues": issues,
-        "critical_count": len(critical_issues),
-        "warning_count": len(warning_issues)
+        "critical_count": len([i for i in issues if i["severity"] == "critical"]),
+        "warning_count": len([i for i in issues if i["severity"] == "warning"])
     }
 
 @api_router.post("/assessment/calculate")
@@ -4104,8 +4180,11 @@ async def run_ipo_assessment(
     # 4. SEBI Eligibility Check
     eligibility = check_sebi_eligibility(data, unit)
     
-    # 5. Determine Readiness Status
-    readiness = determine_readiness_status(eligibility, pe_valuation, dcf_valuation, fcfe_result)
+    # 5. Governance/Compliance Score
+    governance_result = calculate_governance_score(data.governance_compliance)
+    
+    # 6. Determine Readiness Status (now includes governance)
+    readiness = determine_readiness_status(eligibility, pe_valuation, dcf_valuation, fcfe_result, governance_result)
     
     # Calculate suggested price band (10-15% discount)
     if avg_valuation > 0:
@@ -4154,15 +4233,21 @@ ELIGIBILITY: {eligibility['board']}
 - Passed: {eligibility['passed_count']}/{eligibility['total_checks']} criteria
 - Eligible: {'Yes' if eligibility['eligible'] else 'No'}
 
+GOVERNANCE/COMPLIANCE: {governance_result['score']}/100
+- Positive answers: {governance_result['positive_count']}/{governance_result['total']}
+- Flagged areas: {len(governance_result.get('flagged_items', []))} items need attention
+
 ISSUES IDENTIFIED:
 {issues_text}
 
 READINESS SCORE: {readiness['score']}/100 ({readiness['status_label']})
+(Financial: {readiness.get('financial_score', 0)}/100, Governance: {governance_result['score']}/100)
 
-Provide a concise analysis (max 150 words) with:
+Provide a concise analysis (max 200 words) with:
 1. Key strengths (2 bullet points)
-2. Priority actions to improve readiness (2-3 bullet points)
-3. Which IntelliEngine module to use first (DRHP Builder, Match Maker, or IPO Funding)
+2. Governance/compliance observations (1-2 bullet points)
+3. Priority actions to improve readiness (2-3 bullet points)
+4. Which IntelliEngine module to use first (DRHP Builder, Match Maker, or IPO Funding)
 
 Use professional Indian financial terminology. Be direct and actionable."""
 
@@ -4181,7 +4266,8 @@ Use professional Indian financial terminology. Be direct and actionable."""
             "pl_data": data.pl_data.model_dump(),
             "balance_sheet": data.balance_sheet.model_dump(),
             "projections": data.projections.model_dump(),
-            "market_data": data.market_data.model_dump()
+            "market_data": data.market_data.model_dump(),
+            "governance_compliance": data.governance_compliance
         },
         "results": {
             "pe_valuation": pe_valuation,
@@ -4189,7 +4275,8 @@ Use professional Indian financial terminology. Be direct and actionable."""
             "fcfe": fcfe_result,
             "issue_size": issue_size,
             "eligibility": eligibility,
-            "readiness": readiness
+            "readiness": readiness,
+            "governance": governance_result
         },
         "ai_analysis": ai_analysis,
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -4211,6 +4298,7 @@ Use professional Indian financial terminology. Be direct and actionable."""
         },
         "eligibility": eligibility,
         "readiness": readiness,
+        "governance": governance_result,
         "valuation_summary": {
             "average_valuation": round(avg_valuation, 2),
             "suggested_price_band": {

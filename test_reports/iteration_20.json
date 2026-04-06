@@ -1,0 +1,103 @@
+{
+  "summary": "Governance/Compliance Assessment Feature - All 13 backend tests passed. Frontend verified: 6-step wizard with Governance at step 5, 55 questions configured.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "1. test_perfect_governance_score - 100% score with all positive answers",
+    "2. test_zero_governance_score - 0% score with all wrong answers",
+    "3. test_partial_governance_score - ~49% score with 27/55 correct",
+    "4. test_empty_governance_compliance - Backwards compatibility with empty dict",
+    "5. test_missing_governance_compliance - Backwards compatibility without field",
+    "6. test_blended_score_calculation - 60% financial + 40% governance blending verified",
+    "7. test_low_governance_downgrades_status - Critical issue added for score < 40",
+    "8. test_moderate_governance_adds_warning - Warning added for score 40-65",
+    "9. test_governance_in_response - Response structure includes governance object",
+    "10. test_readiness_includes_governance_score - Readiness has financial_score and governance_score",
+    "11. test_55_questions_total - Total question count is 55",
+    "12. test_all_question_ids_valid - All gc_1 to gc_55 IDs are valid",
+    "13. test_assessment_requires_auth - Endpoint requires authentication (401)"
+  ],
+  
+  "features_verified": {
+    "wizard_steps": {
+      "description": "Assessment wizard has 6 steps instead of 5",
+      "status": "PASS",
+      "details": "Steps: Company Info (1), P&L Data (2), Balance Sheet (3), Projections (4), Governance (5), Market Data (6)"
+    },
+    "governance_step_position": {
+      "description": "Governance tab is at position 5 (after Projections, before Market Data)",
+      "status": "PASS"
+    },
+    "governance_questions_count": {
+      "description": "55 governance questions configured in frontend and backend",
+      "status": "PASS",
+      "details": "Frontend: /app/frontend/src/config/governanceQuestions.js has 55 questions. Backend: GOVERNANCE_POSITIVE_ANSWERS has 55 entries"
+    },
+    "governance_categories": {
+      "description": "Questions grouped by categories",
+      "status": "PASS",
+      "details": "31 unique categories including Corporate Structure, Promoter Background, Board Composition, etc."
+    },
+    "blended_scoring": {
+      "description": "Final score = 60% financial + 40% governance",
+      "status": "PASS",
+      "details": "Verified via test_blended_score_calculation"
+    },
+    "backwards_compatibility": {
+      "description": "API works with empty or missing governance_compliance",
+      "status": "PASS",
+      "details": "Empty dict returns score=0, unanswered=55"
+    },
+    "governance_results_display": {
+      "description": "Results page shows governance score circle and breakdown",
+      "status": "PASS",
+      "details": "AssessmentResults.jsx has governance-results-card and score-breakdown-card"
+    }
+  },
+  
+  "test_report_links": [
+    "/app/backend/tests/test_governance_assessment.py",
+    "/app/test_reports/pytest/governance_assessment_results.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [
+    "Governance scoring logic correctly calculates score based on positive answer matching",
+    "Blended score formula (60% financial + 40% governance) implemented correctly in determine_readiness_status()",
+    "Low governance score (<40) correctly adds critical issue and can downgrade status",
+    "Frontend wizard correctly shows 6 steps with Governance at position 5",
+    "All 55 questions have proper positiveAnswer mapping in both frontend and backend"
+  ],
+  
+  "updated_files": [
+    "/app/backend/tests/test_governance_assessment.py (new test file)"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (13/13 tests passed)",
+    "frontend": "100% (wizard structure verified)"
+  },
+  
+  "test_credentials": "Test user created dynamically and cleaned up after tests",
+  
+  "seed_data_creation": "None required - tests use API directly",
+  
+  "retest_needed": false,
+  
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "Governance/Compliance feature fully tested. Backend API /api/assessment/calculate accepts governance_compliance dict and returns governance scoring. Frontend wizard has 6 steps with Governance at step 5. All 55 questions configured with Yes/No toggles. Blended scoring (60% financial + 40% governance) working correctly. Results page displays governance score circle and breakdown.",
+  
+  "mocked_apis": {}
+}

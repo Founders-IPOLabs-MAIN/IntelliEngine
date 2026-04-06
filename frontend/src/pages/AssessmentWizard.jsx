@@ -21,15 +21,23 @@ import {
   BarChart3,
   Calculator,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Shield,
+  Info,
+  ChevronDown,
+  ChevronRight,
+  Check,
+  X
 } from "lucide-react";
+import GOVERNANCE_QUESTIONS, { GOVERNANCE_CATEGORIES } from "@/config/governanceQuestions";
 
 const STEPS = [
   { id: 1, title: "Company Info", icon: Building2 },
   { id: 2, title: "P&L Data", icon: FileText },
   { id: 3, title: "Balance Sheet", icon: BarChart3 },
   { id: 4, title: "Projections", icon: TrendingUp },
-  { id: 5, title: "Market Data", icon: Calculator }
+  { id: 5, title: "Governance", icon: Shield },
+  { id: 6, title: "Market Data", icon: Calculator }
 ];
 
 const AssessmentWizard = ({ user, apiClient }) => {
@@ -75,12 +83,33 @@ const AssessmentWizard = ({ user, apiClient }) => {
     wacc: "",
     terminal_growth: "3",
     
-    // Step 5: Market Data
+    // Step 5: Governance/Compliance (55 questions, each "yes" or "no")
+    governance_answers: {},
+    
+    // Step 6: Market Data
     industry_pe: "",
     peer_pe: "",
     issue_type: "fresh",
     dilution_percent: "25"
   });
+
+  const [expandedCategories, setExpandedCategories] = useState(
+    GOVERNANCE_CATEGORIES.reduce((acc, cat) => ({ ...acc, [cat]: true }), {})
+  );
+
+  const toggleCategory = (cat) => {
+    setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
+  };
+
+  const setGovernanceAnswer = (questionId, answer) => {
+    setFormData(prev => ({
+      ...prev,
+      governance_answers: { ...prev.governance_answers, [questionId]: answer }
+    }));
+  };
+
+  const governanceProgress = Object.keys(formData.governance_answers).length;
+  const governanceTotal = GOVERNANCE_QUESTIONS.length;
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -102,6 +131,8 @@ const AssessmentWizard = ({ user, apiClient }) => {
       case 4:
         return formData.growth_rate && formData.wacc && formData.terminal_growth;
       case 5:
+        return Object.keys(formData.governance_answers).length === GOVERNANCE_QUESTIONS.length;
+      case 6:
         return formData.industry_pe && formData.peer_pe && formData.dilution_percent;
       default:
         return true;
@@ -110,10 +141,15 @@ const AssessmentWizard = ({ user, apiClient }) => {
 
   const handleNext = () => {
     if (!validateStep(currentStep)) {
-      toast.error("Please fill all required fields");
+      if (currentStep === 5) {
+        const unanswered = GOVERNANCE_QUESTIONS.length - Object.keys(formData.governance_answers).length;
+        toast.error(`Please answer all governance questions (${unanswered} remaining)`);
+      } else {
+        toast.error("Please fill all required fields");
+      }
       return;
     }
-    if (currentStep < 5) {
+    if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
       handleSubmit();
@@ -168,6 +204,7 @@ const AssessmentWizard = ({ user, apiClient }) => {
           wacc: parseFloat(formData.wacc) || 0,
           terminal_growth: parseFloat(formData.terminal_growth) || 3
         },
+        governance_compliance: formData.governance_answers,
         market_data: {
           industry_pe: parseFloat(formData.industry_pe) || 0,
           peer_pe: parseFloat(formData.peer_pe) || 0
@@ -192,7 +229,7 @@ const AssessmentWizard = ({ user, apiClient }) => {
     }
   };
 
-  const progress = (currentStep / 5) * 100;
+  const progress = (currentStep / 6) * 100;
   const unit = formData.reporting_unit === "crores" ? "Cr" : "L";
 
   return (
@@ -216,7 +253,7 @@ const AssessmentWizard = ({ user, apiClient }) => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-black">IPO Readiness Assessment</h1>
-                <p className="text-muted-foreground">Step {currentStep} of 5: {STEPS[currentStep - 1].title}</p>
+                <p className="text-muted-foreground">Step {currentStep} of 6: {STEPS[currentStep - 1].title}</p>
               </div>
             </div>
           </div>
@@ -793,8 +830,145 @@ const AssessmentWizard = ({ user, apiClient }) => {
             </Card>
           )}
 
-          {/* Step 5: Market Data */}
+          {/* Step 5: Governance / Compliance */}
           {currentStep === 5 && (
+            <div className="space-y-4">
+              <Card className="border border-border">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-green-600" />
+                    Governance & Compliance Readiness
+                  </CardTitle>
+                  <CardDescription>
+                    Answer all 55 questions to evaluate your company's governance posture for IPO readiness
+                  </CardDescription>
+                  <div className="flex items-center gap-3 mt-3">
+                    <Progress value={(governanceProgress / governanceTotal) * 100} className="h-2 flex-1" />
+                    <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+                      {governanceProgress} / {governanceTotal}
+                    </span>
+                  </div>
+                </CardHeader>
+              </Card>
+
+              {GOVERNANCE_CATEGORIES.map((category) => {
+                const categoryQuestions = GOVERNANCE_QUESTIONS.filter(q => q.category === category);
+                const answeredInCat = categoryQuestions.filter(q => formData.governance_answers[q.id] !== undefined).length;
+                const isExpanded = expandedCategories[category];
+
+                return (
+                  <Card key={category} className="border border-border overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => toggleCategory(category)}
+                      className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors text-left"
+                      data-testid={`gc-category-${category.toLowerCase().replace(/[\s\/]/g, '-')}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {isExpanded
+                          ? <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                          : <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        }
+                        <span className="font-semibold text-sm text-black">{category}</span>
+                      </div>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        answeredInCat === categoryQuestions.length
+                          ? 'bg-green-100 text-green-700'
+                          : answeredInCat > 0
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {answeredInCat}/{categoryQuestions.length}
+                      </span>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="border-t border-border">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="bg-gray-50">
+                              <th className="text-left text-xs font-semibold text-muted-foreground px-6 py-2.5 w-10">#</th>
+                              <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-2.5">Question</th>
+                              <th className="text-center text-xs font-semibold text-muted-foreground px-4 py-2.5 w-32">Response</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {categoryQuestions.map((q, idx) => {
+                              const answer = formData.governance_answers[q.id];
+                              const isAnswered = answer !== undefined;
+                              const isPositive = isAnswered && answer === q.positiveAnswer;
+
+                              return (
+                                <tr
+                                  key={q.id}
+                                  className={`border-t border-border transition-colors ${
+                                    isAnswered
+                                      ? isPositive
+                                        ? 'bg-green-50/50'
+                                        : 'bg-red-50/40'
+                                      : 'hover:bg-gray-50/50'
+                                  }`}
+                                  data-testid={`gc-row-${q.id}`}
+                                >
+                                  <td className="px-6 py-3 text-xs text-muted-foreground align-top">
+                                    {GOVERNANCE_QUESTIONS.indexOf(q) + 1}
+                                  </td>
+                                  <td className="px-4 py-3 align-top">
+                                    <p className="text-sm text-black leading-relaxed">{q.question}</p>
+                                    <p className="text-xs text-muted-foreground mt-1 flex items-start gap-1">
+                                      <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                      {q.tooltip}
+                                    </p>
+                                  </td>
+                                  <td className="px-4 py-3 align-top">
+                                    <div className="flex items-center justify-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => setGovernanceAnswer(q.id, "yes")}
+                                        className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all border ${
+                                          answer === "yes"
+                                            ? q.positiveAnswer === "yes"
+                                              ? 'bg-green-600 text-white border-green-600'
+                                              : 'bg-red-500 text-white border-red-500'
+                                            : 'bg-white text-gray-600 border-gray-300 hover:border-green-400 hover:text-green-600'
+                                        }`}
+                                        data-testid={`gc-${q.id}-yes`}
+                                      >
+                                        {answer === "yes" && <Check className="w-3 h-3" />}
+                                        Yes
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setGovernanceAnswer(q.id, "no")}
+                                        className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all border ${
+                                          answer === "no"
+                                            ? q.positiveAnswer === "no"
+                                              ? 'bg-green-600 text-white border-green-600'
+                                              : 'bg-red-500 text-white border-red-500'
+                                            : 'bg-white text-gray-600 border-gray-300 hover:border-red-400 hover:text-red-600'
+                                        }`}
+                                        data-testid={`gc-${q.id}-no`}
+                                      >
+                                        {answer === "no" && <Check className="w-3 h-3" />}
+                                        No
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Step 6: Market Data */}
+          {currentStep === 6 && (
             <Card className="border border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -928,7 +1102,7 @@ const AssessmentWizard = ({ user, apiClient }) => {
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Analyzing...
                 </>
-              ) : currentStep === 5 ? (
+              ) : currentStep === 6 ? (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
                   Get Results
