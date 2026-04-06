@@ -822,3 +822,20 @@ Build a complete IPO-readiness platform with:
 - ✅ **SEBI Document Testing - 100% tests passed** (iteration_19.json)
   - 26/26 Backend tests with actual 4.8MB SEBI document
   - Verified: 140 hyperlinks, 336 tables, 54 images, 618 headings
+
+
+## Governance/Compliance Assessment (Apr 6, 2026)
+- [x] Added "Governance/Compliance" tab as Step 5 in IPO Readiness Assessment Wizard
+- [x] 55 SEBI governance questions with Yes/No answers, grouped by 21 categories
+- [x] Categories include: Corporate Structure, Promoter Background, Share Capital, Board Composition, Committees, Governance Policies, Internal Controls, Human Resources, etc.
+- [x] All questions mandatory with progress tracking (X/55)
+- [x] Collapsible category sections with per-category completion indicators
+- [x] Governance score (0-100) blended into final IPO Readiness Score (40% governance, 60% financial)
+- [x] Low governance score (<40) adds critical issue and can downgrade IPO readiness status
+- [x] Results page shows governance score circle, compliance breakdown, and score breakdown card
+- [x] Backwards compatible: API works with empty/missing governance data
+- [x] Questions source: /app/frontend/src/config/governanceQuestions.js
+- [x] Backend scoring: GOVERNANCE_POSITIVE_ANSWERS in server.py, calculate_governance_score()
+- ✅ **Governance Assessment - 100% tests passed** (iteration_20.json)
+  - 13/13 Backend tests passed
+  - Frontend wizard structure verified
