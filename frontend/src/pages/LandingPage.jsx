@@ -7,7 +7,8 @@ import {
   Users, 
   CheckCircle2,
   ArrowRight,
-  MessageCircle
+  MessageCircle,
+  Scale
 } from "lucide-react";
 
 const LandingPage = () => {
@@ -18,7 +19,7 @@ const LandingPage = () => {
   // Shimmer effect every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setShimmerIndex(prev => (prev + 1) % 4);
+      setShimmerIndex(prev => (prev + 1) % 5);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -60,6 +61,15 @@ const LandingPage = () => {
       path: "/login?module=matchmaker",
       iconBg: "bg-purple-100",
       iconColor: "text-purple-600"
+    },
+    {
+      id: "valuation",
+      title: "Business Valuation",
+      description: "AI-Powered DCF, NAV & Comparable Analysis",
+      icon: Scale,
+      path: "/login?module=valuation",
+      iconBg: "bg-amber-100",
+      iconColor: "text-amber-600"
     }
   ];
 
@@ -152,6 +162,7 @@ const LandingPage = () => {
                 className={`group relative p-5 rounded-[32px] bg-white border border-gray-200 
                            hover:scale-[1.03] hover:shadow-xl hover:border-[#00D1FF] 
                            transition-all duration-300 text-left overflow-hidden
+                           ${index === 4 ? 'col-span-2' : ''}
                            ${shimmerIndex === index ? 'shimmer-active' : ''}`}
                 data-testid={`landing-module-${module.id}`}
               >

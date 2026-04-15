@@ -38,6 +38,9 @@ import AssessmentResults from "@/pages/AssessmentResults";
 import AdminCenter from "@/pages/AdminCenter";
 import AccountDetails from "@/pages/AccountDetails";
 import DRHPOutput from "@/pages/DRHPOutput";
+import ValuationModule from "@/pages/ValuationModule";
+import ValuationWizard from "@/pages/ValuationWizard";
+import ValuationResults from "@/pages/ValuationResults";
 
 // Components
 import Footer from "@/components/Footer";
@@ -430,6 +433,32 @@ const AppRouter = () => {
         }
       />
       <Route path="*" element={<Navigate to="/" />} />
+
+      {/* Valuation Module */}
+      <Route
+        path="/valuation"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <ValuationModule user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/valuation/:valuationId/wizard"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <ValuationWizard user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/valuation/:valuationId/results"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <ValuationResults user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };

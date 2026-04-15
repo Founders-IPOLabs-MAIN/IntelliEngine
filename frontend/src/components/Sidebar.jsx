@@ -13,7 +13,8 @@ import {
   ChevronDown,
   Loader2,
   Shield,
-  User
+  User,
+  Scale
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -58,6 +59,8 @@ const Sidebar = ({ user, apiClient }) => {
         return path.startsWith('/funding');
       case 'matchmaker':
         return path.startsWith('/matchmaker');
+      case 'valuation':
+        return path.startsWith('/valuation');
       case 'admin':
         return path.startsWith('/admin');
       case 'account':
@@ -73,6 +76,7 @@ const Sidebar = ({ user, apiClient }) => {
     { id: "drhp", label: "DRHP Builder", icon: FileText, path: null, onClick: handleDRHPClick },
     { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding" },
     { id: "matchmaker", label: "Match Maker", icon: Users, path: "/matchmaker" },
+    { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation" },
     { id: "admin", label: "Admin Center", icon: Shield, path: "/admin" },
     { id: "account", label: "Account Details", icon: User, path: "/account" },
   ];
