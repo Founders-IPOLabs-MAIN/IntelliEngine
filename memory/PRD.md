@@ -838,4 +838,23 @@ Build a complete IPO-readiness platform with:
 - [x] Backend scoring: GOVERNANCE_POSITIVE_ANSWERS in server.py, calculate_governance_score()
 - ✅ **Governance Assessment - 100% tests passed** (iteration_20.json)
   - 13/13 Backend tests passed
+
+## Automated Business Valuation Module (Apr 15, 2026)
+- [x] Added as 5th module on Landing Page (amber Scale icon, full-width card) and Sidebar navigation
+- [x] Disclaimer dialog shown on module entry (AI-assisted, not for regulatory filings without professional cert)
+- [x] Valuation CRUD: Create, list, view, update, delete projects
+- [x] 4-step wizard: Company Profile → Financial Data → Valuation Config → Run Valuation
+- [x] Step 1: Company name, industry (21 sectors), purpose (M&A/ESOP/IPO/Family Settlement/Tax Assessment), currency (Cr/L), company type, description
+- [x] Step 2: Financial data table with 14 metrics (Revenue, EBITDA, PAT, Depreciation, Capex, etc.) across 3-5 years, shares outstanding, face value
+- [x] Step 3: Method selection (DCF/NAV/Comparable/DDM) with per-method configuration (WACC, growth, terminal, peers, illiquidity), weights
+- [x] Step 4: Generate Valuation Report (triggers AI-powered analysis)
+- [x] Backend calculation engine (valuation_engine.py): DCF (FCFF projections + Gordon Growth terminal value), NAV (fair value adjustments + illiquidity), Comparable (median peer multiples), DDM (Gordon Growth)
+- [x] GPT-5.2 AI analysis: Regulatory compliance (Companies Act/SEBI/Income Tax), Risk assessment (5 categories), Tax implications, Quality control with confidence score
+- [x] Rich on-screen Results Dashboard: Hero card with weighted valuation + confidence score circle, financial ratios grid, DCF projections table + sensitivity analysis, NAV adjustments breakdown, Comparable peers table + applied multiples, Risk assessment color-coded cards, Regulatory compliance, Tax implications, Quality control checks
+- [x] Document upload endpoint (GridFS) + AI financial data extraction endpoint
+- ✅ **Valuation Module - 100% tests passed** (iteration_21.json)
+  - 18/18 Backend tests passed (calculation engine + API endpoints + auth)
+  - Frontend wizard flow verified
+  - Badge import bug fixed by testing agent
+
   - Frontend wizard structure verified
