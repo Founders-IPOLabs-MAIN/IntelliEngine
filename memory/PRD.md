@@ -857,4 +857,17 @@ Build a complete IPO-readiness platform with:
   - Frontend wizard flow verified
   - Badge import bug fixed by testing agent
 
+### Document Upload + AI Extraction Enhancement (Apr 15, 2026)
+- [x] Added document upload card in Step 2 of Valuation Wizard (PDF, Excel, Word, CSV support)
+- [x] Files stored in GridFS with size/type validation (10MB limit)
+- [x] Upload card shows file chips with filename and size
+- [x] "Extract with AI" button (conditional on files being uploaded)
+- [x] Backend reads Excel files from GridFS via openpyxl, CSV via text parsing
+- [x] GPT-5.2 analyzes file content and returns structured financial data JSON
+- [x] Auto-populates the financial data table with extracted values
+- [x] GridFS bug fixed by testing agent (db.delegate → db)
+- ✅ **Upload + Extraction - 100% tests passed** (iteration_22.json)
+  - 16/16 tests passed (upload, extract, validation, auth, regression)
+
+
   - Frontend wizard structure verified
