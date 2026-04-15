@@ -6391,8 +6391,8 @@ async def upload_valuation_document(
     if len(content) > 10 * 1024 * 1024:  # 10MB limit
         raise HTTPException(status_code=400, detail="File too large (max 10MB)")
 
-    grid_fs = AsyncIOMotorGridFSBucket(db.delegate)
-    grid_id = await grid_fs.upload_from_stream(file.filename, content)
+    grid_fs = AsyncIOMotorGridFSBucket(db)
+    grid_id = await grid_fs.upload_from_stream(file.filename, io.BytesIO(content))
 
     doc_record = {
         "filename": file.filename,
@@ -6412,6 +6412,7 @@ async def upload_valuation_document(
 async def extract_financial_data(valuation_id: str, user: User = Depends(get_current_user)):
     """Use AI (GPT-5.2) to extract financial data from uploaded documents"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
+    import io
 
     project = await db.valuation_projects.find_one(
         {"valuation_id": valuation_id, "user_id": user.user_id}, {"_id": 0}
@@ -6422,29 +6423,72 @@ async def extract_financial_data(valuation_id: str, user: User = Depends(get_cur
     if not project.get("documents"):
         raise HTTPException(status_code=400, detail="No documents uploaded yet")
 
+    company = project.get("company_profile", {})
+    currency = company.get("currency", "crores")
+
+    # Try to read actual content from uploaded files
+    file_contents = []
+    grid_fs = AsyncIOMotorGridFSBucket(db)
+
+    for doc in project["documents"][:3]:  # Max 3 docs
+        try:
+            from bson import ObjectId
+            grid_id = ObjectId(doc["gridfs_id"])
+            data_stream = io.BytesIO()
+            await grid_fs.download_to_stream(grid_id, data_stream)
+            data_stream.seek(0)
+            fname = doc["filename"].lower()
+
+            if fname.endswith((".xlsx", ".xls")):
+                import openpyxl
+                wb = openpyxl.load_workbook(data_stream, data_only=True)
+                sheets_text = []
+                for sheet_name in wb.sheetnames[:5]:
+                    ws = wb[sheet_name]
+                    rows = []
+                    for row in ws.iter_rows(min_row=1, max_row=min(ws.max_row or 1, 60), values_only=True):
+                        row_str = " | ".join([str(c) if c is not None else "" for c in row])
+                        if row_str.strip(" |"):
+                            rows.append(row_str)
+                    if rows:
+                        sheets_text.append(f"--- Sheet: {sheet_name} ---\n" + "\n".join(rows))
+                file_contents.append(f"=== File: {doc['filename']} ===\n" + "\n\n".join(sheets_text))
+
+            elif fname.endswith(".csv"):
+                text = data_stream.read().decode("utf-8", errors="ignore")
+                lines = text.strip().split("\n")[:60]
+                file_contents.append(f"=== File: {doc['filename']} ===\n" + "\n".join(lines))
+
+            elif fname.endswith(".pdf"):
+                file_contents.append(f"=== File: {doc['filename']} (PDF - text extraction limited) ===\nPlease review manually.")
+
+        except Exception as e:
+            logger.error(f"Failed to read {doc['filename']}: {e}")
+
     api_key = os.environ.get("EMERGENT_LLM_KEY")
     chat = LlmChat(
         api_key=api_key,
         session_id=f"val_extract_{uuid.uuid4().hex[:8]}",
         system_message="""You are a financial data extraction expert for Indian companies. 
-Extract financial data from documents and return ONLY valid JSON.
-All monetary values should be in the same unit (Crores or Lakhs as specified).
-If data is not available, use 0. Be precise with numbers."""
+Extract financial data from the provided spreadsheet/document content and return ONLY valid JSON.
+All monetary values should be in the unit specified (Crores or Lakhs).
+Match data to the closest fiscal year labels (FY2024, FY2023, etc.).
+If a value is not found, use 0. Be precise with numbers."""
     ).with_model("openai", "gpt-5.2")
 
-    company = project.get("company_profile", {})
-    currency = company.get("currency", "crores")
+    doc_text = "\n\n".join(file_contents) if file_contents else "No readable file content available."
 
-    prompt = f"""Based on the uploaded financial documents for {company.get('company_name', 'the company')} 
-in the {company.get('industry', 'general')} sector, provide extracted financial data.
-
+    prompt = f"""Extract financial data for {company.get('company_name', 'the company')} ({company.get('industry', 'general')} sector).
 Currency unit: {currency}
 
-Return ONLY this JSON structure (no markdown, no explanation):
+UPLOADED DOCUMENT CONTENT:
+{doc_text[:8000]}
+
+Extract and return ONLY this JSON structure (no markdown, no extra text):
 {{
   "years_data": [
     {{
-      "year": "FY2022",
+      "year": "FY2024",
       "revenue": 0,
       "ebitda": 0,
       "pat": 0,
@@ -6463,16 +6507,14 @@ Return ONLY this JSON structure (no markdown, no explanation):
   ],
   "shares_outstanding": 100000,
   "face_value": 10,
-  "notes": "Key observations about the financial data"
+  "notes": "Key observations"
 }}
 
-Since I cannot read the actual uploaded files in this context, provide a realistic template structure 
-for a {company.get('industry', 'general')} sector company. The user will fill in actual numbers."""
+Include data for all years found in the documents. Map Revenue/Sales/Turnover to 'revenue', Profit After Tax/Net Profit to 'pat', Shareholders Equity to 'net_worth'."""
 
     try:
         response = await chat.send_message(UserMessage(text=prompt))
         import json
-        # Try to parse JSON from response
         json_str = response
         if "```json" in json_str:
             json_str = json_str.split("```json")[1].split("```")[0]
@@ -6491,7 +6533,7 @@ for a {company.get('industry', 'general')} sector company. The user will fill in
             ],
             "shares_outstanding": 100000,
             "face_value": 10,
-            "notes": "Template structure — please fill in actual data from your financial statements."
+            "notes": "AI extraction did not succeed — please fill in data manually from your financial statements."
         }
 
     return {"extracted_data": extracted}

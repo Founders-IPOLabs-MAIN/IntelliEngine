@@ -15,7 +15,7 @@ import Sidebar from "@/components/Sidebar";
 import {
   ArrowLeft, ArrowRight, Loader2, Building2, FileText, TrendingUp,
   BarChart3, Calculator, CheckCircle2, Sparkles, Upload, Scale,
-  Plus, Trash2, Save, Info
+  Plus, Trash2, Save, Info, FileUp, Wand2, File, X
 } from "lucide-react";
 
 const STEPS = [
@@ -62,6 +62,9 @@ const ValuationWizard = ({ user, apiClient }) => {
   ]);
   const [sharesOutstanding, setSharesOutstanding] = useState("");
   const [faceValue, setFaceValue] = useState("10");
+  const [uploadedDocs, setUploadedDocs] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
 
   // Step 3: Valuation Config
   const [methods, setMethods] = useState(["dcf"]);
@@ -87,6 +90,7 @@ const ValuationWizard = ({ user, apiClient }) => {
         if (p.financial_data.shares_outstanding) setSharesOutstanding(String(p.financial_data.shares_outstanding));
         if (p.financial_data.face_value) setFaceValue(String(p.financial_data.face_value));
       }
+      if (p.documents?.length) setUploadedDocs(p.documents);
       if (p.valuation_config?.methods) {
         setMethods(p.valuation_config.methods);
         if (p.valuation_config.dcf_config) setDcfConfig(prev => ({ ...prev, ...Object.fromEntries(Object.entries(p.valuation_config.dcf_config).map(([k, v]) => [k, String(v)])) }));
@@ -212,6 +216,54 @@ const ValuationWizard = ({ user, apiClient }) => {
       ...prev,
       peers: prev.peers.filter((_, i) => i !== idx)
     }));
+  };
+
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setUploading(true);
+    const newDocs = [];
+    for (const file of files) {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("doc_type", "financial_statement");
+        const res = await apiClient.post(`/valuation/projects/${valuationId}/upload`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        newDocs.push(res.data.document);
+        toast.success(`Uploaded: ${file.name}`);
+      } catch (err) {
+        toast.error(`Failed to upload ${file.name}`);
+      }
+    }
+    setUploadedDocs(prev => [...prev, ...newDocs]);
+    setUploading(false);
+    e.target.value = "";
+  };
+
+  const handleAIExtract = async () => {
+    setExtracting(true);
+    try {
+      const res = await apiClient.post(`/valuation/projects/${valuationId}/extract`);
+      const extracted = res.data.extracted_data;
+      if (extracted?.years_data?.length) {
+        setYearsData(extracted.years_data.map(y => {
+          const row = {};
+          for (const key of Object.keys(EMPTY_YEAR)) {
+            row[key] = y[key] !== undefined && y[key] !== null ? String(y[key]) : "";
+          }
+          return row;
+        }));
+        toast.success("Financial data extracted! Please review and adjust values.");
+      }
+      if (extracted?.shares_outstanding) setSharesOutstanding(String(extracted.shares_outstanding));
+      if (extracted?.face_value) setFaceValue(String(extracted.face_value));
+    } catch (err) {
+      toast.error("AI extraction failed. Please enter data manually.");
+    } finally {
+      setExtracting(false);
+    }
   };
 
   const unit = profile.currency === "crores" ? "Cr" : "L";
@@ -348,6 +400,63 @@ const ValuationWizard = ({ user, apiClient }) => {
           {/* STEP 2: Financial Data */}
           {step === 2 && (
             <div className="space-y-4">
+              {/* Document Upload Card */}
+              <Card className="border-2 border-dashed border-[#00D1FF]/40 bg-gradient-to-r from-blue-50/50 to-cyan-50/30">
+                <CardContent className="p-5">
+                  <div className="flex items-start gap-5">
+                    <div className="w-12 h-12 bg-[#003366]/5 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <FileUp className="w-6 h-6 text-[#003366]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm text-black mb-0.5">Upload Financial Statements</h3>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        Upload audited P&L, Balance Sheet, or annual reports (PDF, Excel, Word). AI will extract and auto-fill the data table below.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            multiple
+                            accept=".pdf,.xlsx,.xls,.docx,.doc,.csv"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                            data-testid="doc-upload-input"
+                          />
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-border rounded-lg text-xs font-medium text-gray-700 hover:border-[#003366] hover:text-[#003366] transition-colors">
+                            {uploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                            {uploading ? "Uploading..." : "Choose Files"}
+                          </span>
+                        </label>
+                        {uploadedDocs.length > 0 && (
+                          <Button
+                            size="sm"
+                            onClick={handleAIExtract}
+                            disabled={extracting}
+                            className="bg-[#003366] hover:bg-[#002244] gap-1.5 text-xs h-7"
+                            data-testid="ai-extract-btn"
+                          >
+                            {extracting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                            {extracting ? "Extracting..." : "Extract with AI"}
+                          </Button>
+                        )}
+                      </div>
+                      {/* Uploaded files list */}
+                      {uploadedDocs.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {uploadedDocs.map((doc, i) => (
+                            <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-border rounded-md text-xs" data-testid={`uploaded-doc-${i}`}>
+                              <File className="w-3 h-3 text-[#003366]" />
+                              <span className="text-gray-700 max-w-[150px] truncate">{doc.filename}</span>
+                              <span className="text-gray-400">({(doc.size / 1024).toFixed(0)}KB)</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="border border-border">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#003366]" /> Financial Statements ({unit})</CardTitle>
