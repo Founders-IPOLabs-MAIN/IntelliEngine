@@ -4840,18 +4840,23 @@ async def upload_profile_picture(
     return response
 
 @api_router.get("/account/profile-picture/{file_id}")
-async def get_profile_picture(file_id: str):
-    """Get profile picture from GridFS"""
+async def get_profile_picture(file_id: str, user: User = Depends(get_current_user)):
+    """Get profile picture from GridFS - authenticated & ownership verified"""
     try:
         grid_out = await fs_bucket.open_download_stream(ObjectId(file_id))
+        metadata = grid_out.metadata or {}
+        if metadata.get("user_id") and metadata["user_id"] != user.user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to access this file")
         content = await grid_out.read()
-        content_type = grid_out.metadata.get("content_type", "image/jpeg") if grid_out.metadata else "image/jpeg"
+        content_type = metadata.get("content_type", "image/jpeg")
         
         return Response(
             content=content,
             media_type=content_type,
             headers={"Cache-Control": "max-age=86400"}
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get profile picture: {e}")
         raise HTTPException(status_code=404, detail="Profile picture not found")
