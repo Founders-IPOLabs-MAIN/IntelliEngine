@@ -6782,6 +6782,21 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization", "X-Session-ID"],
 )
 
+@app.on_event("startup")
+async def create_indexes():
+    try:
+        await db.user_sessions.create_index("session_token", unique=True)
+        await db.user_sessions.create_index("expires_at", expireAfterSeconds=0)
+        await db.users.create_index("email", unique=True)
+        await db.projects.create_index("user_id")
+        await db.projects.create_index("project_id", unique=True)
+        await db.drhp_sections.create_index("project_id")
+        await db.drhp_sections.create_index("section_id", unique=True)
+        await db.audit_logs.create_index("timestamp")
+        logger.info("MongoDB indexes created successfully")
+    except Exception as e:
+        logger.error(f"Index creation error: {e}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
