@@ -30,7 +30,7 @@ const LandingPage = () => {
       title: "DRHP Builder",
       description: "SEBI Compliant, Secure & On-Cloud",
       icon: FileText,
-      path: "/login?module=drhp1",
+      path: "/login?module=drhp",
       iconBg: "bg-blue-100",
       iconColor: "text-[#003366]"
     },
@@ -67,7 +67,7 @@ const LandingPage = () => {
       title: "Business Valuation",
       description: "AI-Powered DCF, NAV & Comparable Analysis",
       icon: Scale,
-      path: "/login?module=valuation1",
+      path: "/login?module=valuation",
       iconBg: "bg-amber-100",
       iconColor: "text-amber-600"
     }

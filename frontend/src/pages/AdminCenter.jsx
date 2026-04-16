@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import {
@@ -37,7 +38,9 @@ import {
   RotateCcw,
   Star,
   Mail,
-  Send
+  Send,
+  Lock,
+  ToggleRight
 } from "lucide-react";
 
 const ACTION_ICONS = {
@@ -80,6 +83,11 @@ const AdminCenter = ({ user, apiClient }) => {
   const [assignRole, setAssignRole] = useState("");
   const [assignLoading, setAssignLoading] = useState(false);
   
+  // Module access state
+  const [moduleUsers, setModuleUsers] = useState([]);
+  const [moduleSearch, setModuleSearch] = useState("");
+  const [togglingPerm, setTogglingPerm] = useState(null);
+  
   // Filters
   const [userSearch, setUserSearch] = useState("");
   const [logFilter, setLogFilter] = useState({ action: "", module: "" });
@@ -116,6 +124,9 @@ const AdminCenter = ({ user, apiClient }) => {
         setUsers(usersRes.data.users);
         const rolesRes = await apiClient.get("/admin/roles");
         setRoles(rolesRes.data.roles);
+      } else if (activeTab === "access") {
+        const usersRes = await apiClient.get("/admin/users");
+        setModuleUsers(usersRes.data.users);
       } else if (activeTab === "audit") {
         const logsRes = await apiClient.get("/admin/audit-logs?limit=100");
         setAuditLogs(logsRes.data.logs);
@@ -211,6 +222,33 @@ const AdminCenter = ({ user, apiClient }) => {
     }
   };
 
+  const handleTogglePermission = async (userId, module, currentValue) => {
+    const key = `${userId}-${module}`;
+    setTogglingPerm(key);
+    try {
+      const targetUser = moduleUsers.find(u => u.user_id === userId);
+      const currentPerms = targetUser?.module_permissions || {};
+      const updatedPerms = { ...currentPerms, [module]: !currentValue };
+      
+      await apiClient.put(`/admin/users/${userId}/permissions`, {
+        permissions: updatedPerms
+      });
+
+      setModuleUsers(prev => prev.map(u =>
+        u.user_id === userId
+          ? { ...u, module_permissions: updatedPerms }
+          : u
+      ));
+      
+      toast.success(`${module} access ${!currentValue ? "granted" : "revoked"} for ${targetUser?.name || targetUser?.email}`);
+    } catch (error) {
+      console.error("Failed to toggle permission:", error);
+      toast.error("Failed to update permission");
+    } finally {
+      setTogglingPerm(null);
+    }
+  };
+
   const getRoleBadgeColor = (roleId) => {
     switch (roleId) {
       case "master_admin": return "bg-yellow-100 text-yellow-700";
@@ -236,6 +274,19 @@ const AdminCenter = ({ user, apiClient }) => {
     u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
     u.email?.toLowerCase().includes(userSearch.toLowerCase())
   );
+
+  const filteredModuleUsers = moduleUsers.filter(u =>
+    u.name?.toLowerCase().includes(moduleSearch.toLowerCase()) ||
+    u.email?.toLowerCase().includes(moduleSearch.toLowerCase())
+  );
+
+  const MODULES = [
+    { key: "matchmaker", label: "Match Maker", color: "blue" },
+    { key: "assessment", label: "Assessment", color: "green" },
+    { key: "drhp", label: "DRHP Builder", color: "purple" },
+    { key: "funding", label: "Funding", color: "orange" },
+    { key: "valuation", label: "Valuation", color: "amber" }
+  ];
 
   const filteredLogs = auditLogs.filter(log => {
     if (logFilter.action && log.action_type !== logFilter.action) return false;
@@ -285,10 +336,14 @@ const AdminCenter = ({ user, apiClient }) => {
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-8 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-5 w-full max-w-2xl mb-6">
+            <TabsList className="grid grid-cols-6 w-full max-w-3xl mb-6">
               <TabsTrigger value="operations" className="gap-2">
                 <Star className="w-4 h-4" />
                 Operations
+              </TabsTrigger>
+              <TabsTrigger value="access" className="gap-2" data-testid="module-access-tab">
+                <ToggleRight className="w-4 h-4" />
+                Module Access
               </TabsTrigger>
               <TabsTrigger value="roles" className="gap-2">
                 <Shield className="w-4 h-4" />
@@ -491,6 +546,110 @@ const AdminCenter = ({ user, apiClient }) => {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            {/* Module Access Tab */}
+            <TabsContent value="access">
+              <Card className="border border-border" data-testid="module-access-card">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Lock className="w-5 h-5 text-purple-500" />
+                        Module Access Control
+                      </CardTitle>
+                      <CardDescription>Toggle module access per user. Changes take effect immediately.</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder="Search users..."
+                          value={moduleSearch}
+                          onChange={(e) => setModuleSearch(e.target.value)}
+                          className="pl-9 w-64"
+                          data-testid="module-access-search"
+                        />
+                      </div>
+                      <Button variant="outline" size="icon" onClick={fetchData}>
+                        <RefreshCw className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+                    </div>
+                  ) : filteredModuleUsers.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>No users found</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-64">User</TableHead>
+                            {MODULES.map(mod => (
+                              <TableHead key={mod.key} className="text-center w-32">{mod.label}</TableHead>
+                            ))}
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredModuleUsers.map((u) => {
+                            const perms = u.module_permissions || {};
+                            const isAdminUser = ["admin", "super_admin", "master_admin"].includes(u.role?.toLowerCase().replace(" ", "_"));
+                            return (
+                              <TableRow key={u.user_id} data-testid={`module-access-row-${u.user_id}`}>
+                                <TableCell>
+                                  <div className="flex items-center gap-3">
+                                    {u.picture ? (
+                                      <img src={u.picture} alt={u.name} className="w-8 h-8 rounded-full" />
+                                    ) : (
+                                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <User className="w-4 h-4 text-gray-500" />
+                                      </div>
+                                    )}
+                                    <div>
+                                      <p className="font-medium text-sm">{u.name}</p>
+                                      <p className="text-xs text-muted-foreground">{u.email}</p>
+                                    </div>
+                                    {isAdminUser && (
+                                      <Badge className="bg-yellow-100 text-yellow-700 text-[10px]">Admin</Badge>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                {MODULES.map(mod => {
+                                  const enabled = !!perms[mod.key];
+                                  const toggling = togglingPerm === `${u.user_id}-${mod.key}`;
+                                  return (
+                                    <TableCell key={mod.key} className="text-center">
+                                      <div className="flex items-center justify-center">
+                                        {toggling ? (
+                                          <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                                        ) : (
+                                          <Switch
+                                            checked={enabled}
+                                            onCheckedChange={() => handleTogglePermission(u.user_id, mod.key, enabled)}
+                                            data-testid={`toggle-${mod.key}-${u.user_id}`}
+                                          />
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                  );
+                                })}
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Roles Tab */}

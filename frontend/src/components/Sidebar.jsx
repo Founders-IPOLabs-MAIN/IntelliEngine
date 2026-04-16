@@ -42,7 +42,7 @@ const Sidebar = ({ user, apiClient }) => {
   };
 
   const handleDRHPClick = () => {
-    navigate("/drhp1");
+    navigate("/drhp");
   };
 
   const isActive = (itemId) => {
@@ -53,13 +53,13 @@ const Sidebar = ({ user, apiClient }) => {
       case 'assessment':
         return path.startsWith('/assessment');
       case 'drhp':
-        return path === '/drhp1' || path.includes('drhp-builder') || path.includes('command-center');
+        return path === '/drhp' || path.includes('drhp-builder') || path.includes('command-center');
       case 'funding':
-        return path === '/funding1' || path.startsWith('/funding');
+        return path.startsWith('/funding');
       case 'matchmaker':
         return path.startsWith('/matchmaker');
       case 'valuation':
-        return path === '/valuation1' || path.startsWith('/valuation');
+        return path.startsWith('/valuation');
       case 'admin':
         return path.startsWith('/admin');
       case 'account':
@@ -69,16 +69,22 @@ const Sidebar = ({ user, apiClient }) => {
     }
   };
 
-  const navItems = [
+  const isAdmin = user?.is_admin || false;
+
+  const allNavItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: "/assessment" },
     { id: "drhp", label: "DRHP Builder", icon: FileText, path: null, onClick: handleDRHPClick },
-    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding1" },
+    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding" },
     { id: "matchmaker", label: "Match Maker", icon: Users, path: "/matchmaker" },
-    { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation1" },
-    { id: "admin", label: "Admin Center", icon: Shield, path: "/admin" },
+    { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation" },
     { id: "account", label: "Account Details", icon: User, path: "/account" },
   ];
+
+  // Only show Admin Center in sidebar for admin users
+  const navItems = isAdmin
+    ? [...allNavItems.slice(0, -1), { id: "admin", label: "Admin Center", icon: Shield, path: "/admin" }, allNavItems[allNavItems.length - 1]]
+    : allNavItems;
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-border flex flex-col z-20" data-testid="sidebar">
@@ -183,12 +189,14 @@ const Sidebar = ({ user, apiClient }) => {
                 Account Details
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/admin" className="flex items-center cursor-pointer" data-testid="admin-center-dropdown-link">
-                <Shield className="w-4 h-4 mr-2" />
-                Admin Center
-              </Link>
-            </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem asChild>
+                <Link to="/admin" className="flex items-center cursor-pointer" data-testid="admin-center-dropdown-link">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Admin Center
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer text-red-600 focus:text-red-600"

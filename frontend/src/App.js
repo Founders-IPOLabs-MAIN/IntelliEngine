@@ -36,12 +36,13 @@ import Assessment from "@/pages/Assessment";
 import AssessmentWizard from "@/pages/AssessmentWizard";
 import AssessmentResults from "@/pages/AssessmentResults";
 import AdminCenter from "@/pages/AdminCenter";
+import AdminLogin from "@/pages/AdminLogin";
+import AccessDenied from "@/pages/AccessDenied";
 import AccountDetails from "@/pages/AccountDetails";
 import DRHPOutput from "@/pages/DRHPOutput";
 import ValuationModule from "@/pages/ValuationModule";
 import ValuationWizard from "@/pages/ValuationWizard";
 import ValuationResults from "@/pages/ValuationResults";
-import ComingSoon from "@/pages/ComingSoon";
 
 // Components
 import Footer from "@/components/Footer";
@@ -164,6 +165,68 @@ const ProtectedRoute = ({ children, showFooter = true }) => {
   );
 };
 
+// Module-gated Route - checks user.module_permissions before rendering
+const ModuleRoute = ({ children, requiredModule, showFooter = true }) => {
+  return (
+    <ProtectedRoute showFooter={showFooter}>
+      {({ user, apiClient }) => {
+        const perms = user?.module_permissions || {};
+        if (!perms[requiredModule]) {
+          return <AccessDenied />;
+        }
+        return children({ user, apiClient });
+      }}
+    </ProtectedRoute>
+  );
+};
+
+// Admin Gate - dedicated admin login then AdminCenter
+const AdminGate = () => {
+  const [adminUser, setAdminUser] = useState(null);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const res = await apiClient.get("/auth/me");
+        if (res.data.is_admin) {
+          setAdminUser(res.data);
+        }
+      } catch {}
+      setChecking(false);
+    };
+    checkAdmin();
+  }, []);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!adminUser) {
+    return (
+      <AdminLogin
+        onLoginSuccess={async () => {
+          try {
+            const res = await apiClient.get("/auth/me");
+            if (res.data.is_admin) {
+              setAdminUser(res.data);
+            }
+          } catch {}
+        }}
+      />
+    );
+  }
+
+  return <AdminCenter user={adminUser} apiClient={apiClient} />;
+};
+
 // App Router Component
 const AppRouter = () => {
   const location = useLocation();
@@ -177,6 +240,7 @@ const AppRouter = () => {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login apiClient={apiClient} />} />
+      <Route path="/access-denied" element={<AccessDenied />} />
       <Route
         path="/dashboard"
         element={
@@ -188,145 +252,145 @@ const AppRouter = () => {
       <Route
         path="/project/:projectId/command-center"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <CommandCenter user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/project/:projectId/company-data"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <CompanyData user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/project/:projectId/promoter-checklist"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <PromoterChecklist user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/project/:projectId/kmp-checklist"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <KMPChecklist user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/project/:projectId/pre-ipo-tracker"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <PreIPOTracker user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/project/:projectId/non-drhp-tracker"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <NonDRHPTracker user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/drhp-builder/:projectId"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="drhp">
             {({ user, apiClient }) => <DRHPBuilder user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/drhp"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <DRHPLandingPage user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/project/:projectId/drhp-section/:sectionId"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <DRHPSection user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/project/:projectId/drhp-content/:sectionId"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <DRHPContent user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/project/:projectId/drhp-content/:sectionId/:subModuleId"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <DRHPContent user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/drhp-builder/:projectId/section/:sectionId"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="drhp">
             {({ user, apiClient }) => <SectionEditor user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/matchmaker"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="matchmaker">
             {({ user, apiClient }) => <MatchMaker user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/matchmaker/search"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="matchmaker">
             {({ user, apiClient }) => <MatchMakerSearch user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/matchmaker/profile/:professionalId"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="matchmaker">
             {({ user, apiClient }) => <ProfessionalProfile user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/matchmaker/register"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="matchmaker">
             {({ user, apiClient }) => <ProfessionalRegister user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/matchmaker/edit-profile"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="matchmaker">
             {({ user, apiClient }) => <EditProfile user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/matchmaker/browse-all"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="matchmaker">
             {({ user, apiClient }) => <BrowseAllProfessionals user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
@@ -348,74 +412,70 @@ const AppRouter = () => {
       <Route
         path="/funding"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="funding">
             {({ user, apiClient }) => <Funding user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/funding/pre-ipo"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="funding">
             {({ user, apiClient }) => <PreIPOFunding user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/funding/post-ipo"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="funding">
             {({ user, apiClient }) => <PostIPOFunding user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/funding/partners"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="funding">
             {({ user, apiClient }) => <FundingPartners user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/funding/quiz"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="funding">
             {({ user, apiClient }) => <FundingQuiz user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/assessment"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="assessment">
             {({ user, apiClient }) => <Assessment user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/assessment/start"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="assessment">
             {({ user, apiClient }) => <AssessmentWizard user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/assessment/results/:assessmentId"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="assessment">
             {({ user, apiClient }) => <AssessmentResults user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/admin"
-        element={
-          <ProtectedRoute>
-            {({ user, apiClient }) => <AdminCenter user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
-        }
+        element={<AdminGate />}
       />
       <Route
         path="/account"
@@ -428,64 +488,39 @@ const AppRouter = () => {
       <Route
         path="/project/:projectId/drhp-output"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <DRHPOutput user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/" />} />
 
       {/* Valuation Module */}
       <Route
         path="/valuation"
         element={
-          <ProtectedRoute>
+          <ModuleRoute requiredModule="valuation">
             {({ user, apiClient }) => <ValuationModule user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/valuation/:valuationId/wizard"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="valuation" showFooter={false}>
             {({ user, apiClient }) => <ValuationWizard user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
       <Route
         path="/valuation/:valuationId/results"
         element={
-          <ProtectedRoute showFooter={false}>
+          <ModuleRoute requiredModule="valuation" showFooter={false}>
             {({ user, apiClient }) => <ValuationResults user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
+          </ModuleRoute>
         }
       />
 
-      {/* Coming Soon Pages */}
-      <Route
-        path="/drhp1"
-        element={
-          <ProtectedRoute showFooter={false}>
-            {({ user, apiClient }) => <ComingSoon user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/funding1"
-        element={
-          <ProtectedRoute showFooter={false}>
-            {({ user, apiClient }) => <ComingSoon user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/valuation1"
-        element={
-          <ProtectedRoute showFooter={false}>
-            {({ user, apiClient }) => <ComingSoon user={user} apiClient={apiClient} />}
-          </ProtectedRoute>
-        }
-      />
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 };

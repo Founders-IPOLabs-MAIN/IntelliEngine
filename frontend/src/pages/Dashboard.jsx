@@ -38,7 +38,7 @@ const Dashboard = ({ user, apiClient }) => {
       bgColor: "bg-blue-50",
       hoverBg: "hover:bg-blue-50",
       hoverBorder: "hover:border-blue-300",
-      path: "/drhp1"
+      path: "/drhp"
     },
     {
       id: "funding",
@@ -49,7 +49,7 @@ const Dashboard = ({ user, apiClient }) => {
       bgColor: "bg-emerald-50",
       hoverBg: "hover:bg-emerald-50",
       hoverBorder: "hover:border-emerald-300",
-      path: "/funding1"
+      path: "/funding"
     },
     {
       id: "matchmaker",

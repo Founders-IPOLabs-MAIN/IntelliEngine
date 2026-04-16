@@ -4913,7 +4913,8 @@ async def admin_login(request: Request, data: EmailAuthRequest, response: Respon
 @api_router.get("/admin/users/{user_id}/permissions")
 async def get_user_permissions(user_id: str, user: User = Depends(require_admin)):
     """Get a user's module permissions"""
-    target = await db.users.find_one({"user_id": user_id}, {"_id": 0, "module_permissions": 1})
+    # First check if user exists (without projection to avoid empty dict issue)
+    target = await db.users.find_one({"user_id": user_id})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
     return {"permissions": target.get("module_permissions", DEFAULT_MODULE_PERMISSIONS)}
