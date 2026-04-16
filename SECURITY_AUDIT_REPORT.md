@@ -77,7 +77,7 @@ All responses now include:
 ### 5. CORS Locked Down
 
 ```python
-CORS_ORIGINS="https://sebi-drhp-editor.preview.emergentagent.com"
+CORS_ORIGINS="https://permissions-mgmt.preview.emergentagent.com"
 ```
 
 ### 6. Dependencies Updated

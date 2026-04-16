@@ -453,6 +453,7 @@ class User(BaseModel):
     picture: Optional[str] = None
     role: str = "Editor"  # Admin/Editor/Viewer
     company_id: Optional[str] = None
+    module_permissions: Optional[dict] = None
     created_at: datetime
 
 class UserSession(BaseModel):
@@ -651,7 +652,12 @@ async def process_session(request: Request, session_request: SessionRequest, res
 @api_router.get("/auth/me")
 async def get_me(user: User = Depends(get_current_user)):
     """Get current authenticated user"""
-    return user.model_dump()
+    data = user.model_dump()
+    if not data.get("module_permissions"):
+        data["module_permissions"] = DEFAULT_MODULE_PERMISSIONS.copy()
+    is_admin = data.get("role") in ["admin", "super_admin", "master_admin", "Admin", "Super Admin"]
+    data["is_admin"] = is_admin
+    return data
 
 @api_router.post("/auth/logout")
 async def logout(request: Request, response: Response):
@@ -4587,7 +4593,7 @@ class AuditLogEntry(BaseModel):
 # Helper to check admin access
 async def require_admin(user: User = Depends(get_current_user)):
     """Require admin or super_admin role"""
-    if user.role not in ["admin", "super_admin", "Admin", "Super Admin"]:
+    if user.role not in ["admin", "super_admin", "Admin", "Super Admin", "master_admin"]:
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
@@ -4730,9 +4736,9 @@ async def delete_custom_role(
 @api_router.get("/admin/users")
 async def get_all_users(user: User = Depends(require_admin)):
     """Get all users with their roles"""
-    users = await db.users.find({}, {"_id": 0}).to_list(500)
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(500)
     
-    # Add role details
+    # Add role details and default permissions
     for u in users:
         role_id = u.get("role", "viewer").lower().replace(" ", "_")
         if role_id in DEFAULT_ROLES:
@@ -4740,6 +4746,8 @@ async def get_all_users(user: User = Depends(require_admin)):
         else:
             custom_role = await db.custom_roles.find_one({"role_id": role_id}, {"_id": 0})
             u["role_details"] = custom_role if custom_role else DEFAULT_ROLES["viewer"]
+        if not u.get("module_permissions"):
+            u["module_permissions"] = DEFAULT_MODULE_PERMISSIONS.copy()
     
     return {"users": users}
 
@@ -4844,6 +4852,98 @@ class PasswordChange(BaseModel):
     new_password: str
 
 # Subscription Plans (MOCKED - Razorpay placeholders)
+
+DEFAULT_MODULE_PERMISSIONS = {
+    "assessment": True,
+    "matchmaker": True,
+    "drhp": False,
+    "funding": False,
+    "valuation": False
+}
+
+ADMIN_EMAIL = "admin@ipolabs.com"
+ADMIN_PASSWORD = "admin@123"
+
+@api_router.post("/admin/login")
+@limiter.limit("5/minute")
+async def admin_login(request: Request, data: EmailAuthRequest, response: Response):
+    """Admin-only login endpoint"""
+    email = data.email.strip().lower()
+    password = data.password.strip()
+
+    admin_user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not admin_user:
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+    admin_roles = ["admin", "super_admin", "master_admin", "Admin", "Super Admin"]
+    if admin_user.get("role") not in admin_roles:
+        raise HTTPException(status_code=403, detail="This account does not have admin privileges")
+
+    if not admin_user.get("password_hash"):
+        raise HTTPException(status_code=401, detail="Admin password not set. Contact support.")
+
+    if not verify_password(password, admin_user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+    session_token = str(uuid.uuid4())
+    await db.user_sessions.insert_one({
+        "session_id": str(uuid.uuid4()),
+        "user_id": admin_user["user_id"],
+        "session_token": session_token,
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=1)).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    response.set_cookie(
+        key="session_token", value=session_token,
+        httponly=True, secure=True, samesite="none", path="/", max_age=24*60*60
+    )
+
+    return {
+        "user": {
+            "user_id": admin_user["user_id"],
+            "email": admin_user["email"],
+            "name": admin_user.get("name", ""),
+            "role": admin_user.get("role", "admin"),
+        },
+        "session_token": session_token,
+        "is_admin": True
+    }
+
+@api_router.get("/admin/users/{user_id}/permissions")
+async def get_user_permissions(user_id: str, user: User = Depends(require_admin)):
+    """Get a user's module permissions"""
+    target = await db.users.find_one({"user_id": user_id}, {"_id": 0, "module_permissions": 1})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"permissions": target.get("module_permissions", DEFAULT_MODULE_PERMISSIONS)}
+
+@api_router.put("/admin/users/{user_id}/permissions")
+async def update_user_permissions(user_id: str, data: dict = Body(...), user: User = Depends(require_admin)):
+    """Update a user's module permissions"""
+    target = await db.users.find_one({"user_id": user_id})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    permissions = data.get("permissions", {})
+    valid_modules = ["assessment", "matchmaker", "drhp", "funding", "valuation"]
+    clean_perms = {}
+    for mod in valid_modules:
+        clean_perms[mod] = bool(permissions.get(mod, DEFAULT_MODULE_PERMISSIONS.get(mod, False)))
+
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"module_permissions": clean_perms}}
+    )
+
+    await log_audit_action(
+        user.user_id, "update", "user_management",
+        f"Updated module permissions for {target.get('email')}: {clean_perms}",
+        user_id
+    )
+
+    return {"status": "updated", "permissions": clean_perms}
+
 SUBSCRIPTION_PLANS = [
     {
         "plan_id": "free",
@@ -6951,6 +7051,32 @@ async def create_indexes():
         logger.info("MongoDB indexes created successfully")
     except Exception as e:
         logger.error(f"Index creation error: {e}")
+
+    # Seed admin account
+    try:
+        existing_admin = await db.users.find_one({"email": ADMIN_EMAIL})
+        if not existing_admin:
+            await db.users.insert_one({
+                "user_id": f"admin_{uuid.uuid4().hex[:12]}",
+                "email": ADMIN_EMAIL,
+                "name": "Platform Admin",
+                "picture": None,
+                "password_hash": hash_password(ADMIN_PASSWORD),
+                "auth_type": "email",
+                "role": "admin",
+                "company_id": None,
+                "module_permissions": {"assessment": True, "matchmaker": True, "drhp": True, "funding": True, "valuation": True},
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            logger.info(f"Admin account seeded: {ADMIN_EMAIL}")
+        elif not existing_admin.get("password_hash"):
+            await db.users.update_one(
+                {"email": ADMIN_EMAIL},
+                {"$set": {"password_hash": hash_password(ADMIN_PASSWORD), "role": "admin"}}
+            )
+            logger.info(f"Admin password updated for: {ADMIN_EMAIL}")
+    except Exception as e:
+        logger.error(f"Admin seeding error: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

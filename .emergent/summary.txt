@@ -1,159 +1,182 @@
 <analysis>**original_problem_statement:**
-The user is building IntelliEngine, a comprehensive IPO-readiness platform. The core focus is building a highly complex DRHP Builder that mimics Microsoft Word. The system must be able to import massive, complex SEBI DRHP Word documents (), retain 100% of their exact formatting (legal paper sizes, custom margins, hyperlinks, numbered lists, table constraints), allow editing in a TipTap-based UI, and export back to Word/PDF. 
-**PRODUCT REQUIREMENTS (Latest Shift):** The imported flat Word document must now be intelligently parsed and automatically mapped/chunked into the structured 9-chapter SEBI module system (from ), rather than just dumped into a flat text editor. The UI must mimic Microsoft Word exactly (page breaks, page numbers, exact mouse behavior).
+The user is building IntelliEngine, an IPO-readiness platform. Following the successful addition of a Governance Assessment feature, a robust Automated Business Valuation module (with Excel document AI extraction), and manual user authentication, the core requirement has shifted to implementing strict Role-Based Access Control (RBAC). The application requires a secure Admin Panel ( hidden from normal users) where an admin can toggle specific module access (Matchmaker, Assessment, DRHP, Funding) on a per-user basis. Normal users lacking permissions should be routed to an Access Denied page or Dashboard.
+
+**PRODUCT REQUIREMENTS (Latest):** 
+1. Hidden  route with dedicated Admin Login page.
+2. Admin Dashboard containing a user list with toggleable permissions for specific modules (Matchmaker, Assessment, DRHP, Funding).
+3. Access enforcement: Users attempting to access unauthorized modules must be redirected to Access Denied or Dashboard.
 
 **User's preferred language**: English
 *(INSTRUCT next agent: Please respond in English only)*
 
 **what currently exists?**
-A full-stack React/FastAPI/MongoDB app. 
-- **Frontend:** A  with distinct buttons for Main Board and SME Board. A TipTap-based  editor with a custom formatting toolbar, direct DOCX upload button, and Submit for Review feature. 
-- **Backend:** A robust, custom  based import/export pipeline (, ) that successfully handles complex 4.8MB SEBI DRHP documents, preserving custom CSS, constrained tables, exact list hierarchies, and hyperlinks. Images are extracted and saved asynchronously to MongoDB GridFS.
+A full-stack React/FastAPI/MongoDB app.
+- **Frontend:** Robust modules including CommandCenter, Assessment Wizard, Valuation Wizard, and a hybrid Login page (Google + Manual). Base implementations for , , and  are present. 
+- **Backend:** Highly comprehensive API inside a monolithic  (7000+ lines). Includes fully functioning AI-extraction (via openpyxl and GPT-5.2), automated DCF/NAV calculations, and JWT/Session-based Auth. The backend  model has recently been updated to include  arrays, and an admin seed was initialized.
 
 **Last working item**:
-    - Last item agent was working: Analyzing the user's latest request to radically shift the import pipeline. The agent was reviewing  and  to figure out how to take the parsed Word document, split it by chapters, and map the content into the 9-section structured chapter builder, while also updating the TipTap UI to visually represent exact Word pages (page breaks, page numbers, mouse behavior).
+    - Last item agent was working: Building the frontend Role-Based Access Control (RBAC) UI in . The agent had successfully created the backend endpoints for managing user permissions, seeded the admin account, and created the  and  pages. The context was cut off while actively editing  to render the user table and permission toggles.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? Both (Frontend testing agent for the massive UI overhaul of TipTap; Backend testing agent for the complex parsing/chunking algorithm mapping the document to the DB).
+    - Which testing method agent to use? Both (Frontend testing agent for the Admin UI logic, and Backend agent to ensure role enforcements work securely).
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  Issue 1: Map Imported Word Document to Structured Chapter Modules (Priority: P0)
-  Issue 2: Enforce 100% MS Word UI/UX in TipTap Editor (Priority: P0)
-  Issue 3: Remove internal Board toggles inside DRHP modules (Priority: P1)
-  Issue 4: Professional Registration Next button bug for RTA category (Priority: P2)
+  Issue 1: Implement Admin Role-Based Access Control & User Permissions UI (Priority: P0)
+  Issue 2: Map Imported Word Document to Structured Chapter Modules (Priority: P0)
+  Issue 3: Enforce 100% MS Word UI/UX in TipTap Editor (Priority: P0)
+  Issue 4: Remove internal Board toggles inside DRHP modules (Priority: P1)
+  Issue 5: Professional Registration Next button bug for RTA category (Priority: P2)
 
   Issues Detail:
-  - Issue 1: Map Imported Word Document to Structured Chapter Modules
-     - Attempted fixes: Agent just started viewing files.
-     - Next debug checklist: Check . Update  or the import API endpoint to parse the document, identify chapter headers (e.g., using regex or structural cues based on SEBI formatting), split the HTML content into chunks, and save them to the database under their respective section IDs instead of one giant flat file. 
-     - Why fix this issue and what will be achieved with the fix? This is the user's explicit newest requirement. It bridges the gap between the flat document upload and the structured module system.
+  - Issue 1: Implement Admin Role-Based Access Control & User Permissions UI
+     - Attempted fixes: Backend models, auth endpoints, and new React files (, ) are in place. Editing  was interrupted.
+     - Next debug checklist: Resume updating  to display a list of users, map  to toggles, and link them to the newly created  endpoint. Update  routing to enforce the  access checks.
+     - Why fix this issue and what will be achieved with the fix? Completes the most recent and critical security/administrative requirement requested by the user.
      - Status: IN PROGRESS
      - Is recurring issue? N
      - Should Test frontend/backend/both after fix? Both
      - Blocked on other issue: None
-  - Issue 2: Enforce 100% MS Word UI/UX in TipTap Editor
-     - Attempted fixes: None yet.
-     - Next debug checklist: Investigate TipTap extensions or custom React implementations for visual page breaks, dynamic page numbering, and strict A4/Legal page boundaries. Ensure mouse interactions (text selection, table resizing) mimic Word.
-     - Why fix this issue and what will be achieved with the fix? Meets user requirement for a true Word-like environment.
+  - Issue 2: Map Imported Word Document to Structured Chapter Modules
+     - Attempted fixes: Ignored in recent sessions due to user prioritization of new Valuation/Auth features.
+     - Next debug checklist: Check . Update  to map imported SEBI documents to structured chapters instead of flat text.
+     - Why fix this issue and what will be achieved with the fix? Fulfils the core DRHP Builder requirement from the previous fork.
      - Status: NOT STARTED
      - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Frontend
+     - Should Test frontend/backend/both after fix? Both
      - Blocked on other issue: None
-  - Issue 3: Remove internal Board toggles inside DRHP modules
-     - Attempted fixes: None yet.
-     - Next debug checklist: In , remove the internal buttons/tabs for SME/Main Board since the user now selects this from the Command Center. Realign the UI.
-     - Why fix this issue and what will be achieved with the fix? UX cleanup requested by user.
+  - Issue 3: Enforce 100% MS Word UI/UX in TipTap Editor
+     - Attempted fixes: None.
+     - Next debug checklist: Investigate TipTap extensions for visual page breaks, dynamic page numbering, and Legal page boundaries.
+     - Why fix this issue and what will be achieved with the fix? Meets user requirement for a true Word-like environment.
      - Status: NOT STARTED
      - Is recurring issue? N
      - Should Test frontend/backend/both after fix? Frontend
      - Blocked on other issue: None
 
 **In progress Task List**:
-  - Task 1: Master Profile Admin Approval Workflow Testing
-     - Where to resume: Admin Approval UI and backend flow exist but haven't been tested end-to-end.
-     - What will be achieved with this? Complete the platform's professional governance lifecycle.
-     - Status: TESTING PENDING
+  - Task 1: AdminCenter.jsx Permissions Tab
+     - Where to resume: .
+     - What will be achieved with this? Allows master admins to toggle feature access for standard users.
+     - Status: IN PROGRESS
      - Should Test frontend/backend/both after fix? Both
      - Blocked on something: None
 
 **Upcoming and Future Tasks**
     Upcoming Tasks:
-    - P0: Implement DRHP Data Synchronization: Backend logic to automatically sync data from the 5 Centralised Corporate Repository modules to the Main DRHP Chapters. 
-    - P1: Refactor  Monolith: File is now ~6400 lines long. It MUST be broken down using FastAPI's .
-    - P1: Populate remaining ~30 DRHP sub-modules with editable content based on standard SEBI structures.
+    - P0: DRHP Data Synchronization: Backend logic to automatically sync data from Centralised Corporate Repository to Main DRHP Chapters.
+    - P1: Refactor  Monolith: File is now over 7,000 lines long. Breakdown using FastAPI's  is urgently needed.
+    - P1: Populate remaining ~30 DRHP sub-modules with editable SEBI standard content.
 
     Future Tasks:
     - Implement Professional Verification API (Protean).
     - Implement full billing integration with Razorpay.
-    - Develop the dynamic IPO Readiness health score.
 
 **Completed work in this session**
-- DRHP TipTap Editor UI with complex formatting toolbar (DONE)
-- Command Center UI routing (Removed old chapters list, added standalone Main/SME Board buttons) (DONE)
-- Custom  based DRHP Word Import Pipeline preserving strict SEBI styles, 330+ tables, and hyperlinks () (DONE)
-- Word and PDF Export functionality () using  and  (DONE)
-- GridFS integration for asynchronous image extraction from uploaded Word documents (DONE)
-- Tested pipeline against a massive 4.8MB actual SEBI DRHP document (DONE)
+- Added Governance/Compliance Assessment tab with 55 questions and backend scoring (DONE)
+- Built Automated Business Valuation Module including 4-step wizard, DCF/NAV math engines, and on-screen report dashboard (DONE)
+- Implemented file upload + AI Extraction using GPT-5.2 and  for Excel/PDF financial data parsing (DONE)
+- Added 8 MongoDB startup indexes (DONE)
+- Fixed profile picture GridFS ownership authentication vulnerability (DONE)
+- Built Manual Email/Password Registration and Sign-in, including Google OAuth duplicate email collision handling (DONE)
+- Implemented Coming Soon module redirections for unauthorized users (DONE)
 
 **Earlier issues found/mentioned but not fixed**
    - Issue 1: Unreliable automated frontend tests for authenticated routes.
-     - Debug checklist: Rely on testing agent scripts explicitly passing auth tokens or manual verification via screenshot/curl.
-     - Why to solve this issue and what will be achieved with this? Reliable CI/CD regressions.
+     - Debug checklist: Pass explicit auth tokens or use screenshot verification for authed routes.
+     - Why to solve this issue and what will be achieved with this? Stable CI/CD regression testing.
      - Should Test frontend/backend/both after fix: Frontend
      - Is recurring issue? Y
 
 **Known issue recurrence from previous fork**
-  - Issue: The Next button bug in the professional registration form for the RTA category.
-  - Recurrence count: 3
-  - Status: NOT STARTED (Agent ignored this to focus purely on the massive DRHP builder).
+  - Issue recurrence in previous fork: Professional Registration Next button bug (RTA category).
+  - Recurrence count: 4
+  - Status: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Frontend:** React, Tailwind CSS, TipTap (with , , etc.).
-- **Backend:** Python, FastAPI, Motor (Async MongoDB), , , .
-- **Database:** MongoDB, AsyncIOMotorGridFSBucket (for extracting/storing docx images).
+- **Frontend:** React, Tailwind CSS, TipTap Editor.
+- **Backend:** Python, FastAPI, Motor (Async MongoDB),  (for Excel parsing), .
+- **Database:** MongoDB, AsyncIOMotorGridFSBucket.
 
 **key DB schema**
-  - : Contains 
-  -  / : GridFS for storing images extracted from Word docs.
+  - : Added  array (e.g. ).
+  - : Stores financial and governance scores.
+  - : Ties user resources together.
 
 **changes in tech stack**
-  - Added  packages to frontend.
-  - Added , , ,  to backend.
-  - Removed  (replaced by custom parser).
+  - Added  and  to backend dependencies for financial data extraction.
+  - Added  integration for manual authentication.
 
-**All files of reference**
-  -  (Currently modified to house the TipTap editor and upload pipeline)
-  -  (New file: handles massive parsing logic)
-  -  (New file: handles document generation)
-  -  (CRITICAL for next task: dictates how the document should be chunked)
-  -  (Contains the  endpoint that needs linking to chapter logic)
+**All files of reference** 
+  -  (Updated extensively: Auth endpoints, Valuation endpoints, Admin endpoints).
+  -  (Currently heavily modified; work in progress).
+  -  (New).
+  -  (New).
+  -  (CRITICAL: needs  checks wrapped around protected routes).
+  -  (Updated with toggleable manual registration).
 
-**Areas that need refactoring**:
-  - : Over 6,400 lines. Risk of breaking changes is very high. Suggest refactoring into modular routes before adding more massive features.
+**Areas that need refactoring**: 
+  - : Has bloated past 7,000 lines. Modularity is absolutely required going forward.
 
 **key api endpoints**
-  -  (Handles the DOCX upload, currently saves as flat HTML. Needs to be modified to map to chunks).
-  -  
+  -  (Updates RBAC rules).
+  -  (Manual auth).
+  -  (AI File Extraction pipeline).
 
 **Critical Info for New Agent**
-- **The paradigm has shifted:** The user does NOT want the imported DRHP to just be a long flat document in TipTap anymore. The backend  pipeline must be updated to intelligently map the parsed content into the 9 SEBI chapters defined in .
-- **UI Constraints:** The user wants TipTap to mimic MS Word *flawlessly* (visual page breaks, page numbers, mouse behaviors). This will require advanced TipTap extensions or custom React wrapping.
-- **Remove internal toggles:** Delete the Main Board and SME Board toggle buttons currently residing *inside* , as selection is now handled at the Command Center level.
+- **Immediate Task Context:** The backend structure for Role-Based Access Control (RBAC) is complete. The admin account has been seeded (). Your immediate focus should be completing the UI in  to list users and attach UI toggles to . Afterwards, wrap the module routes in  to strictly enforce these roles.
+- **Auth Mechanics:** Be aware that the app now supports *both* Emergent-managed Google Auth and standard manual email/password auth (using bcrypt). Both issue a .
+- **Priorities Note:** The user keeps requesting large new features (Valuation, Auth, Admin Panels) ignoring the original DRHP MS-Word constraints. Prioritize completing the current user's request (Admin RBAC), but do not lose sight of the DRHP backlog if prompted for next steps.
 
 **documents and test reports created in this job**
-  -  to 
-  -  (Updated with completion of SEBI import/export)
+  -  (Governance tests)
+  -  (Valuation core tests)
+  -  (Document Upload tests)
+  -  
+  -  (Contains the new admin seed credentials).
 
 **Last 10 User Messages and any pending HUMAN messages** 
- - 10. **Request:** Add direct upload button, preserve same format, .docx only, move submit button. (Completed)
- - 9. **Request:** Remove DRHP Chapters from Command Center, add Main Board/SME Board buttons. (Completed)
- - 8. **Bug:** DRHP import losing SEBI formatting. Use python-docx, keep images separate. (Completed)
- - 7. **Agent Action:** Built Word/PDF export pipeline based on backlog. (Completed)
- - 6. **Request:** Uploaded real 4.8MB SEBI document. Test and preserve all formatting, tables, hyperlinks. (Completed)
- - 5. **PENDING (Message 361):** Remove internal board buttons in DRHPOutput. Enforce strict MS Word UI (page breaks, numbers, mouse behavior). Map imported document directly into the structured 9-chapter module system based on sections, rather than outputting flat text.
+ - 10. **Request:** Add Valuation module based on doc (Completed).
+ - 9. **Request:** Add detailed on-screen report to valuation (Completed).
+ - 8. **Request:** Add file upload / AI extraction for financials in valuation wizard (Completed).
+ - 7. **Request:** Create 8 MongoDB startup indexes (Completed).
+ - 6. **Request:** Secure profile picture endpoint with auth/GridFS ownership check (Completed).
+ - 5. **Request:** Add sign-up button on  for manual registration (Completed).
+ - 4. **Bug Report:** 409 Conflict when existing Google OAuth user tries manual signup (Completed).
+ - 3. **Request:** Role-based flow part 1 - Redirect default users to Coming Soon for DRHP and Funding (Completed).
+ - 2. **Request (Message 387):** Implement Admin Panel Access Control, dedicated admin login, and Role-Based Module Assignment (Matchmaker, Assessment, DRHP, Funding) with Access Denied redirects.
+ - 1. **PENDING:** Agent started editing  to accommodate the permissions table but got cut off. Complete the UI integration and routing enforcement.
 
 **Project Health Check:**
-- Broken: DRHP Data Synchronization from repository to chapters. 
-- Mocked: Razorpay billing.
+- Broken: RTA Professional Registration Next bug.
+- Mocked: Razorpay billing, Protean verification.
 
 **3rd Party Integrations**
-	 •	Emergent-managed Google Auth (Authentication)
+	 •	Emergent LLM Key (Used for GPT-5.2 AI document extraction)
+	 •	Emergent-managed Google Auth
 	 •	Resend (Emails) — requires User API Key
-	 •	Protean (Verification) — planned
-	 •	Razorpay (Payments) — planned/mocked
 
 **Testing status**
-  - Testing agent used after significant changes: YES (Heavily used for import/export pipeline iterations 13-19).
-  - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: None permanently retained (temp backend scripts used during testing agent runs).
-  - Known regressions: Professional registration Next button (RTA category).
+  - Testing agent used after significant changes: YES (iterations 20-22).
+  - Troubleshoot agent used after agent stuck in loop: NO.
+  - Test files created: None.
+  - Known regressions: None new; existing RTA button bug remains.
 
 **Credentials to test flow:**
-- App relies on Emergent's Google Auth flow. 
+- Read . The admin seed is .
 
 **What agent forgot to execute**
-- The agent completely ignored the recurring bug regarding the Next button in the Professional Registration form (RTA category) and did not run the end-to-end tests for the Master Admin Approval workflow, choosing to focus exclusively on the complex DRHP Editor tasks.</analysis>
+- Still carrying over the original P0 tasks: DRHP chunking mapping, and matching TipTap MS Word UI from earlier sessions.
+
+**Debugging checklist for current issue**
+    Issue: Admin Role-Based Access Control UI & Enforcement Setup
+
+    Frontend files to check: 
+    -  (Finish adding the user listing and permission toggle logic).
+    -  (Update  or route declarations to check  against requested paths and redirect to ).
+  
+    Backend files to check:
+    -  (Verify  functions exactly as expected when called by the frontend).</analysis>
