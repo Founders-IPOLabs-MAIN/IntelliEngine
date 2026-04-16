@@ -6,7 +6,7 @@
 **Platform Type:** Cloud-hosted & secure IPO-readiness platform  
 **Target Market:** Indian market  
 **Date Started:** Feb 17, 2026
-**Last Updated:** Mar 13, 2026
+**Last Updated:** Apr 16, 2026
 
 ## Original Problem Statement
 Build a complete IPO-readiness platform with:
@@ -17,867 +17,124 @@ Build a complete IPO-readiness platform with:
 - Version controlled, collaborative platform
 - Match Maker module for connecting with IPO professionals
 - Legal and Disclaimer module for compliance
-
-## User Personas
-1. **CFOs** - Need to manage IPO documentation and financial reporting
-2. **Company Secretaries** - Handle compliance and regulatory matters
-3. **Investment Bankers** - Track IPO progress and due diligence
-4. **Founders/Promoters** - Monitor overall IPO readiness
-5. **IPO Professionals** - CAs, CSs, CFOs, Legal experts registering on the platform
-
-## Core Requirements (Static)
-- [x] User authentication with Google OAuth
-- [x] Multi-tenant architecture
-- [x] Session management with secure cookies
-- [x] Project (IPO) management
-- [x] DRHP Builder with 13 sections
-- [x] Document upload to GridFS
-- [x] Document download
-- [x] OCR processing with AI (GPT-5.2 Vision)
-- [x] Section content editing
-- [x] Status tracking (Draft/Review/Final)
-- [x] Progress tracking
-- [x] Match Maker module with AI recommendations
-- [x] Legal Disclaimer and Terms of Use pages
-- [x] Click-wrap agreement for professional registration
-- [x] Command Center Dashboard
-- [x] Data Capture Modules (Company Data, Promoter, KMP, Pre-IPO Tracker)
-
-## Security Features (Mar 13, 2026)
-- [x] **File Upload Security:**
-  - 5MB max file size limit
-  - File type whitelist by context (document, image, profile_picture, id_document)
-  - MIME type verification
-  - Blocked dangerous extensions (ZIP, EXE, RAR, etc.)
-  - AI content moderation for images (nudity/explicit detection)
-  - Filename sanitization (path traversal prevention)
-- [x] **Rate Limiting:**
-  - Auth: 10/minute
-  - Document upload: 20/minute
-  - Profile picture: 5/minute
-  - OCR upload: 10/minute
-- [x] **Security Headers:**
-  - X-Content-Type-Options, X-Frame-Options, X-XSS-Protection
-  - Referrer-Policy, Permissions-Policy
-- [x] **Input Sanitization:**
-  - Regex escape for search queries (ReDoS prevention)
-- [x] **CORS:** Explicit origin configuration
-- [x] **Dependencies:** All CVEs patched
+- Business Valuation module with AI-powered analysis
+- Role-Based Access Control (RBAC) with Admin Panel
 
 ## Tech Stack
 - **Frontend:** React 19, Tailwind CSS, ShadCN UI, Lucide Icons
 - **Backend:** FastAPI, Python 3.11
 - **Database:** MongoDB with GridFS
-- **Authentication:** Emergent-managed Google OAuth
+- **Authentication:** Emergent-managed Google OAuth + Email/Password (bcrypt)
 - **OCR:** Gemini 2.5 Flash via Emergent LLM Key
+- **AI:** GPT-5.2 via Emergent LLM Key
 
-### Phase 3 - Legal and Disclaimer Module (Feb 18, 2026) ✅
-1. **Legal Disclaimer Page** (`/legal-disclaimer`)
-   - General Nature of the Platform section
-   - No Investment or Financial Advice section
-   - Professional Matchmaking section
-   - AI & Technology Limitations section
-   - Privacy & Data Security section
-
-2. **Terms of Use Page** (`/terms-of-use`)
-   - Representation of Professional Standing section
-   - Strict Prohibition of Illegal Solicitation section
-   - Integrity of AI-Human Interaction section
-   - Confidentiality & Data Protection section
-   - Indemnity & Limitation of Liability section
-
-3. **Global Footer Component**
-   - Appears on all protected/authenticated pages
-   - Links to Legal Disclaimer and Terms of Use
-   - IntelliEngine branding with copyright
-
-4. **Dashboard Legal Links**
-   - Dedicated legal links section with icons
-   - Links to Legal Disclaimer and Terms of Use
-
-5. **Click-Wrap Agreement**
-   - Added to Professional Registration Step 3
-   - Mandatory checkbox for Terms of Use acceptance
-   - Links open in new tabs
-   - Submit button disabled until terms accepted
-
-### Phase 4 - IPO Funding Module (Feb 18, 2026) ✅
-1. **Funding Landing Page** (`/funding`)
-   - Disclaimer popup on first visit (DPDP Act 2023 compliant)
-   - 4 pillar cards: Pre-IPO Funding, Post-IPO Funding, Our Funding Partners, Funding Eligibility Quiz
-   - "Human + AI Powered Funding Engine" branding
-   - Stats bar and How It Works section
-
-2. **Pre-IPO Funding Page** (`/funding/pre-ipo`)
-   - 6 funding options: Angel & Seed, VC, PE, Bridge Financing, Mezzanine, Pre-IPO Placement
-   - Interactive cards with jargon-free explanations
-   - AI Funding Fitment Calculator (3-question quick assessment)
-   - Expert Consultation booking with MOCKED calendar
-
-3. **Post-IPO Funding Page** (`/funding/post-ipo`)
-   - 5 funding options: FPO, Rights Issue, QIP, Preferential Allotment, NCDs
-   - Same interaction pattern as Pre-IPO
-   - AI Fitment and Expert Consultation features
-
-4. **Funding Partners Directory** (`/funding/partners`)
-   - 4 tabs: Investment Banks, HNI Networks, Sovereign Wealth Funds, Banks
-   - Real Indian partners data (Kotak Mahindra Capital, ICICI Securities, SBI, Indian Angel Network, ADIA, GIC, etc.)
-   - External links to partner websites
-
-5. **AI-Powered Eligibility Quiz** (`/funding/quiz`)
-   - Multi-step wizard (max 6 questions)
-   - Adapts for Pre-IPO vs Post-IPO funding
-   - 3-tier scoring: High Readiness (80-100), Potentially Ready (50-79), Early Stage (<50)
-   - AI Profile Summary generation using GPT-5.2
-   - Action buttons based on tier (VIP booking, standard call, toolkit download)
-
-6. **Backend APIs**
-   - GET /api/funding/pre-ipo-options - 6 Pre-IPO funding options
-   - GET /api/funding/post-ipo-options - 5 Post-IPO funding options
-   - GET /api/funding/partners - All partner categories
-   - GET /api/funding/quiz-questions - Quiz questions by funding type
-   - POST /api/funding/quiz-evaluate - AI-powered quiz evaluation
-   - POST /api/funding/ai-fitment - Quick 3-question AI assessment
-   - POST /api/funding/book-consultation - Expert consultation booking
-   - POST /api/funding/disclaimer-consent - Record user consent
-   - GET /api/funding/available-slots - MOCKED calendar slots
-
-### Phase 5 - IPO Assessment Module (Feb 18, 2026) ✅
-1. **Assessment Landing Page** (`/assessment`)
-   - Features overview: 4 calculators, SEBI eligibility, AI analysis, Readiness score
-   - How It Works section with 4 steps
-   - Calculator previews with descriptions
-   - SEBI Mainboard vs SME criteria overview
-
-2. **Assessment Wizard** (`/assessment/start`)
-   - 5-step multi-step form with progress bar
-   - Step 1: Company Info (Type, Target Board, Reporting Unit)
-   - Step 2: P&L Data (3 years: PAT, EBITDA, Revenue with tabs)
-   - Step 3: Balance Sheet (Debt, Cash, NTA 3yrs, Net Worth 3yrs, D&A, CapEx, WC Change)
-   - Step 4: Projections (Growth Rate, WACC, Terminal Growth)
-   - Step 5: Market Data (Industry P/E, Peer P/E, Issue Type, Dilution %)
-
-3. **Assessment Results Page** (`/assessment/results/:id`)
-   - Readiness Score with visual circular indicator (0-100)
-   - 3-tier status: Ready (75+), Requires 1-2 Years Planning (50-74), Not Eligible (<50)
-   - Valuation Summary: Average valuation, Suggested price band, Issue size
-   - 4 Calculator Cards:
-     - P/E Valuation: PAT × Industry P/E Multiple
-     - DCF Valuation: 5-year FCF projections + Gordon Growth terminal value
-     - FCFE: PAT + D&A - CapEx - ΔWC
-     - Issue Size: Valuation × Dilution %
-   - SEBI Eligibility Check with pass/fail for each criterion
-   - AI-Powered Gap Analysis using GPT-5.2 (restricted to website services)
-   - CTA buttons to Match Maker, DRHP Builder, and Funding modules
-
-4. **Backend APIs**
-   - POST /api/assessment/calculate - Run all 4 calculators + AI analysis
-   - GET /api/assessment/history - User's assessment history
-   - GET /api/assessment/{id} - Specific assessment details
-
-### Phase 7 - Command Center Dashboard (Feb 19, 2026) ✅
-1. **Command Center Page** (`/project/:projectId/command-center`)
-   - Premium fintech-style dark theme dashboard
-   - Launches automatically when any IPO project is opened
-   - Replaces direct DRHP Builder navigation
-
-2. **KPI Ribbon (Top Header)**
-   - IPO Readiness Score: Radial gauge (0-100%)
-   - Days to Filing: Countdown to Dec 31, 2026
-   - Active Intermediaries: Avatar indicators for online team members
-   - Critical Delays: Pulsing red notification badge
-   - Upcoming Meetings: List with dates
-   - Upcoming Deadlines: Priority-based list
-
-3. **Module Progress Tracking (Bento Grid)**
-   - 13 Chapter Status Cards with mini-progress bars
-   - Click-to-edit deep linking to section editor
-   - Readiness Heatmap: Compact grid showing Drafting/Review/Final status
-
-4. **Compliance Status Hub**
-   - Overall Progress bar
-   - Gap Analysis: Missing SEBI disclosures count
-   - Delayed Modules: Red flag indicators with AI-generated tooltips (GPT-5.2)
-
-5. **Version Control & Audit Trail ("Pulse" Feed)**
-   - Version History Panel: 5 recent saves with Compare button
-   - Immutable Audit Trail: Vertical timeline with timestamps
-
-6. **Communication Layer**
-   - Team Directory: Searchable member list with status indicators
-   - Quick Schedule: Modal for scheduling calls (Topic, Date, Time)
-   - MOCKED Google Meet links
-
-7. **Interactive Features**
-   - Hover Intelligence: AI-generated delay explanations
-   - "Generate DRHP Draft" button: Pulsing animation at 90%+ readiness
-   - Fixed bottom "Open DRHP Builder" button
-
-8. **Backend APIs**
-   - GET /api/projects/{id}/command-center - Full dashboard data
-   - POST /api/projects/{id}/schedule-meeting - Schedule meeting (MOCKED Meet link)
-   - GET /api/projects/{id}/meetings - List project meetings
-   - POST /api/projects/{id}/ai-delay-explanation - AI-powered delay analysis
-
-### Phase 6 - Admin Center & Account Details (Feb 18, 2026) ✅
-1. **Admin Center** (`/admin`)
-   - **Roles Tab**: 4 default roles (Super Admin max 3, Admin, Editor, Viewer) with descriptions
-   - **Permissions Tab**: Permission matrix (8 features × 4 roles) with R/W/D indicators
-   - **Users Tab**: User list with role badges, search, and role assignment
-   - **Audit Log Tab**: Action history with filters (action type, module)
-   - **Assign Role Dialog**: Email-based user search and role assignment
-
-2. **Account Details** (`/account`)
-   - **Profile Tab**: Edit name, phone, address, company name, designation
-   - **Profile Picture**: Upload with GridFS storage (max 5MB), camera icon button
-   - **Security Tab**: Google OAuth status, password change disabled for OAuth users
-   - **Billing Tab** (MOCKED with Razorpay placeholders):
-     - Current plan display (Free, Starter, Professional, Enterprise)
-     - Upgrade/Cancel subscription buttons
-     - Transaction history with invoice download
-     - MOCKED notice about Razorpay integration
-
-3. **Backend APIs**
-   - GET /api/admin/roles - All roles with permissions
-   - GET /api/admin/features - 8 platform features
-   - GET /api/admin/permission-matrix - Full permission matrix
-   - GET /api/admin/users - User list with role details
-   - POST /api/admin/users/assign-role - Assign role to user
-   - GET /api/admin/audit-logs - Audit logs with filters
-   - GET /api/account/profile - User profile
-   - PUT /api/account/profile - Update profile
-   - POST /api/account/profile-picture - Upload picture (GridFS)
-   - GET /api/account/subscription - Current subscription
-   - GET /api/account/subscription/plans - Available plans
-   - POST /api/account/subscription/upgrade - MOCKED upgrade
-   - POST /api/account/subscription/cancel - MOCKED cancel
-   - GET /api/account/billing/transactions - MOCKED transactions
-
-### Phase 2 - Match Maker Module (Feb 17, 2026)
-1. **Match Maker Landing Page (Practo-style)**
-   - **AI-Powered Match Making Engine** branding
-   - 11 professional categories with icons and descriptions
-   - Hero section with "Get AI Recommendations" CTA
-   - Stats bar (500+ Experts, 11 Categories, 100+ Cities, 200+ IPOs)
-   - "Register as Professional" CTA
-   - How It Works section (AI-powered)
-
-2. **AI-Powered Matching System** ⭐ NEW
-   - AI recommendation dialog with comprehensive form:
-     - Company Name & Sector
-     - Current Stage (Pre-IPO/Assessment/Drafting/Filing)
-     - Target Exchange (SME/Mainboard)
-     - Estimated Issue Size & Timeline
-     - Specific Services Needed (multi-select tags)
-     - Preferred Cities (multi-select)
-     - Additional Context
-   - Gemini AI analysis via Emergent LLM key
-   - Returns:
-     - AI Analysis Summary with matching strategy
-     - Top 5 recommended professionals with match scores (0-100)
-     - Detailed match reasoning for each professional
-     - Key strengths and recommended services
-     - Additional AI advice
-
-3. **Professional Search & Discovery**
-   - City selection dialog
-   - Advanced filtering sidebar:
-     - Category filter
-     - Years of Experience (1-5, 5-10, 10+)
-     - IPO Experience (5+ IPOs, SME Specialist, Mainboard Specialist)
-     - Subject Matter Expertise tags
-     - Verified Only filter
-   - Profile cards with name, agency, rating, expertise, experience, locations
-   - Action buttons: View Profile, Book Call, Send Enquiry
-   - Pagination support
-
-3. **Professional Profile Page**
-   - Detailed profile header with photo, rating, verification badge
-   - Services Offered with pricing
-   - IPO Track Record
-   - Contact Information
-   - Certifications (SEBI, CA/CS memberships)
-   - Reviews section with Write Review functionality
-   - Book Consultation dialog (video/audio/in-person)
-   - Send Enquiry dialog
-
-4. **Professional Registration (3-step wizard)**
-   - Step 1: Basic Info (category, name, agency, email, mobile)
-   - Step 2: Professional Details (locations, experience, summary, expertise tags, certifications)
-   - Step 3: Services & Consent (DPDP Act 2023 compliance)
-
-5. **Backend APIs**
-   - GET /api/matchmaker/categories - 11 professional categories
-   - GET /api/matchmaker/cities - 24 Indian cities
-   - GET /api/matchmaker/expertise-tags - 16 expertise tags
-   - GET /api/matchmaker/professionals - Search with filters
-   - POST /api/matchmaker/professionals - Register as professional
-   - PUT /api/matchmaker/professionals/:id - Update profile
-   - POST /api/matchmaker/enquiry - Send enquiry
-   - POST /api/matchmaker/consultation - Book consultation
-   - POST /api/matchmaker/professionals/:id/review - Add review
-
-## What's Been Implemented ✅
-
-### Phase 1 MVP (Feb 17, 2026)
-1. **Authentication System**
-   - Google OAuth integration via Emergent Auth
-   - Session management with httpOnly cookies
-   - Protected routes with auth verification
-   - User profile display
-
-2. **Dashboard**
-   - Welcome banner with IntelliEngine branding
-   - Platform modules grid (5 modules - DRHP Builder active)
-   - IPO Projects listing with progress
-   - Create new project dialog
-
-3. **DRHP Builder**
-   - All 13 SEBI-compliant sections with descriptions:
-     - Cover Page: Basic issuer info, company name, logo, contacts, lead managers, registrar
-     - Definitions and Abbreviations: Technical terms used throughout DRHP
-     - Risk Factors: Internal, external, business, regulatory, legal, financial risks
-     - Introduction and Summary: Offer overview, issue type, business & industry summary
-     - Capital Structure: Authorized/paid-up capital, pre/post-IPO shareholding
-     - Objects of the Issue: Fund utilization - debt, capex, working capital
-     - Basis for Issue Price: Qualitative/quantitative factors, peer comparison
-     - Industry Overview: Market size, growth trends, competitive landscape
-     - Business Overview: Business model, operations, products, strategies
-     - Management & Promoter Group: Directors, KMPs, promoter details
-     - Financial Information: Restated financials, balance sheet, P&L, cash flow
-     - Legal and Regulatory Matters: Litigation, tax disputes, regulatory actions
-     - Other Information/Disclosures: Material contracts, approvals, disclosures
-   - Progress tracking per project
-   - Status badges (Draft/Review/Final)
-   - Document upload and download capabilities per section
-
-4. **Section Editor (Task 4 - Enhanced)**
-   - **Structured Form Fields** specific to each section type:
-     - Cover Page: Company name, logo URL, addresses, contacts, lead managers, registrar
-     - Risk Factors: 6 risk categories (internal, external, business, regulatory, legal, financial)
-     - Capital Structure: Authorized capital, paid-up capital, shareholding patterns
-     - Objects of Issue: Fund utilization breakdown with amounts
-     - Financial Info: Revenue trends, profit trends, key ratios, MD&A
-     - And more for all 13 sections
-   - **Tabs UI**: Structured Form tab + Notes & OCR tab
-   - Document upload via drag & drop or click
-   - Document list with file info
-   - OCR processing trigger
-   - Document download
-   - Document delete
-   - Status change dropdown
-   - Save functionality
-
-5. **Sidebar Navigation**
-   - IntelliEngine branding
-   - Navigation items with icons
-   - User profile section
-   - Logout functionality
-
-## Database Schema
-
-### Users Collection
-```json
-{
-  "user_id": "user_xxx",
-  "email": "string",
-  "name": "string",
-  "picture": "string",
-  "role": "Editor|Admin|Viewer",
-  "company_id": "string|null",
-  "created_at": "datetime"
-}
+## Core Architecture
+```
+/app
+├── backend/
+│   ├── server.py              # Monolith (>7000 lines) - Auth, API, Admin, Routing
+│   ├── valuation_engine.py    # DCF, DDM, NAV calculation engines
+│   ├── drhp_import.py         # SEBI DRHP document parser
+│   └── drhp_export.py         # Word/PDF export with SEBI formatting
+├── frontend/
+│   └── src/
+│       ├── pages/
+│       │   ├── AdminCenter.jsx      # RBAC Module Access + Operations + Roles + Users + Audit
+│       │   ├── AdminLogin.jsx       # Dedicated admin login gate
+│       │   ├── AccessDenied.jsx     # Permission denied page
+│       │   ├── Dashboard.jsx        # Main dashboard with module cards
+│       │   ├── ValuationModule.jsx  # Business valuation
+│       │   └── Login.jsx            # Manual + Google Auth
+│       ├── components/
+│       │   └── Sidebar.jsx          # Navigation with RBAC visibility
+│       └── App.js                   # Routing with ModuleRoute enforcement
+├── memory/
+│   ├── PRD.md
+│   └── test_credentials.md
 ```
 
-### Projects Collection
-```json
-{
-  "project_id": "proj_xxx",
-  "user_id": "user_xxx",
-  "company_name": "string",
-  "sector": "string",
-  "current_stage": "Assessment|Drafting|Filed",
-  "progress_percentage": 0-100,
-  "created_at": "datetime",
-  "updated_at": "datetime"
-}
-```
+## Key DB Schema
+- `users`: user_id, email, name, role, module_permissions, password_hash, auth_type
+- `user_sessions`: session_id, user_id, session_token, expires_at
+- `module_permissions`: {assessment: bool, matchmaker: bool, drhp: bool, funding: bool, valuation: bool}
+- Default permissions: assessment=true, matchmaker=true, drhp=false, funding=false, valuation=false
 
-### DRHP Sections Collection
-```json
-{
-  "section_id": "sec_xxx",
-  "project_id": "proj_xxx",
-  "section_name": "string",
-  "content": {},
-  "last_edited_by": "user_id",
-  "status": "Draft|Review|Final",
-  "documents": ["doc_id1", "doc_id2"],
-  "created_at": "datetime",
-  "updated_at": "datetime"
-}
-```
+## Completed Features
 
-### Documents Collection
-```json
-{
-  "document_id": "doc_xxx",
-  "user_id": "user_xxx",
-  "project_id": "proj_xxx",
-  "section_id": "sec_xxx",
-  "filename": "string",
-  "content_type": "string",
-  "gridfs_id": "ObjectId string",
-  "ocr_text": "string|null",
-  "ocr_status": "pending|processing|completed|failed",
-  "file_size": "int",
-  "created_at": "datetime"
-}
-```
+### Role-Based Access Control (RBAC) - Apr 16, 2026 ✅
+- [x] Admin Login gate at /admin with dedicated admin credentials
+- [x] AdminCenter "Module Access" tab with per-user toggle switches for 5 modules
+- [x] ModuleRoute component enforces permissions at route level
+- [x] Users without module access see "Access Denied" page
+- [x] Admin Center hidden from non-admin users in sidebar and dropdown
+- [x] Dashboard module cards use real paths (/drhp, /funding, etc.)
+- [x] Backend: PUT /api/admin/users/{user_id}/permissions updates RBAC rules
+- [x] Backend: GET /api/auth/me returns is_admin and module_permissions
+- [x] Admin seed: admin@ipolabs.com with all permissions
+- [x] 16/16 backend tests + 14/14 frontend tests passed (iteration_23.json)
 
-## API Endpoints
+### Email/Password Authentication - Apr 16, 2026 ✅
+- [x] POST /api/auth/register (bcrypt, unique email, 6+ char password)
+- [x] POST /api/auth/login (bcrypt, brute force protection)
+- [x] Session tokens in user_sessions collection
 
-### Authentication
-- `POST /api/auth/session` - Process OAuth session
-- `GET /api/auth/me` - Get current user
-- `POST /api/auth/logout` - Logout
+### Business Valuation Module - Apr 15, 2026 ✅
+- [x] 4-step wizard: Company Profile → Financial Data → Valuation Config → Run
+- [x] DCF, NAV, Comparable, DDM calculation engines
+- [x] GPT-5.2 AI analysis + risk assessment
+- [x] Excel/CSV upload with AI financial data extraction
+- [x] On-screen results dashboard
 
-### Projects
-- `GET /api/projects` - List user's projects
-- `POST /api/projects` - Create new project
-- `GET /api/projects/{id}` - Get project details
-- `PUT /api/projects/{id}` - Update project
+### Governance Assessment - Apr 6, 2026 ✅
+- [x] 55 SEBI governance questions in Step 5 of Assessment Wizard
+- [x] Governance score blended into IPO Readiness Score
 
-### DRHP Sections
-- `GET /api/projects/{id}/sections` - List sections
-- `GET /api/projects/{id}/sections/{sec_id}` - Get section
-- `PUT /api/projects/{id}/sections/{sec_id}` - Update section
+### DRHP Output Module - Mar 21, 2026 ✅
+- [x] TipTap rich-text editor with Word-like toolbar
+- [x] SEBI-specific DRHP import/export pipeline
+- [x] Word and PDF export with SEBI formatting
+- [x] Document import with formatting preservation
 
-### Documents
-- `POST /api/documents/upload` - Upload document
-- `GET /api/documents` - List documents
-- `GET /api/documents/{id}/download` - Download document
-- `DELETE /api/documents/{id}` - Delete document
-- `POST /api/documents/{id}/ocr` - Process OCR
+### Previous Phases (Feb-Mar 2026) ✅
+- Google OAuth + manual auth
+- Dashboard, DRHP Builder, Command Center
+- Match Maker with AI recommendations
+- IPO Assessment with 4 calculators
+- IPO Funding module (Pre-IPO, Post-IPO, Partners, Quiz)
+- Admin Center (Operations, Roles, Permissions, Users, Audit)
+- Account Details with profile management
+- Legal Disclaimer and Terms of Use
+- Security hardening, file upload validation, rate limiting
+- Email notifications via Resend API
 
 ## Prioritized Backlog
 
-### P0 - Critical (Next)
-- [ ] Rich text editor for section content (Quill/TipTap)
-- [ ] Auto-save functionality
-- [ ] Email/Password authentication
-- [ ] Password reset flow
+### P0 - Critical
+- [ ] Map imported Word Document to structured chapter modules
+- [ ] Enforce 100% MS Word UI/UX in TipTap Editor
+- [ ] DRHP Data Synchronization (Corporate Repository → DRHP Chapters)
 
 ### P1 - High Priority
-- [ ] Version history for sections
-- [ ] Document preview in-app
-- [ ] Export DRHP as PDF
-- [ ] Collaborative editing (real-time)
-- [ ] Comments/annotations on sections
+- [ ] Refactor server.py monolith (7000+ lines → APIRouter modules)
+- [ ] Populate remaining ~30 DRHP sub-modules with SEBI content
+- [ ] Remove internal Board toggles inside DRHP modules
 
 ### P2 - Medium Priority
-- [ ] Free IPO Assessment module
-- [ ] IPO Funding module
-- [ ] IPO Match Maker module
+- [ ] Professional Registration "Next" button bug (RTA category) - recurring 4x
+- [ ] Version history for sections
+- [ ] Document preview in-app
+- [ ] Collaborative editing
+
+### P3 - Future
+- [ ] Professional Verification API (Protean) - MOCKED
+- [ ] Razorpay billing integration - MOCKED
+- [ ] Real calendar API for consultation scheduling - MOCKED
 - [ ] Market Analytics module
-- [ ] Company profile management
-- [ ] Team member management
-
-### P3 - Future Enhancements
 - [ ] AI-powered content suggestions
-- [ ] SEBI compliance checker
-- [ ] Automated financial data import
-- [ ] Investor roadshow module
-- [ ] Integration with stock exchanges
-
-## Design System
-- **Primary Color:** Twitter Blue (#1DA1F2)
-- **Background:** Minimalist White (#FFFFFF)
-- **Typography:** Inter font family
-- **Style:** Sophisticated Minimalist, Engineering-focused
-- **Layout:** Bento Grid, Card-based
 
 ## Testing Status
-- ✅ Backend API tests passed (100%)
-- ✅ Frontend integration tests passed (100%)
-- ✅ Authentication flow tested
-- ✅ CRUD operations tested
-- ✅ Document upload/download tested
-- ✅ OCR processing tested
-- ✅ Match Maker module tested
-- ✅ Legal and Disclaimer module tested (iteration_5.json - 20/20 tests passed)
-- ✅ IPO Funding module tested (iteration_6.json - 51/51 tests passed)
-- ✅ IPO Assessment module tested (iteration_7.json - 32/32 tests passed)
-- ✅ Admin Center & Account Details tested (iteration_8.json - 40/40 tests passed)
-
-## Bug Fixes
-
-### Mar 9, 2026 - Professional Registration & Browse All Fixes
-**Issue 1:** "Browse All Professionals" button/API returning 404 error
-**Root Cause:** FastAPI route ordering bug - `/{professional_id}` route was defined before `/all` route, so "all" was being matched as a professional_id
-**Fix Applied:** Moved `/matchmaker/professionals/all` route definition BEFORE `/{professional_id}` route in server.py
-**Files Modified:** `/app/backend/server.py`
-
-**Issue 2:** Browse All Professionals page crashing with SelectItem empty value error
-**Root Cause:** shadcn/ui Select component does not allow empty string as value for SelectItem
-**Fix Applied:** Changed `value=""` to `value="all"` for category and city filters, added transformation in onValueChange
-**Files Modified:** `/app/frontend/src/pages/BrowseAllProfessionals.jsx`
-
-**Issue 3:** Sonner Toast component failing due to next-themes dependency
-**Root Cause:** The sonner.jsx component imported `useTheme` from `next-themes` which doesn't work in standard React apps
-**Fix Applied:** Removed next-themes import, hardcoded theme to "light"
-**Files Modified:** `/app/frontend/src/components/ui/sonner.jsx`
-
-### Feb 19, 2026 - Navigation Bug Fix
-**Issue:** Admin Center and Account Settings navigation links not working after clicking.
-**Root Cause:** In `/app/frontend/src/components/Sidebar.jsx`:
-  1. `DropdownMenuItem` components were using `onClick` instead of `onSelect` (Radix UI's preferred handler)
-  2. Navigation buttons were missing explicit `type="button"` attribute
-**Fix Applied:**
-  - Changed `onClick` to `onSelect` for all `DropdownMenuItem` components (Account Details, Admin Center, Logout)
-  - Added `type="button"` to all sidebar navigation buttons
-  - Made onClick handler more explicit with proper conditional check
-**Files Modified:** `/app/frontend/src/components/Sidebar.jsx`
-
-## Next Tasks
-1. Implement Market & DRHP Analytics module
-2. Add rich text editor for DRHP sections
-3. Implement version history
-4. Add document preview
-5. Build PDF export functionality
-6. Integrate Razorpay for real billing (currently MOCKED)
-7. Integrate real calendar API for consultation scheduling (currently MOCKED)
-
-## Completed in Latest Session (Feb 18, 2026)
-- ✅ Legal Disclaimer page and Terms of Use pages
-- ✅ Global footer with legal links
-- ✅ Click-wrap agreement on Professional Registration
-- ✅ IPO Funding module (4 pillars: Pre-IPO, Post-IPO, Partners, Quiz)
-- ✅ IPO Assessment module (4 calculators, SEBI eligibility, AI gap analysis)
-- ✅ Admin Center (Roles, Permissions, Users, Audit Log)
-- ✅ Account Details (Profile, Security, Billing with MOCKED Razorpay)
-- ✅ All tests passed (100%)
-
-## Completed in Latest Session (Mar 9, 2026)
-- ✅ Fixed "Browse All Professionals" button - route ordering bug in backend
-- ✅ Fixed SelectItem empty value error in BrowseAllProfessionals.jsx
-- ✅ Fixed Sonner toast component (removed broken next-themes dependency)
-- ✅ Master Admin approval workflow verified working (Approve/Reject/Re-apply)
-- ✅ Professional Registration form "Next" button verified working across all 5 steps
-- ✅ RTA category registration flow verified working
-- ✅ All 21 tests passed (iteration_9.json)
-- ✅ **NEW: Email Notifications for Professional Registration**
-  - Automatic email sent to professional on approval/rejection/re-apply
-  - Copy sent to Master Admin (ronraj2312@gmail.com)
-  - Manual "Send Email" button in Admin Center for each registration
-  - Email configuration status indicator in Admin Center
-  - Uses Resend API for transactional emails
-  - HTML-formatted professional emails with IntelliEngine branding
-- ✅ **NEW: State-wise Professional View in MatchMaker**
-  - "Skip for now" button shows ALL professionals grouped by state (alphabetically)
-  - City selection dialog now groups cities by state
-  - Collapsible/expandable state sections
-  - View toggle: "City View" vs "All States"
-  - Clicking specific city filters to only that city's professionals
-  - All 10 UI tests passed (iteration_10.json)
-- ✅ **Removed Emergent Branding**
-  - Removed "Made with Emergent" badge from bottom-right corner
-  - Updated page title to "IntelliEngine | IPO Readiness Platform"
-  - Updated meta description
-- ✅ **NEW: Centralised Corporate Repository & Document Upload with OCR**
-  - Added "Centralised Corporate Repository" header in Command Center
-  - Added document upload box with OCR in all 5 checklist modules:
-    - Company Data (blue theme)
-    - Promoter Checklist (purple theme)
-    - KMP Checklist (green theme)
-    - Pre-IPO Tracker (orange theme)
-    - Non-DRHP Tracker (indigo theme)
-  - Supports PDF, Word, Excel, JPEG, PNG formats (max 10MB)
-  - Auto-extracts data using Gemini AI OCR
-  - Data syncs automatically to all relevant DRHP modules
-  - New backend endpoints: `/upload-document-ocr`, `/corporate-repository`
-- ✅ **NEW: DRHP Landing Page & Dashboard Reorganization**
-  - Created new `/drhp` landing page showing "Ongoing DRHP Projects"
-  - Projects displayed as clickable cards with progress indicators
-  - Click project → Command Center
-  - Removed "Your IPO Projects" section from main Dashboard
-  - Enlarged module buttons in Dashboard (2x2 grid fills screen)
-  - Legal Disclaimer & Terms of Use links kept in Dashboard
-  - DRHP Builder module now navigates to `/drhp` landing page
-  - New file: `/app/frontend/src/pages/DRHPLandingPage.jsx`
-- ✅ **NEW: Complete DRHP Chapters Restructure (Based on SEBI ICDR)**
-  - Renamed "Module Progress" to "Main DRHP Chapters"
-  - Created 9 main sections matching Indian DRHP format:
-    - Section I - General (4 sub-modules)
-    - Section II - Risk Factors (direct content)
-    - Section III - Introduction (8 sub-modules)
-    - Section IV - About Our Company (7 sub-modules)
-    - Section V - Financial Information (5 sub-modules)
-    - Section VI - Legal and Other Information (4 sub-modules)
-    - Section VII - Offer Information (4 sub-modules)
-    - Section VIII - Provisions of Articles (direct content)
-    - Section IX - Other Information (2 sub-modules)
-  - Sub-module navigation: Click chapter → Sub-modules page → Content editor
-  - Each module has OCR upload for documents (PDF, Word, Excel, Images)
-  - Tables and fields based on real DRHP examples
-  - "Review" and "Submit" buttons at top and bottom of each page
-  - New files:
-    - `/app/frontend/src/config/drhpChapters.js` (chapter configuration)
-    - `/app/frontend/src/pages/DRHPSection.jsx` (sub-module listing)
-    - `/app/frontend/src/pages/DRHPContent.jsx` (content editor)
-  - New API endpoints:
-    - `GET /api/projects/{id}/drhp-progress`
-    - `GET /api/projects/{id}/drhp-section-progress/{section_id}`
-    - `GET/POST /api/projects/{id}/drhp-content/{section_id}`
-    - `GET/POST /api/projects/{id}/drhp-content/{section_id}/{sub_module_id}`
-- ✅ **NEW: Definitions & Abbreviations Module with Real DRHP Data**
-  - Pre-populated tables based on actual Groww DRHP filing
-  - 6 categorized tables:
-    - General Terms
-    - Company Related Terms (45+ entries)
-    - Offer Related Terms (55+ entries)
-    - Technical/Industry Terms (33+ entries)
-    - Conventional/General Abbreviations (65+ entries)
-    - Key Performance Indicators
-  - Auto-expanding editable cells that grow with content
-  - Floating add/delete buttons on hover (right side)
-  - Support for blank fields (____) for user input
-  - All table headers and content fully editable
-
-## Completed in Latest Session (Mar 13, 2026)
-- ✅ **DRHP Introductory Text Section** - Added standard paragraphs above General Terms
-- ✅ **Landing Page Updates** - New headline, sub-headline, 5 bullet points
-- ✅ **Security Hardening** - File upload (5MB limit), rate limiting, input sanitization, content moderation
-- ✅ **Matchmaker Route Fix** - Fixed critical route ordering bug preventing draft save/load
-- ✅ **LinkedIn Integration** - Added LinkedIn URL field to professional registration (optional)
-  - LinkedIn button next to name (blue when linked, gray when not)
-  - LinkedIn shown in Contact Information section
-- ✅ **Review System Fix** - One review per user per professional
-  - Duplicate review prevention with clear error message
-  - Self-review prevention
-  - New endpoint: GET /api/matchmaker/professionals/{id}/review-status
-  - Star rating clickable in review dialog
-
-## Completed in Latest Session (Mar 21, 2026)
-- ✅ **DRHP Output Module - Word-like Editor** (NEW MAJOR FEATURE)
-  - Built using TipTap rich-text editor library
-  - Full MS Word-style toolbar with:
-    - Bold, Italic, Underline, Strikethrough formatting
-    - Superscript and Subscript
-    - Text color and highlight with color picker
-    - Text alignment (Left, Center, Right, Justify)
-    - Headings dropdown (Normal, H1, H2, H3)
-    - Bullet and Numbered lists
-    - Block Quote and Code Block
-    - Table insertion with full CRUD (add/delete rows/columns, merge/split cells)
-    - Link and Image insertion dialogs
-    - Horizontal line
-    - Undo/Redo
-  - Two tabs: SME Board DRHP and Main Board DRHP
-  - Default DRHP templates pre-populated based on SEBI ICDR format
-  - Auto-save every 30 seconds
-  - Export buttons (Word, PDF, Print) - MOCKED, actual generation pending
-  - Print preview opens new window with formatted content
-  - Navigation from Command Center "DRHP Output" module button
-  - New files:
-    - `/app/frontend/src/pages/DRHPOutput.jsx` (1500+ lines)
-  - New API endpoints:
-    - `GET /api/projects/{project_id}/drhp-output` - Load saved content
-    - `POST /api/projects/{project_id}/drhp-output` - Save content
-    - `POST /api/projects/{project_id}/drhp-output/export` - Export (MOCKED)
-  - TipTap packages installed:
-    - @tiptap/react, @tiptap/pm, @tiptap/starter-kit
-    - @tiptap/extension-table, @tiptap/extension-image, @tiptap/extension-link
-    - @tiptap/extension-placeholder, @tiptap/extension-text-style
-    - @tiptap/extension-color, @tiptap/extension-underline
-    - @tiptap/extension-text-align, @tiptap/extension-highlight
-    - @tiptap/extension-superscript, @tiptap/extension-subscript
-
-- ✅ **Word Document Import Feature** (NEW)
-  - Import .docx files directly into the TipTap editor
-  - Uses mammoth Python library for .docx to HTML conversion
-  - Preserves document structure and formatting:
-    - Tables (converted to HTML with proper structure)
-    - Text formatting (bold, italic, underline)
-    - Headings (H1-H6)
-    - Lists (bullet and numbered)
-    - Images (embedded as base64 data URIs)
-  - Supports multi-page documents up to 50MB
-  - Custom style mapping for DRHP-specific formatting
-  - Import dialog with drag-and-drop file upload zone
-  - Shows import result with success/failure message
-  - Displays conversion warnings if any
-  - New API endpoint:
-    - `POST /api/projects/{project_id}/drhp-output/import?board_type=sme|mainboard`
-  - Test IDs: import-word-btn, confirm-import-btn
-
-- ✅ **Direct Upload DOCX Button** (UPDATE - Mar 21, 2026)
-  - Added prominent "Upload DOCX" button in header toolbar
-  - Direct file input trigger - no dialog needed
-  - Validates file type (.docx only) and size (50MB max) on frontend
-  - Shows upload progress toast during import
-  - Success/error toast notifications
-  - Enhanced CSS for better Word formatting preservation:
-    - TOC styles, list paragraphs, document titles
-    - Page break markers for multi-page documents
-    - Table styling matching Word defaults
-  - Moved "Submit for Review" button to bottom of the page
-  - Test IDs: upload-docx-btn, submit-for-review-btn
-
-- ✅ **Command Center UI Reorganization** (UPDATE - Mar 21, 2026)
-  - Removed entire DRHP Chapters module and all sub-modules
-  - Added two separate DRHP Output buttons:
-    - **Main Board DRHP**: Blue styling, Landmark icon, "NSE / BSE" badge
-    - **SME Board DRHP**: Green styling, Building2 icon, "SME Platform" badge
-  - Each button navigates to DRHP Output with board type query parameter
-  - DRHP Output page reads URL param and auto-selects correct tab
-  - CommandCenter.jsx reduced from ~360 lines to ~220 lines
-  - Test IDs: drhp-output-mainboard, drhp-output-sme
-
-- ✅ **SEBI-Specific DRHP Import Pipeline** (NEW - Major Refactoring)
-  - Replaced mammoth library with custom python-docx based parser
-  - New file: `/app/backend/drhp_import.py` with two classes:
-    - **DRHPDocumentParser**: Full SEBI formatting preservation
-    - **DRHPImageExtractor**: Stores images as separate GridFS files
-  - Preserves SEBI-specific formatting:
-    - Paragraph styles (DRHP Section, DRHP Clause, Risk Factor, Legal, Disclaimer)
-    - Numbered clause hierarchies with SEBI numbering format
-    - Custom indentation (left, right, first-line indent)
-    - Text alignment (left, center, right, justify)
-    - Hyperlinks and internal bookmarks
-    - Table structures with proper styling
-    - Character formatting (bold, italic, underline, superscript, subscript, colors)
-    - Page breaks and spacing
-  - Images stored as separate files in GridFS (not inline base64)
-  - New endpoint: `GET /api/projects/{project_id}/drhp-images/{image_id}`
-  - Comprehensive CSS for SEBI styling (~200 lines):
-    - .drhp-title, .drhp-h1 through .drhp-h6
-    - .drhp-clause, .drhp-sub-clause
-    - .drhp-risk-factor, .drhp-legal, .drhp-disclaimer
-    - .drhp-toc-1 through .drhp-toc-4
-    - .drhp-numbered-list, .drhp-bullet-list with levels
-    - .drhp-table, .drhp-image, .drhp-link, .drhp-page-break
-
-- ✅ **Word/PDF Export with SEBI Formatting** (NEW - P0 Complete)
-  - New file: `/app/backend/drhp_export.py` with two classes:
-    - **DRHPWordExporter**: Converts HTML to Word with SEBI styles
-      - Uses python-docx + BeautifulSoup for HTML parsing
-      - Preserves headings, tables, lists, formatting
-      - **Proper clickable hyperlinks** using OOXML manipulation
-      - Generates .docx with Times New Roman font, 1" margins
-    - **DRHPPDFExporter**: Generates PDF using WeasyPrint
-      - Print-optimized CSS with @page rules
-      - A4 page size with proper margins
-      - Header/footer with company name and page numbers
-      - Full SEBI CSS styles embedded
-  - Updated export endpoint: `POST /api/projects/{project_id}/drhp-output/export`
-    - Parameters: format (docx/pdf), board_type (sme/mainboard), content (HTML)
-    - Returns StreamingResponse with proper Content-Disposition header
-    - Falls back to saved content if none provided
-    - Filename: `DRHP_{BOARD_TYPE}_{Company_Name}.docx/pdf`
-  - New dependencies: beautifulsoup4, weasyprint
-
-- ✅ **Tested with Actual SEBI DRHP Document** (P1 Complete - Mar 21, 2026)
-  - Tested with real 4.8MB SEBI DRHP document
-  - All formatting preserved:
-    - **140 hyperlinks** (12 mailto, 56 http/https, 72 internal bookmarks)
-    - **336 tables** with fixed layout, 100% width, word-wrap
-    - **54 images** extracted to GridFS
-    - **618 headings** (236 h1, 334 h2, 48 h3)
-    - 10pt Times New Roman font
-  - Fixed hyperlink processing to handle hyperlinks as sibling elements of runs
-  - Tables constrained to page boundaries with:
-    - `table-layout: fixed`
-    - `max-width: 100%`
-    - `word-wrap: break-word`
-    - `overflow-x: hidden`
-  - Internal bookmarks preserved as anchor links (#_bookmark)
-  - Added SEBI-specific CSS classes:
-    - `.drhp-table-para` for table paragraph style
-    - Enhanced `.drhp-list-para` with proper indentation (54px left, -18px text-indent)
-  - Test report: `/app/test_reports/iteration_19.json` - 26/26 tests passed
-
-## Testing Status
-- ✅ Backend API tests passed (100%)
-- ✅ Frontend integration tests passed (100%)
-- ✅ Professional Registration form (all 5 steps) - PASS
-- ✅ Browse All Professionals page - PASS (after fix)
-- ✅ Master Admin Approval workflow - PASS
-- ✅ Toast notifications - PASS (after sonner fix)
-- ✅ **DRHP Output Editor - 100% tests passed** (iteration_13.json)
-  - 7/7 Backend API tests
-  - 25/25 Frontend UI tests
-- ✅ **Word Document Import - 100% tests passed** (iteration_14.json)
-  - 9/9 Backend API tests
-  - 5/5 Frontend code review checks
-- ✅ **Direct Upload DOCX Feature - 100% tests passed** (iteration_15.json)
-  - 13/13 Backend API tests
-  - 6/6 Frontend UI tests
-- ✅ **Command Center UI Reorganization - 100% tests passed** (iteration_16.json)
-  - 10/10 Frontend UI tests
-- ✅ **SEBI-Specific DRHP Import - 100% tests passed** (iteration_17.json)
-  - 20/20 Backend API tests (including 2 bug fixes by testing agent)
-- ✅ **Word/PDF Export - 100% tests passed** (iteration_18.json)
-  - 16/16 Backend API tests
-- ✅ **SEBI Document Testing - 100% tests passed** (iteration_19.json)
-  - 26/26 Backend tests with actual 4.8MB SEBI document
-  - Verified: 140 hyperlinks, 336 tables, 54 images, 618 headings
-
-
-## Governance/Compliance Assessment (Apr 6, 2026)
-- [x] Added "Governance/Compliance" tab as Step 5 in IPO Readiness Assessment Wizard
-- [x] 55 SEBI governance questions with Yes/No answers, grouped by 21 categories
-- [x] Categories include: Corporate Structure, Promoter Background, Share Capital, Board Composition, Committees, Governance Policies, Internal Controls, Human Resources, etc.
-- [x] All questions mandatory with progress tracking (X/55)
-- [x] Collapsible category sections with per-category completion indicators
-- [x] Governance score (0-100) blended into final IPO Readiness Score (40% governance, 60% financial)
-- [x] Low governance score (<40) adds critical issue and can downgrade IPO readiness status
-- [x] Results page shows governance score circle, compliance breakdown, and score breakdown card
-- [x] Backwards compatible: API works with empty/missing governance data
-- [x] Questions source: /app/frontend/src/config/governanceQuestions.js
-- [x] Backend scoring: GOVERNANCE_POSITIVE_ANSWERS in server.py, calculate_governance_score()
-- ✅ **Governance Assessment - 100% tests passed** (iteration_20.json)
-  - 13/13 Backend tests passed
-
-## Automated Business Valuation Module (Apr 15, 2026)
-- [x] Added as 5th module on Landing Page (amber Scale icon, full-width card) and Sidebar navigation
-- [x] Disclaimer dialog shown on module entry (AI-assisted, not for regulatory filings without professional cert)
-- [x] Valuation CRUD: Create, list, view, update, delete projects
-- [x] 4-step wizard: Company Profile → Financial Data → Valuation Config → Run Valuation
-- [x] Step 1: Company name, industry (21 sectors), purpose (M&A/ESOP/IPO/Family Settlement/Tax Assessment), currency (Cr/L), company type, description
-- [x] Step 2: Financial data table with 14 metrics (Revenue, EBITDA, PAT, Depreciation, Capex, etc.) across 3-5 years, shares outstanding, face value
-- [x] Step 3: Method selection (DCF/NAV/Comparable/DDM) with per-method configuration (WACC, growth, terminal, peers, illiquidity), weights
-- [x] Step 4: Generate Valuation Report (triggers AI-powered analysis)
-- [x] Backend calculation engine (valuation_engine.py): DCF (FCFF projections + Gordon Growth terminal value), NAV (fair value adjustments + illiquidity), Comparable (median peer multiples), DDM (Gordon Growth)
-- [x] GPT-5.2 AI analysis: Regulatory compliance (Companies Act/SEBI/Income Tax), Risk assessment (5 categories), Tax implications, Quality control with confidence score
-- [x] Rich on-screen Results Dashboard: Hero card with weighted valuation + confidence score circle, financial ratios grid, DCF projections table + sensitivity analysis, NAV adjustments breakdown, Comparable peers table + applied multiples, Risk assessment color-coded cards, Regulatory compliance, Tax implications, Quality control checks
-- [x] Document upload endpoint (GridFS) + AI financial data extraction endpoint
-- ✅ **Valuation Module - 100% tests passed** (iteration_21.json)
-  - 18/18 Backend tests passed (calculation engine + API endpoints + auth)
-  - Frontend wizard flow verified
-  - Badge import bug fixed by testing agent
-
-### Document Upload + AI Extraction Enhancement (Apr 15, 2026)
-- [x] Added document upload card in Step 2 of Valuation Wizard (PDF, Excel, Word, CSV support)
-- [x] Files stored in GridFS with size/type validation (10MB limit)
-- [x] Upload card shows file chips with filename and size
-- [x] "Extract with AI" button (conditional on files being uploaded)
-- [x] Backend reads Excel files from GridFS via openpyxl, CSV via text parsing
-- [x] GPT-5.2 analyzes file content and returns structured financial data JSON
-- [x] Auto-populates the financial data table with extracted values
-- [x] GridFS bug fixed by testing agent (db.delegate → db)
-- ✅ **Upload + Extraction - 100% tests passed** (iteration_22.json)
-  - 16/16 tests passed (upload, extract, validation, auth, regression)
-
-
-
-## Email/Password Authentication (Apr 16, 2026)
-- [x] Added POST /api/auth/register (bcrypt hashing, unique email, 6+ char password)
-- [x] Added POST /api/auth/login (bcrypt verification, brute force protection: 5 attempts / 15-min lockout)
-- [x] Session tokens stored in user_sessions collection (same as Google OAuth)
-- [x] Login page: Toggle between Sign In / Sign Up, Google OAuth + Email form, password visibility toggle
-- [x] Duplicate email prevention (409), rate limiting (5/min register, 10/min login)
-- [x] Test account: test@example.com / test123
-- ✅ Tested: register, login, wrong password, duplicate register, token auth /me — all pass
-
-  - Frontend wizard structure verified
+- ✅ RBAC Admin Module: 16/16 backend + 14/14 frontend (iteration_23.json)
+- ✅ Governance Assessment: 13/13 (iteration_20.json)
+- ✅ Valuation Module: 18/18 (iteration_21.json)
+- ✅ Document Upload + AI Extraction: 16/16 (iteration_22.json)
+- ✅ All previous modules tested and passing

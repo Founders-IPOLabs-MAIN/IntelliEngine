@@ -10,5 +10,12 @@
 - **Name**: Test User
 - **Role**: Editor
 
-## Admin Accounts
-- Admin accounts are created via Google OAuth with `master_admin` role assignment
+## Admin Account (Email/Password)
+- **Email**: admin@ipolabs.com
+- **Password**: admin@123
+- **Name**: Platform Admin
+- **Role**: admin
+- **Access**: All modules enabled, admin panel access
+
+## Admin Accounts (Google OAuth)
+- Admin accounts created via Google OAuth can be assigned `master_admin` role via Admin Center
