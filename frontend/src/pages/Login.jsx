@@ -51,10 +51,13 @@ const Login = ({ apiClient }) => {
         credentials: "include",
         body: JSON.stringify({ email: email.trim(), password: password.trim() })
       });
-      const data = await res.json();
+
+      let data;
+      try { data = await res.json(); } catch { data = {}; }
 
       if (!res.ok) {
-        setError(formatApiErrorDetail(data.detail));
+        setError(formatApiErrorDetail(data.detail) || `Login failed (${res.status})`);
+        setLoading(false);
         return;
       }
 
@@ -64,8 +67,7 @@ const Login = ({ apiClient }) => {
       }
       window.location.href = "/dashboard";
     } catch (err) {
-      setError("Network error. Please try again.");
-    } finally {
+      setError("Unable to connect. Please check your connection and try again.");
       setLoading(false);
     }
   };
@@ -91,10 +93,13 @@ const Login = ({ apiClient }) => {
         credentials: "include",
         body: JSON.stringify({ email: email.trim(), password: password.trim(), name: name.trim() || undefined })
       });
-      const data = await res.json();
+
+      let data;
+      try { data = await res.json(); } catch { data = {}; }
 
       if (!res.ok) {
-        setError(formatApiErrorDetail(data.detail));
+        setError(formatApiErrorDetail(data.detail) || `Registration failed (${res.status})`);
+        setLoading(false);
         return;
       }
 
@@ -103,8 +108,7 @@ const Login = ({ apiClient }) => {
       }
       window.location.href = "/dashboard";
     } catch (err) {
-      setError("Network error. Please try again.");
-    } finally {
+      setError("Unable to connect. Please check your connection and try again.");
       setLoading(false);
     }
   };

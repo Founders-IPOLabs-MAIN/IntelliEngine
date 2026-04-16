@@ -689,21 +689,34 @@ async def register_email(request: Request, data: EmailAuthRequest, response: Res
 
     existing = await db.users.find_one({"email": email})
     if existing:
-        raise HTTPException(status_code=409, detail="An account with this email already exists. Please sign in.")
-
-    user_id = f"user_{uuid.uuid4().hex[:12]}"
-    user_doc = {
-        "user_id": user_id,
-        "email": email,
-        "name": name,
-        "picture": None,
-        "password_hash": hash_password(password),
-        "auth_type": "email",
-        "role": "Editor",
-        "company_id": None,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.users.insert_one(user_doc)
+        if existing.get("password_hash"):
+            raise HTTPException(status_code=409, detail="An account with this email already exists. Please sign in.")
+        # User exists from Google OAuth but has no password — let them set one
+        await db.users.update_one(
+            {"email": email},
+            {"$set": {"password_hash": hash_password(password), "name": name or existing.get("name", "")}}
+        )
+        user_id = existing["user_id"]
+        user_name = name or existing.get("name", "")
+        user_role = existing.get("role", "Editor")
+        user_picture = existing.get("picture")
+    else:
+        user_id = f"user_{uuid.uuid4().hex[:12]}"
+        user_doc = {
+            "user_id": user_id,
+            "email": email,
+            "name": name,
+            "picture": None,
+            "password_hash": hash_password(password),
+            "auth_type": "email",
+            "role": "Editor",
+            "company_id": None,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(user_doc)
+        user_name = name
+        user_role = "Editor"
+        user_picture = None
 
     session_token = str(uuid.uuid4())
     await db.user_sessions.insert_one({
@@ -721,8 +734,8 @@ async def register_email(request: Request, data: EmailAuthRequest, response: Res
 
     return {
         "user": {
-            "user_id": user_id, "email": email, "name": name,
-            "role": "Editor", "picture": None
+            "user_id": user_id, "email": email, "name": user_name,
+            "role": user_role, "picture": user_picture
         },
         "session_token": session_token
     }
