@@ -505,6 +505,11 @@ class Document(BaseModel):
 class SessionRequest(BaseModel):
     session_id: str
 
+class EmailAuthRequest(BaseModel):
+    email: str
+    password: str
+    name: Optional[str] = None
+
 class ProjectCreate(BaseModel):
     company_name: str
     sector: str
@@ -658,6 +663,138 @@ async def logout(request: Request, response: Response):
     
     response.delete_cookie(key="session_token", path="/")
     return {"message": "Logged out successfully"}
+
+# ============ EMAIL/PASSWORD AUTH ============
+
+import bcrypt
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+
+@api_router.post("/auth/register")
+@limiter.limit("5/minute")
+async def register_email(request: Request, data: EmailAuthRequest, response: Response):
+    """Register a new user with email/password"""
+    email = data.email.strip().lower()
+    password = data.password.strip()
+    name = (data.name or "").strip() or email.split("@")[0]
+
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Invalid email address")
+    if len(password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=409, detail="An account with this email already exists. Please sign in.")
+
+    user_id = f"user_{uuid.uuid4().hex[:12]}"
+    user_doc = {
+        "user_id": user_id,
+        "email": email,
+        "name": name,
+        "picture": None,
+        "password_hash": hash_password(password),
+        "auth_type": "email",
+        "role": "Editor",
+        "company_id": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(user_doc)
+
+    session_token = str(uuid.uuid4())
+    await db.user_sessions.insert_one({
+        "session_id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "session_token": session_token,
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    response.set_cookie(
+        key="session_token", value=session_token,
+        httponly=True, secure=True, samesite="none", path="/", max_age=7*24*60*60
+    )
+
+    return {
+        "user": {
+            "user_id": user_id, "email": email, "name": name,
+            "role": "Editor", "picture": None
+        },
+        "session_token": session_token
+    }
+
+@api_router.post("/auth/login")
+@limiter.limit("10/minute")
+async def login_email(request: Request, data: EmailAuthRequest, response: Response):
+    """Login with email/password"""
+    email = data.email.strip().lower()
+    password = data.password.strip()
+
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="Email and password are required")
+
+    # Brute force check
+    client_ip = request.client.host if request.client else "unknown"
+    attempt_key = f"{client_ip}:{email}"
+    attempts_doc = await db.login_attempts.find_one({"identifier": attempt_key})
+    if attempts_doc and attempts_doc.get("count", 0) >= 5:
+        locked_at = attempts_doc.get("locked_at")
+        if locked_at:
+            if isinstance(locked_at, str):
+                locked_at = datetime.fromisoformat(locked_at)
+            if locked_at.tzinfo is None:
+                locked_at = locked_at.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) - locked_at < timedelta(minutes=15):
+                raise HTTPException(status_code=429, detail="Too many failed attempts. Try again in 15 minutes.")
+            else:
+                await db.login_attempts.delete_one({"identifier": attempt_key})
+
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user or not user.get("password_hash"):
+        # Increment failed attempts
+        await db.login_attempts.update_one(
+            {"identifier": attempt_key},
+            {"$inc": {"count": 1}, "$set": {"locked_at": datetime.now(timezone.utc).isoformat()}},
+            upsert=True
+        )
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if not verify_password(password, user["password_hash"]):
+        await db.login_attempts.update_one(
+            {"identifier": attempt_key},
+            {"$inc": {"count": 1}, "$set": {"locked_at": datetime.now(timezone.utc).isoformat()}},
+            upsert=True
+        )
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    # Clear failed attempts on success
+    await db.login_attempts.delete_many({"identifier": attempt_key})
+
+    session_token = str(uuid.uuid4())
+    await db.user_sessions.insert_one({
+        "session_id": str(uuid.uuid4()),
+        "user_id": user["user_id"],
+        "session_token": session_token,
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    response.set_cookie(
+        key="session_token", value=session_token,
+        httponly=True, secure=True, samesite="none", path="/", max_age=7*24*60*60
+    )
+
+    return {
+        "user": {
+            "user_id": user["user_id"], "email": user["email"], "name": user.get("name", ""),
+            "role": user.get("role", "Editor"), "picture": user.get("picture")
+        },
+        "session_token": session_token
+    }
 
 # ============ PROJECT ENDPOINTS ============
 

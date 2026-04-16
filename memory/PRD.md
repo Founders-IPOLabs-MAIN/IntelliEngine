@@ -870,4 +870,14 @@ Build a complete IPO-readiness platform with:
   - 16/16 tests passed (upload, extract, validation, auth, regression)
 
 
+
+## Email/Password Authentication (Apr 16, 2026)
+- [x] Added POST /api/auth/register (bcrypt hashing, unique email, 6+ char password)
+- [x] Added POST /api/auth/login (bcrypt verification, brute force protection: 5 attempts / 15-min lockout)
+- [x] Session tokens stored in user_sessions collection (same as Google OAuth)
+- [x] Login page: Toggle between Sign In / Sign Up, Google OAuth + Email form, password visibility toggle
+- [x] Duplicate email prevention (409), rate limiting (5/min register, 10/min login)
+- [x] Test account: test@example.com / test123
+- ✅ Tested: register, login, wrong password, duplicate register, token auth /me — all pass
+
   - Frontend wizard structure verified
