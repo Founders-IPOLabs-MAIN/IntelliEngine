@@ -42,8 +42,7 @@ const Sidebar = ({ user, apiClient }) => {
   };
 
   const handleDRHPClick = () => {
-    // Navigate to dashboard and scroll to projects section
-    navigate("/dashboard#projects");
+    navigate("/drhp1");
   };
 
   const isActive = (itemId) => {
@@ -54,13 +53,13 @@ const Sidebar = ({ user, apiClient }) => {
       case 'assessment':
         return path.startsWith('/assessment');
       case 'drhp':
-        return path.includes('drhp-builder') || path.includes('command-center');
+        return path === '/drhp1' || path.includes('drhp-builder') || path.includes('command-center');
       case 'funding':
-        return path.startsWith('/funding');
+        return path === '/funding1' || path.startsWith('/funding');
       case 'matchmaker':
         return path.startsWith('/matchmaker');
       case 'valuation':
-        return path.startsWith('/valuation');
+        return path === '/valuation1' || path.startsWith('/valuation');
       case 'admin':
         return path.startsWith('/admin');
       case 'account':
@@ -74,9 +73,9 @@ const Sidebar = ({ user, apiClient }) => {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: "/assessment" },
     { id: "drhp", label: "DRHP Builder", icon: FileText, path: null, onClick: handleDRHPClick },
-    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding" },
+    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding1" },
     { id: "matchmaker", label: "Match Maker", icon: Users, path: "/matchmaker" },
-    { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation" },
+    { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation1" },
     { id: "admin", label: "Admin Center", icon: Shield, path: "/admin" },
     { id: "account", label: "Account Details", icon: User, path: "/account" },
   ];

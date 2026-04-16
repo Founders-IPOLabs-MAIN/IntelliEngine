@@ -30,7 +30,7 @@ const LandingPage = () => {
       title: "DRHP Builder",
       description: "SEBI Compliant, Secure & On-Cloud",
       icon: FileText,
-      path: "/login?module=drhp",
+      path: "/login?module=drhp1",
       iconBg: "bg-blue-100",
       iconColor: "text-[#003366]"
     },
@@ -49,7 +49,7 @@ const LandingPage = () => {
       title: "IPO Funding",
       description: "Raise Pre, Post or Bridge Fund Rounds",
       icon: TrendingUp,
-      path: "/login?module=funding",
+      path: "/login?module=funding1",
       iconBg: "bg-green-100",
       iconColor: "text-green-600"
     },
@@ -67,7 +67,7 @@ const LandingPage = () => {
       title: "Business Valuation",
       description: "AI-Powered DCF, NAV & Comparable Analysis",
       icon: Scale,
-      path: "/login?module=valuation",
+      path: "/login?module=valuation1",
       iconBg: "bg-amber-100",
       iconColor: "text-amber-600"
     }

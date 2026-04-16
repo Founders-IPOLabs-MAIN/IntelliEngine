@@ -41,6 +41,7 @@ import DRHPOutput from "@/pages/DRHPOutput";
 import ValuationModule from "@/pages/ValuationModule";
 import ValuationWizard from "@/pages/ValuationWizard";
 import ValuationResults from "@/pages/ValuationResults";
+import ComingSoon from "@/pages/ComingSoon";
 
 // Components
 import Footer from "@/components/Footer";
@@ -456,6 +457,32 @@ const AppRouter = () => {
         element={
           <ProtectedRoute showFooter={false}>
             {({ user, apiClient }) => <ValuationResults user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Coming Soon Pages */}
+      <Route
+        path="/drhp1"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <ComingSoon user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/funding1"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <ComingSoon user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/valuation1"
+        element={
+          <ProtectedRoute showFooter={false}>
+            {({ user, apiClient }) => <ComingSoon user={user} apiClient={apiClient} />}
           </ProtectedRoute>
         }
       />
