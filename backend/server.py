@@ -612,15 +612,19 @@ async def process_session(request: Request, session_request: SessionRequest, res
     else:
         # Create new user
         user_id = f"user_{uuid.uuid4().hex[:12]}"
+        auto_role = "master_admin" if email.lower() in [e.lower() for e in CENTRAL_ADMIN_EMAILS] else "Editor"
         user_doc = {
             "user_id": user_id,
             "email": email,
             "name": name,
             "picture": picture,
-            "role": "Editor",
+            "role": auto_role,
             "company_id": None,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
+        if auto_role == "master_admin":
+            user_doc["module_permissions"] = {"assessment": True, "matchmaker": True, "drhp": True, "funding": True, "valuation": True}
+            user_doc["is_master_admin"] = True
         await db.users.insert_one(user_doc)
     
     # Create session
@@ -655,7 +659,7 @@ async def get_me(user: User = Depends(get_current_user)):
     data = user.model_dump()
     if not data.get("module_permissions"):
         data["module_permissions"] = DEFAULT_MODULE_PERMISSIONS.copy()
-    is_admin = data.get("role") in ["admin", "super_admin", "master_admin", "Admin", "Super Admin"]
+    is_admin = data.get("role") in ["admin", "super_admin", "master_admin", "Admin", "Super Admin"] or is_master_admin(data.get("email", ""))
     data["is_admin"] = is_admin
     return data
 
@@ -2048,28 +2052,35 @@ async def get_drhp_image(
 
 # ============ MASTER ADMIN CONFIGURATION ============
 
+CENTRAL_ADMIN_EMAILS = [
+    "ronraj2312@gmail.com",
+    "founders.ipolabs@gmail.com",
+    "cajagrutisahu@gmail.com"
+]
+
 MASTER_ADMIN_CONFIG = {
     "email": "ronraj2312@gmail.com",
     "name": "Ronak Rajan",
     "title": "IPO Labs Operations",
     "role": "master_admin",
-    "permissions": "all"  # Full unrestricted access
+    "permissions": "all"
 }
 
 def is_master_admin(user_email: str) -> bool:
-    """Check if user is the master admin"""
-    return user_email.lower() == MASTER_ADMIN_CONFIG["email"].lower()
+    """Check if user is a central admin"""
+    return user_email.lower() in [e.lower() for e in CENTRAL_ADMIN_EMAILS]
 
 async def ensure_master_admin_exists():
-    """Ensure master admin user exists in database with correct role"""
-    existing = await db.users.find_one({"email": MASTER_ADMIN_CONFIG["email"]})
-    if existing:
-        # Update role to master_admin if not already
-        if existing.get("role") != "master_admin":
-            await db.users.update_one(
-                {"email": MASTER_ADMIN_CONFIG["email"]},
-                {"$set": {"role": "master_admin", "is_master_admin": True}}
-            )
+    """Ensure all central admin users exist in database with correct role"""
+    all_perms = {"assessment": True, "matchmaker": True, "drhp": True, "funding": True, "valuation": True}
+    for email in CENTRAL_ADMIN_EMAILS:
+        existing = await db.users.find_one({"email": email})
+        if existing:
+            if existing.get("role") != "master_admin":
+                await db.users.update_one(
+                    {"email": email},
+                    {"$set": {"role": "master_admin", "is_master_admin": True, "module_permissions": all_perms}}
+                )
     # If user doesn't exist, they'll be created on first login with master admin role
 
 # ============ MATCH MAKER MODELS ============
@@ -2861,6 +2872,7 @@ async def get_master_admin_profile(user: User = Depends(get_current_user)):
     
     return {
         "master_admin": MASTER_ADMIN_CONFIG,
+        "central_admins": CENTRAL_ADMIN_EMAILS,
         "is_current_user_master": is_master_admin(user.email)
     }
 
