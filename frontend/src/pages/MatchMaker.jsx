@@ -212,7 +212,7 @@ const MatchMaker = ({ user, apiClient }) => {
                   </div>
                 </div>
                 <h1 className="text-2xl font-bold tracking-tight mb-1">
-                  IPO Match Maker
+                  The Match-Making Platform
                 </h1>
                 <p className="text-sm text-blue-100 max-w-md">
                   AI-powered recommendations from India's top IPO professionals
@@ -463,7 +463,7 @@ const MatchMaker = ({ user, apiClient }) => {
         <div className="bg-gray-50 border-t border-border">
           <div className="max-w-6xl mx-auto px-6 py-6">
             <h3 className="text-sm font-semibold text-black mb-4 text-center">
-              How Our AI Match Maker Works
+              How Our AI Match-Making Works
             </h3>
             <div className="grid grid-cols-3 gap-6">
               <div className="text-center">

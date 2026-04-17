@@ -459,7 +459,7 @@ const MatchMakerSearch = ({ user, apiClient }) => {
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
             <button onClick={() => navigate("/matchmaker")} className="hover:text-black flex items-center gap-1">
               <ArrowLeft className="w-4 h-4" />
-              Match Maker
+              The Match-Making Platform
             </button>
             <ChevronRight className="w-4 h-4" />
             <span className="text-black font-medium">{getCategoryName(selectedCategory)}</span>

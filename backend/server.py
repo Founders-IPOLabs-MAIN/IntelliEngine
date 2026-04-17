@@ -317,7 +317,7 @@ async def send_registration_email(
         status_text = "APPROVED"
         body_text = f"""
             <p>Congratulations! Your professional registration as a <strong>{category}</strong> has been approved.</p>
-            <p>You are now part of India's premier IPO professional network. Companies seeking IPO services can now discover and connect with you through our Match Maker platform.</p>
+            <p>You are now part of India's premier IPO professional network. Companies seeking IPO services can now discover and connect with you through our Match-Making Platform.</p>
             <p><strong>Next Steps:</strong></p>
             <ul>
                 <li>Complete your profile with additional details</li>
@@ -2095,7 +2095,7 @@ async def ensure_master_admin_exists():
 
 # ============ MATCH MAKER MODELS ============
 
-# Professional Categories for IPO Match Maker
+# Professional Categories for The Match-Making Platform
 PROFESSIONAL_CATEGORIES = [
     {"id": "ipo_consultants", "name": "IPO Consultant", "description": "Expert guidance for IPO journey and SME listings", "icon": "Briefcase"},
     {"id": "merchant_bankers", "name": "SEBI-registered Merchant Bankers", "description": "Licensed merchant banking services for IPO management", "icon": "Building2"},
@@ -2246,7 +2246,7 @@ class ConsultationRequest(BaseModel):
 
 @api_router.get("/matchmaker/categories")
 async def get_professional_categories():
-    """Get all professional categories for IPO Match Maker"""
+    """Get all professional categories for The Match-Making Platform"""
     return {"categories": PROFESSIONAL_CATEGORIES}
 
 @api_router.get("/matchmaker/cities")
@@ -4382,7 +4382,7 @@ async def run_ipo_assessment(
 Your role is to analyze IPO readiness and provide actionable recommendations.
 Only recommend services available on SETU platform:
 1. DRHP Builder - For preparing Draft Red Herring Prospectus
-2. IPO Match Maker - For connecting with CAs, CSs, CFOs, legal experts
+2. The Match-Making Platform - For connecting with CAs, CSs, CFOs, legal experts
 3. IPO Funding Module - For Pre-IPO and Post-IPO funding options
 Do not recommend external services or competitors."""
         ).with_model("openai", "gpt-5.2")
@@ -4589,8 +4589,7 @@ PLATFORM_FEATURES = [
     {"id": "assessment", "name": "IPO Assessment", "description": "IPO readiness assessment tool"},
     {"id": "drhp_builder", "name": "DRHP Builder", "description": "Draft Red Herring Prospectus builder"},
     {"id": "funding", "name": "IPO Funding", "description": "Funding options and partners"},
-    {"id": "matchmaker", "name": "Match Maker", "description": "Professional matching service"},
-    {"id": "analytics", "name": "Analytics", "description": "Market and DRHP analytics"},
+    {"id": "matchmaker", "name": "The Match-Making Platform", "description": "Professional matching service"},    {"id": "analytics", "name": "Analytics", "description": "Market and DRHP analytics"},
     {"id": "admin_center", "name": "Admin Center", "description": "Role and user management"},
     {"id": "user_management", "name": "User Management", "description": "Manage team members"}
 ]

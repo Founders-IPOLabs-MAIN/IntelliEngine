@@ -53,7 +53,7 @@ const Dashboard = ({ user, apiClient }) => {
     },
     {
       id: "matchmaker",
-      title: "IPO Match Maker",
+      title: "The Match-Making Platform",
       description: "Connect with verified CAs, CS, CFOs, Lawyers, and industry experts",
       icon: Users,
       color: "text-orange-600",

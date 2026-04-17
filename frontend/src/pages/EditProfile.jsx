@@ -70,7 +70,7 @@ const EditProfile = ({ user, apiClient }) => {
               className="flex items-center gap-1 text-sm text-muted-foreground hover:text-black"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Match Maker
+              Back to The Match-Making Platform
             </button>
             <div>
               <h1 className="text-lg font-bold text-black">Edit Professional Profile</h1>

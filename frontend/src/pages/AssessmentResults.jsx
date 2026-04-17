@@ -555,7 +555,7 @@ const AssessmentResults = ({ user, apiClient }) => {
                     data-testid="cta-matchmaker"
                   >
                     <Users className="w-4 h-4" />
-                    Talk to Expert (Match Maker)
+                    Talk to Expert (The Match-Making Platform)
                   </Button>
                   <Button
                     variant="outline"

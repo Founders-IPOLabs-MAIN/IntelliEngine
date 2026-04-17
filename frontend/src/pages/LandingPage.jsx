@@ -55,7 +55,7 @@ const LandingPage = () => {
     },
     {
       id: "matchmaking",
-      title: "MatchMaking Platform",
+      title: "The Match-Making Platform",
       description: "Join our Expert Network & Grow Your Business",
       icon: Users,
       path: "/login?module=matchmaker",
