@@ -4856,9 +4856,9 @@ class PasswordChange(BaseModel):
 DEFAULT_MODULE_PERMISSIONS = {
     "assessment": True,
     "matchmaker": True,
-    "drhp": False,
-    "funding": False,
-    "valuation": False
+    "drhp": True,
+    "funding": True,
+    "valuation": True
 }
 
 ADMIN_EMAIL = "admin@ipolabs.com"
