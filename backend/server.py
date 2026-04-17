@@ -570,6 +570,9 @@ async def get_current_user(request: Request) -> User:
     if not user_doc:
         raise HTTPException(status_code=401, detail="User not found")
     
+    if user_doc.get("status") == "suspended":
+        raise HTTPException(status_code=403, detail="Your account has been suspended. Please contact an administrator.")
+    
     return User(**user_doc)
 
 # ============ AUTH ENDPOINTS ============
@@ -613,6 +616,7 @@ async def process_session(request: Request, session_request: SessionRequest, res
         # Create new user
         user_id = f"user_{uuid.uuid4().hex[:12]}"
         auto_role = "master_admin" if email.lower() in [e.lower() for e in CENTRAL_ADMIN_EMAILS] else "Editor"
+        is_admin_user = auto_role == "master_admin"
         user_doc = {
             "user_id": user_id,
             "email": email,
@@ -620,9 +624,12 @@ async def process_session(request: Request, session_request: SessionRequest, res
             "picture": picture,
             "role": auto_role,
             "company_id": None,
+            "user_type": "internal" if is_admin_user else "external",
+            "registration_module": "google_oauth",
+            "status": "active",
             "created_at": datetime.now(timezone.utc).isoformat()
         }
-        if auto_role == "master_admin":
+        if is_admin_user:
             user_doc["module_permissions"] = {"assessment": True, "matchmaker": True, "drhp": True, "funding": True, "valuation": True}
             user_doc["is_master_admin"] = True
         await db.users.insert_one(user_doc)
@@ -721,6 +728,9 @@ async def register_email(request: Request, data: EmailAuthRequest, response: Res
             "auth_type": "email",
             "role": "Editor",
             "company_id": None,
+            "user_type": "external",
+            "registration_module": "email_signup",
+            "status": "active",
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(user_doc)
@@ -4746,9 +4756,15 @@ async def delete_custom_role(
     return {"message": "Role deleted successfully"}
 
 @api_router.get("/admin/users")
-async def get_all_users(user: User = Depends(require_admin)):
-    """Get all users with their roles"""
-    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(500)
+async def get_all_users(user: User = Depends(require_admin), user_type: Optional[str] = None):
+    """Get all users with their roles. Filter by user_type: internal or external"""
+    query = {}
+    if user_type == "internal":
+        query["user_type"] = {"$in": ["internal", None]}
+    elif user_type == "external":
+        query["user_type"] = "external"
+
+    users = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(500)
     
     # Add role details and default permissions
     for u in users:
@@ -4762,6 +4778,83 @@ async def get_all_users(user: User = Depends(require_admin)):
             u["module_permissions"] = DEFAULT_MODULE_PERMISSIONS.copy()
     
     return {"users": users}
+
+@api_router.delete("/admin/users/{user_id}")
+async def admin_delete_user(user_id: str, user: User = Depends(require_admin)):
+    """Permanently delete a user and all their sessions"""
+    target = await db.users.find_one({"user_id": user_id})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if target.get("email") in CENTRAL_ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Cannot delete a Central Admin account")
+
+    await db.users.delete_one({"user_id": user_id})
+    await db.user_sessions.delete_many({"user_id": user_id})
+
+    await log_audit_action(
+        user.user_id, "delete", "user_management",
+        f"Deleted user {target.get('email')} ({user_id})", user_id
+    )
+    return {"message": f"User {target.get('email')} deleted"}
+
+@api_router.post("/admin/users/{user_id}/suspend")
+async def admin_suspend_user(user_id: str, user: User = Depends(require_admin)):
+    """Suspend a user — revokes all access"""
+    target = await db.users.find_one({"user_id": user_id})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if target.get("email") in CENTRAL_ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Cannot suspend a Central Admin account")
+
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"status": "suspended", "suspended_at": datetime.now(timezone.utc).isoformat(), "suspended_by": user.user_id}}
+    )
+    await db.user_sessions.delete_many({"user_id": user_id})
+
+    await log_audit_action(
+        user.user_id, "update", "user_management",
+        f"Suspended user {target.get('email')}", user_id
+    )
+    return {"message": f"User {target.get('email')} suspended"}
+
+@api_router.post("/admin/users/{user_id}/unsuspend")
+async def admin_unsuspend_user(user_id: str, user: User = Depends(require_admin)):
+    """Reactivate a suspended user"""
+    target = await db.users.find_one({"user_id": user_id})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"status": "active"}, "$unset": {"suspended_at": "", "suspended_by": ""}}
+    )
+
+    await log_audit_action(
+        user.user_id, "update", "user_management",
+        f"Unsuspended user {target.get('email')}", user_id
+    )
+    return {"message": f"User {target.get('email')} reactivated"}
+
+@api_router.post("/admin/users/{user_id}/transfer")
+async def admin_transfer_user(user_id: str, user: User = Depends(require_admin)):
+    """Transfer a user from external to internal"""
+    target = await db.users.find_one({"user_id": user_id})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if target.get("user_type") != "external":
+        raise HTTPException(status_code=400, detail="Only external users can be transferred to internal")
+
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"user_type": "internal", "transferred_at": datetime.now(timezone.utc).isoformat(), "transferred_by": user.user_id}}
+    )
+
+    await log_audit_action(
+        user.user_id, "update", "user_management",
+        f"Transferred user {target.get('email')} from external to internal", user_id
+    )
+    return {"message": f"User {target.get('email')} transferred to internal"}
 
 @api_router.post("/admin/users/assign-role")
 async def assign_user_role(

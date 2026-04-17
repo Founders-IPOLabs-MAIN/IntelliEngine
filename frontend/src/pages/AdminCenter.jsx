@@ -40,7 +40,12 @@ import {
   Mail,
   Send,
   Lock,
-  ToggleRight
+  ToggleRight,
+  ArrowRightLeft,
+  Ban,
+  UserX,
+  Globe,
+  Home
 } from "lucide-react";
 
 const ACTION_ICONS = {
@@ -94,6 +99,16 @@ const AdminCenter = ({ user, apiClient }) => {
   const [addUserName, setAddUserName] = useState("");
   const [addUserRole, setAddUserRole] = useState("editor");
   const [addUserLoading, setAddUserLoading] = useState(false);
+
+  // External users state
+  const [externalUsers, setExternalUsers] = useState([]);
+  const [extSearch, setExtSearch] = useState("");
+
+  // User action dialog state
+  const [showUserActionDialog, setShowUserActionDialog] = useState(false);
+  const [userActionType, setUserActionType] = useState("");
+  const [userActionTarget, setUserActionTarget] = useState(null);
+  const [userActionLoading, setUserActionLoading] = useState(false);
   
   // Filters
   const [userSearch, setUserSearch] = useState("");
@@ -127,10 +142,13 @@ const AdminCenter = ({ user, apiClient }) => {
         setFeatures(featuresRes.data.features);
         setPermissionMatrix(matrixRes.data);
       } else if (activeTab === "users") {
-        const usersRes = await apiClient.get("/admin/users");
+        const usersRes = await apiClient.get("/admin/users?user_type=internal");
         setUsers(usersRes.data.users);
         const rolesRes = await apiClient.get("/admin/roles");
         setRoles(rolesRes.data.roles);
+      } else if (activeTab === "external") {
+        const extRes = await apiClient.get("/admin/users?user_type=external");
+        setExternalUsers(extRes.data.users);
       } else if (activeTab === "access") {
         const usersRes = await apiClient.get("/admin/users");
         setModuleUsers(usersRes.data.users);
@@ -281,6 +299,69 @@ const AdminCenter = ({ user, apiClient }) => {
     }
   };
 
+  const openUserAction = (targetUser, action) => {
+    setUserActionTarget(targetUser);
+    setUserActionType(action);
+    setShowUserActionDialog(true);
+  };
+
+  const handleUserAction = async () => {
+    if (!userActionTarget) return;
+    setUserActionLoading(true);
+    try {
+      if (userActionType === "delete") {
+        await apiClient.delete(`/admin/users/${userActionTarget.user_id}`);
+        toast.success(`User ${userActionTarget.email} deleted`);
+      } else if (userActionType === "suspend") {
+        await apiClient.post(`/admin/users/${userActionTarget.user_id}/suspend`);
+        toast.success(`User ${userActionTarget.email} suspended`);
+      } else if (userActionType === "unsuspend") {
+        await apiClient.post(`/admin/users/${userActionTarget.user_id}/unsuspend`);
+        toast.success(`User ${userActionTarget.email} reactivated`);
+      } else if (userActionType === "transfer") {
+        await apiClient.post(`/admin/users/${userActionTarget.user_id}/transfer`);
+        toast.success(`User ${userActionTarget.email} transferred to Internal`);
+      }
+      setShowUserActionDialog(false);
+      setUserActionTarget(null);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || `Failed to ${userActionType} user`);
+    } finally {
+      setUserActionLoading(false);
+    }
+  };
+
+  const UserActionButtons = ({ u, showTransfer = false }) => {
+    const isCentralAdmin = ["ronraj2312@gmail.com", "founders.ipolabs@gmail.com", "cajagrutisahu@gmail.com"].includes(u.email);
+    const isSuspended = u.status === "suspended";
+    return (
+      <div className="flex items-center justify-end gap-1">
+        {showTransfer && (
+          <Button size="sm" variant="outline" className="h-7 px-2 text-blue-600 hover:bg-blue-50" title="Transfer to Internal"
+            onClick={() => openUserAction(u, "transfer")} disabled={isCentralAdmin}>
+            <ArrowRightLeft className="w-3.5 h-3.5" />
+          </Button>
+        )}
+        {isSuspended ? (
+          <Button size="sm" variant="outline" className="h-7 px-2 text-green-600 hover:bg-green-50" title="Reactivate"
+            onClick={() => openUserAction(u, "unsuspend")}>
+            <CheckCircle2 className="w-3.5 h-3.5" />
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" className="h-7 px-2 text-orange-600 hover:bg-orange-50" title="Suspend"
+            onClick={() => openUserAction(u, "suspend")} disabled={isCentralAdmin}>
+            <Ban className="w-3.5 h-3.5" />
+          </Button>
+        )}
+        <Button size="sm" variant="outline" className="h-7 px-2 text-red-600 hover:bg-red-50" title="Delete"
+          onClick={() => openUserAction(u, "delete")} disabled={isCentralAdmin}>
+          <Trash2 className="w-3.5 h-3.5" />
+        </Button>
+      </div>
+    );
+  };
+
   const getRoleBadgeColor = (roleId) => {
     switch (roleId) {
       case "master_admin": return "bg-yellow-100 text-yellow-700";
@@ -311,6 +392,16 @@ const AdminCenter = ({ user, apiClient }) => {
     u.name?.toLowerCase().includes(moduleSearch.toLowerCase()) ||
     u.email?.toLowerCase().includes(moduleSearch.toLowerCase())
   );
+
+  const filteredExternalUsers = externalUsers.filter(u =>
+    u.name?.toLowerCase().includes(extSearch.toLowerCase()) ||
+    u.email?.toLowerCase().includes(extSearch.toLowerCase())
+  );
+
+  const getRegModuleLabel = (mod) => {
+    const map = { google_oauth: "Google Sign-in", email_signup: "Email Sign-up", matchmaker: "Match Maker", assessment: "Assessment", drhp: "DRHP Builder", funding: "Funding", valuation: "Valuation", invited: "Invited" };
+    return map[mod] || mod || "—";
+  };
 
   const MODULES = [
     { key: "matchmaker", label: "Match Maker", color: "blue" },
@@ -379,29 +470,33 @@ const AdminCenter = ({ user, apiClient }) => {
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-8 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-6 w-full max-w-3xl mb-6">
-              <TabsTrigger value="operations" className="gap-2">
-                <Star className="w-4 h-4" />
+            <TabsList className="flex w-full max-w-4xl mb-6">
+              <TabsTrigger value="operations" className="gap-1.5 flex-1 text-xs">
+                <Star className="w-3.5 h-3.5" />
                 Operations
               </TabsTrigger>
-              <TabsTrigger value="access" className="gap-2" data-testid="module-access-tab">
-                <ToggleRight className="w-4 h-4" />
+              <TabsTrigger value="access" className="gap-1.5 flex-1 text-xs" data-testid="module-access-tab">
+                <ToggleRight className="w-3.5 h-3.5" />
                 Module Access
               </TabsTrigger>
-              <TabsTrigger value="roles" className="gap-2">
-                <Shield className="w-4 h-4" />
+              <TabsTrigger value="users" className="gap-1.5 flex-1 text-xs" data-testid="internal-users-tab">
+                <Home className="w-3.5 h-3.5" />
+                Internal Users
+              </TabsTrigger>
+              <TabsTrigger value="external" className="gap-1.5 flex-1 text-xs" data-testid="external-users-tab">
+                <Globe className="w-3.5 h-3.5" />
+                External Users
+              </TabsTrigger>
+              <TabsTrigger value="roles" className="gap-1.5 flex-1 text-xs">
+                <Shield className="w-3.5 h-3.5" />
                 Roles
               </TabsTrigger>
-              <TabsTrigger value="matrix" className="gap-2">
-                <Settings className="w-4 h-4" />
+              <TabsTrigger value="matrix" className="gap-1.5 flex-1 text-xs">
+                <Settings className="w-3.5 h-3.5" />
                 Permissions
               </TabsTrigger>
-              <TabsTrigger value="users" className="gap-2">
-                <Users className="w-4 h-4" />
-                Users
-              </TabsTrigger>
-              <TabsTrigger value="audit" className="gap-2">
-                <FileText className="w-4 h-4" />
+              <TabsTrigger value="audit" className="gap-1.5 flex-1 text-xs">
+                <FileText className="w-3.5 h-3.5" />
                 Audit Log
               </TabsTrigger>
             </TabsList>
@@ -635,34 +730,35 @@ const AdminCenter = ({ user, apiClient }) => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="w-64">User</TableHead>
+                            <TableHead className="w-56">User</TableHead>
                             {MODULES.map(mod => (
-                              <TableHead key={mod.key} className="text-center w-32">{mod.label}</TableHead>
+                              <TableHead key={mod.key} className="text-center w-24">{mod.label}</TableHead>
                             ))}
+                            <TableHead className="text-right w-32">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {filteredModuleUsers.map((u) => {
                             const perms = u.module_permissions || {};
                             const isAdminUser = ["admin", "super_admin", "master_admin"].includes(u.role?.toLowerCase().replace(" ", "_"));
+                            const isSuspended = u.status === "suspended";
                             return (
-                              <TableRow key={u.user_id} data-testid={`module-access-row-${u.user_id}`}>
+                              <TableRow key={u.user_id} className={isSuspended ? "opacity-50" : ""} data-testid={`module-access-row-${u.user_id}`}>
                                 <TableCell>
-                                  <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-2">
                                     {u.picture ? (
-                                      <img src={u.picture} alt={u.name} className="w-8 h-8 rounded-full" />
+                                      <img src={u.picture} alt={u.name} className="w-7 h-7 rounded-full" />
                                     ) : (
-                                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                                        <User className="w-4 h-4 text-gray-500" />
+                                      <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <User className="w-3.5 h-3.5 text-gray-500" />
                                       </div>
                                     )}
                                     <div>
-                                      <p className="font-medium text-sm">{u.name}</p>
-                                      <p className="text-xs text-muted-foreground">{u.email}</p>
+                                      <p className="font-medium text-sm leading-tight">{u.name}</p>
+                                      <p className="text-[11px] text-muted-foreground">{u.email}</p>
                                     </div>
-                                    {isAdminUser && (
-                                      <Badge className="bg-yellow-100 text-yellow-700 text-[10px]">Admin</Badge>
-                                    )}
+                                    {isSuspended && <Badge className="bg-red-100 text-red-600 text-[9px]">Suspended</Badge>}
+                                    {isAdminUser && !isSuspended && <Badge className="bg-yellow-100 text-yellow-700 text-[9px]">Admin</Badge>}
                                   </div>
                                 </TableCell>
                                 {MODULES.map(mod => {
@@ -684,6 +780,9 @@ const AdminCenter = ({ user, apiClient }) => {
                                     </TableCell>
                                   );
                                 })}
+                                <TableCell className="text-right">
+                                  <UserActionButtons u={u} />
+                                </TableCell>
                               </TableRow>
                             );
                           })}
@@ -779,14 +878,17 @@ const AdminCenter = ({ user, apiClient }) => {
               </Card>
             </TabsContent>
 
-            {/* Users Tab */}
+            {/* Internal Users Tab */}
             <TabsContent value="users">
               <Card className="border border-border">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle>User Management</CardTitle>
-                      <CardDescription>{users.length} users in system</CardDescription>
+                      <CardTitle className="flex items-center gap-2">
+                        <Home className="w-5 h-5 text-blue-500" />
+                        Internal Users
+                      </CardTitle>
+                      <CardDescription>{filteredUsers.length} internal users</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="relative">
@@ -811,13 +913,16 @@ const AdminCenter = ({ user, apiClient }) => {
                         <TableHead>User</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Role</TableHead>
+                        <TableHead>Status</TableHead>
                         <TableHead>Joined</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredUsers.map((u) => (
-                        <TableRow key={u.user_id}>
+                      {filteredUsers.map((u) => {
+                        const isSuspended = u.status === "suspended";
+                        return (
+                        <TableRow key={u.user_id} className={isSuspended ? "opacity-50" : ""}>
                           <TableCell>
                             <div className="flex items-center gap-3">
                               {u.picture ? (
@@ -839,25 +944,118 @@ const AdminCenter = ({ user, apiClient }) => {
                               {u.role || "Viewer"}
                             </Badge>
                           </TableCell>
+                          <TableCell>
+                            {isSuspended
+                              ? <Badge className="bg-red-100 text-red-600">Suspended</Badge>
+                              : <Badge className="bg-green-100 text-green-700">Active</Badge>}
+                          </TableCell>
                           <TableCell className="text-muted-foreground">
                             {new Date(u.created_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setAssignEmail(u.email);
-                                setShowAssignDialog(true);
-                              }}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button variant="ghost" size="sm" className="h-7 px-2" title="Edit Role"
+                                onClick={() => { setAssignEmail(u.email); setShowAssignDialog(true); }}>
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </Button>
+                              <UserActionButtons u={u} />
+                            </div>
                           </TableCell>
                         </TableRow>
-                      ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* External Users Tab */}
+            <TabsContent value="external">
+              <Card className="border border-border" data-testid="external-users-card">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Globe className="w-5 h-5 text-teal-500" />
+                        External Users
+                      </CardTitle>
+                      <CardDescription>{filteredExternalUsers.length} external users (new visitors & registrations)</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder="Search external users..."
+                          value={extSearch}
+                          onChange={(e) => setExtSearch(e.target.value)}
+                          className="pl-9 w-64"
+                          data-testid="external-users-search"
+                        />
+                      </div>
+                      <Button variant="outline" size="icon" onClick={fetchData}>
+                        <RefreshCw className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {filteredExternalUsers.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Globe className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p className="text-lg">No external users yet</p>
+                      <p className="text-sm">New visitors and registrations will appear here</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Registered Via</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredExternalUsers.map((u) => {
+                          const isSuspended = u.status === "suspended";
+                          return (
+                            <TableRow key={u.user_id} className={isSuspended ? "opacity-50" : ""} data-testid={`ext-user-row-${u.user_id}`}>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  {u.picture ? (
+                                    <img src={u.picture} alt={u.name} className="w-8 h-8 rounded-full" />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                      <User className="w-4 h-4 text-gray-500" />
+                                    </div>
+                                  )}
+                                  <span className="font-medium">{u.name}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="text-xs">{getRegModuleLabel(u.registration_module)}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                {isSuspended
+                                  ? <Badge className="bg-red-100 text-red-600">Suspended</Badge>
+                                  : <Badge className="bg-green-100 text-green-700">Active</Badge>}
+                              </TableCell>
+                              <TableCell className="text-muted-foreground">
+                                {new Date(u.created_at).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <UserActionButtons u={u} showTransfer={true} />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -1128,6 +1326,66 @@ const AdminCenter = ({ user, apiClient }) => {
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Adding...</>
               ) : (
                 <><Plus className="w-4 h-4 mr-2" />Add User</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* User Action Confirmation Dialog */}
+      <Dialog open={showUserActionDialog} onOpenChange={setShowUserActionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {userActionType === "delete" && <Trash2 className="w-5 h-5 text-red-600" />}
+              {userActionType === "suspend" && <Ban className="w-5 h-5 text-orange-600" />}
+              {userActionType === "unsuspend" && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+              {userActionType === "transfer" && <ArrowRightLeft className="w-5 h-5 text-blue-600" />}
+              {userActionType === "delete" ? "Delete User" : userActionType === "suspend" ? "Suspend User" : userActionType === "unsuspend" ? "Reactivate User" : "Transfer to Internal"}
+            </DialogTitle>
+            <DialogDescription>
+              {userActionTarget?.name} ({userActionTarget?.email})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {userActionType === "delete" && (
+              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+                This will permanently delete this user and revoke all access. This action cannot be undone.
+              </p>
+            )}
+            {userActionType === "suspend" && (
+              <p className="text-sm text-orange-600 bg-orange-50 p-3 rounded-md">
+                This will suspend the user and revoke all access to the application. They can be reactivated later.
+              </p>
+            )}
+            {userActionType === "unsuspend" && (
+              <p className="text-sm text-green-600 bg-green-50 p-3 rounded-md">
+                This will reactivate the user and restore their access to the application.
+              </p>
+            )}
+            {userActionType === "transfer" && (
+              <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded-md">
+                This will move the user from External Users to Internal Users.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUserActionDialog(false)}>Cancel</Button>
+            <Button
+              onClick={handleUserAction}
+              disabled={userActionLoading}
+              className={
+                userActionType === "delete" ? "bg-red-600 hover:bg-red-700" :
+                userActionType === "suspend" ? "bg-orange-600 hover:bg-orange-700" :
+                userActionType === "unsuspend" ? "bg-green-600 hover:bg-green-700" :
+                "bg-blue-600 hover:bg-blue-700"
+              }
+              data-testid="confirm-user-action-btn"
+            >
+              {userActionLoading ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>
+              ) : (
+                <>Confirm {userActionType === "delete" ? "Delete" : userActionType === "suspend" ? "Suspend" : userActionType === "unsuspend" ? "Reactivate" : "Transfer"}</>
               )}
             </Button>
           </DialogFooter>
