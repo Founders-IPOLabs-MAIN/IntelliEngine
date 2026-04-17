@@ -88,6 +88,13 @@ const AdminCenter = ({ user, apiClient }) => {
   const [moduleSearch, setModuleSearch] = useState("");
   const [togglingPerm, setTogglingPerm] = useState(null);
   
+  // Add User dialog state
+  const [showAddUserDialog, setShowAddUserDialog] = useState(false);
+  const [addUserEmail, setAddUserEmail] = useState("");
+  const [addUserName, setAddUserName] = useState("");
+  const [addUserRole, setAddUserRole] = useState("editor");
+  const [addUserLoading, setAddUserLoading] = useState(false);
+  
   // Filters
   const [userSearch, setUserSearch] = useState("");
   const [logFilter, setLogFilter] = useState({ action: "", module: "" });
@@ -249,6 +256,31 @@ const AdminCenter = ({ user, apiClient }) => {
     }
   };
 
+  const handleAddUser = async () => {
+    if (!addUserEmail.trim()) {
+      toast.error("Please enter an email address");
+      return;
+    }
+    setAddUserLoading(true);
+    try {
+      await apiClient.post("/admin/users/add", {
+        email: addUserEmail.trim(),
+        name: addUserName.trim() || null,
+        role: addUserRole
+      });
+      toast.success(`User ${addUserEmail} added successfully`);
+      setShowAddUserDialog(false);
+      setAddUserEmail("");
+      setAddUserName("");
+      setAddUserRole("editor");
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to add user");
+    } finally {
+      setAddUserLoading(false);
+    }
+  };
+
   const getRoleBadgeColor = (roleId) => {
     switch (roleId) {
       case "master_admin": return "bg-yellow-100 text-yellow-700";
@@ -322,14 +354,25 @@ const AdminCenter = ({ user, apiClient }) => {
                 <p className="text-muted-foreground">Role-Based Access Control & User Management</p>
               </div>
             </div>
-            <Button
-              onClick={() => setShowAssignDialog(true)}
-              className="bg-purple-600 hover:bg-purple-700 gap-2"
-              data-testid="assign-role-btn"
-            >
-              <UserPlus className="w-4 h-4" />
-              Assign Role
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => setShowAddUserDialog(true)}
+                variant="outline"
+                className="gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+                data-testid="add-user-btn"
+              >
+                <Plus className="w-4 h-4" />
+                Add User
+              </Button>
+              <Button
+                onClick={() => setShowAssignDialog(true)}
+                className="bg-purple-600 hover:bg-purple-700 gap-2"
+                data-testid="assign-role-btn"
+              >
+                <UserPlus className="w-4 h-4" />
+                Assign Role
+              </Button>
+            </div>
           </div>
         </header>
 
@@ -1005,6 +1048,86 @@ const AdminCenter = ({ user, apiClient }) => {
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Assigning...</>
               ) : (
                 <><CheckCircle2 className="w-4 h-4 mr-2" />Assign Role</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add User Dialog */}
+      <Dialog open={showAddUserDialog} onOpenChange={setShowAddUserDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5 text-purple-600" />
+              Add New User
+            </DialogTitle>
+            <DialogDescription>
+              Add a user by email and assign them a role
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input
+                type="email"
+                value={addUserEmail}
+                onChange={(e) => setAddUserEmail(e.target.value)}
+                placeholder="user@example.com"
+                data-testid="add-user-email-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Name</Label>
+              <Input
+                value={addUserName}
+                onChange={(e) => setAddUserName(e.target.value)}
+                placeholder="Full name (optional)"
+                data-testid="add-user-name-input"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Role *</Label>
+              <Select value={addUserRole} onValueChange={setAddUserRole}>
+                <SelectTrigger data-testid="add-user-role-select">
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="master_admin">
+                    <Badge className="bg-yellow-100 text-yellow-700 text-xs">Master Admin</Badge>
+                  </SelectItem>
+                  <SelectItem value="super_admin">
+                    <Badge className="bg-red-100 text-red-700 text-xs">Super Admin</Badge>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <Badge className="bg-purple-100 text-purple-700 text-xs">Admin</Badge>
+                  </SelectItem>
+                  <SelectItem value="editor">
+                    <Badge className="bg-blue-100 text-blue-700 text-xs">Editor</Badge>
+                  </SelectItem>
+                  <SelectItem value="viewer">
+                    <Badge className="bg-gray-100 text-gray-700 text-xs">Viewer</Badge>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddUserDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={handleAddUser} 
+              disabled={addUserLoading}
+              className="bg-purple-600 hover:bg-purple-700"
+              data-testid="add-user-submit-btn"
+            >
+              {addUserLoading ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Adding...</>
+              ) : (
+                <><Plus className="w-4 h-4 mr-2" />Add User</>
               )}
             </Button>
           </DialogFooter>

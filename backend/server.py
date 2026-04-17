@@ -4804,6 +4804,53 @@ async def assign_user_role(
     
     return {"message": f"Role '{role_id}' assigned to {assignment.user_email}"}
 
+class AddUserRequest(BaseModel):
+    email: str
+    name: Optional[str] = None
+    role: str = "editor"
+
+@api_router.post("/admin/users/add")
+async def admin_add_user(data: AddUserRequest, user: User = Depends(require_admin)):
+    """Admin adds a new user by email with a role"""
+    email = data.email.strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Invalid email address")
+
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=409, detail="A user with this email already exists")
+
+    role_id = data.role.lower().replace(" ", "_")
+    valid_roles = list(DEFAULT_ROLES.keys()) + ["master_admin"]
+    if role_id not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {', '.join(valid_roles)}")
+
+    name = (data.name or "").strip() or email.split("@")[0]
+    user_id = f"user_{uuid.uuid4().hex[:12]}"
+
+    new_user = {
+        "user_id": user_id,
+        "email": email,
+        "name": name,
+        "picture": None,
+        "role": role_id,
+        "auth_type": "invited",
+        "company_id": None,
+        "module_permissions": DEFAULT_MODULE_PERMISSIONS.copy(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "invited_by": user.user_id
+    }
+    await db.users.insert_one(new_user)
+
+    await log_audit_action(
+        user.user_id, "create", "user_management",
+        f"Added user {email} with role '{role_id}'",
+        user_id
+    )
+
+    new_user.pop("_id", None)
+    return {"message": f"User {email} added with role '{role_id}'", "user": new_user}
+
 @api_router.get("/admin/audit-logs")
 async def get_audit_logs(
     user: User = Depends(require_admin),
