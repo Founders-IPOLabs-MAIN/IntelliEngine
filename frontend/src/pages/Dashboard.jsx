@@ -38,7 +38,7 @@ const Dashboard = ({ user, apiClient }) => {
       bgColor: "bg-blue-50",
       hoverBg: "hover:bg-blue-50",
       hoverBorder: "hover:border-blue-300",
-      path: "/drhp1"
+      path: "/drhp"
     },
     {
       id: "funding",
@@ -49,7 +49,7 @@ const Dashboard = ({ user, apiClient }) => {
       bgColor: "bg-emerald-50",
       hoverBg: "hover:bg-emerald-50",
       hoverBorder: "hover:border-emerald-300",
-      path: "/funding1"
+      path: "/funding"
     },
     {
       id: "matchmaker",
@@ -61,6 +61,17 @@ const Dashboard = ({ user, apiClient }) => {
       hoverBg: "hover:bg-orange-50",
       hoverBorder: "hover:border-orange-300",
       path: "/matchmaker"
+    },
+    {
+      id: "valuation",
+      title: "Business Valuation",
+      description: "AI-powered DCF, NAV & Comparable analysis for accurate business valuation",
+      icon: Scale,
+      color: "text-amber-600",
+      bgColor: "bg-amber-50",
+      hoverBg: "hover:bg-amber-50",
+      hoverBorder: "hover:border-amber-300",
+      path: "/valuation"
     }
   ];
 
@@ -108,10 +119,10 @@ const Dashboard = ({ user, apiClient }) => {
           <div className="flex-1 flex flex-col">
             <h3 className="text-lg font-semibold tracking-tight text-black mb-4">Platform Modules</h3>
             <div className="grid grid-cols-2 gap-5 flex-1">
-              {modules.map((module) => (
+              {modules.map((module, idx) => (
                 <Card
                   key={module.id}
-                  className={`border border-border cursor-pointer transition-all duration-200 ${module.hoverBg} ${module.hoverBorder} hover:shadow-lg group`}
+                  className={`border border-border cursor-pointer transition-all duration-200 ${module.hoverBg} ${module.hoverBorder} hover:shadow-lg group ${idx === modules.length - 1 && modules.length % 2 !== 0 ? "col-span-2" : ""}`}
                   onClick={() => navigate(module.path)}
                   data-testid={`module-${module.id}`}
                 >
