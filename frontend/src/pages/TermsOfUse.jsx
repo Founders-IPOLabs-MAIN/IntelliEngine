@@ -39,7 +39,7 @@ const TermsOfUse = ({ user, apiClient }) => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-muted-foreground">
-              <p>By registering as a Service Provider on IntelliEngine, you represent and warrant that:</p>
+              <p>By registering as a Service Provider on SETU, you represent and warrant that:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>
                   You hold a valid and subsisting license/registration from your respective regulatory body (e.g., <strong className="text-black">SEBI, ICAI, ICSI, Bar Council of India</strong>).
@@ -131,7 +131,7 @@ const TermsOfUse = ({ user, apiClient }) => {
               <div>
                 <h4 className="font-semibold text-black mb-2">Non-Compete</h4>
                 <p>
-                  You agree not to bypass the Platform's matchmaking engine to contact users for independent solicitation once a lead has been established through IntelliEngine, for a period of <strong className="text-black">12 months</strong> from the date of the first consultation.
+                  You agree not to bypass the Platform's matchmaking engine to contact users for independent solicitation once a lead has been established through SETU, for a period of <strong className="text-black">12 months</strong> from the date of the first consultation.
                 </p>
               </div>
             </CardContent>

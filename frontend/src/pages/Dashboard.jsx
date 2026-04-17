@@ -38,7 +38,7 @@ const Dashboard = ({ user, apiClient }) => {
       bgColor: "bg-blue-50",
       hoverBg: "hover:bg-blue-50",
       hoverBorder: "hover:border-blue-300",
-      path: "/drhp"
+      path: "/drhp1"
     },
     {
       id: "funding",
@@ -49,7 +49,7 @@ const Dashboard = ({ user, apiClient }) => {
       bgColor: "bg-emerald-50",
       hoverBg: "hover:bg-emerald-50",
       hoverBorder: "hover:border-emerald-300",
-      path: "/funding"
+      path: "/funding1"
     },
     {
       id: "matchmaker",
@@ -96,7 +96,7 @@ const Dashboard = ({ user, apiClient }) => {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold tracking-tight text-black">
-                    IntelliEngine Platform
+                    SETU Platform
                   </h2>
                   <p className="text-sm text-muted-foreground">by IPO Labs - Your complete IPO readiness solution</p>
                 </div>

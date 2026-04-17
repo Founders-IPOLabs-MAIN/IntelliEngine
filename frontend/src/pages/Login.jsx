@@ -131,7 +131,7 @@ const Login = ({ apiClient }) => {
                 <div className="w-12 h-12 bg-[#1DA1F2] rounded-xl flex items-center justify-center">
                   <Building2 className="w-7 h-7 text-white" />
                 </div>
-                <span className="text-3xl font-bold tracking-tighter text-black">IntelliEngine</span>
+                <span className="text-3xl font-bold tracking-tighter text-black">SETU</span>
               </div>
               <p className="text-muted-foreground text-lg">by IPO Labs</p>
             </div>
@@ -158,7 +158,7 @@ const Login = ({ apiClient }) => {
               <div className="w-10 h-10 bg-[#1DA1F2] rounded-xl flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold tracking-tighter text-black">IntelliEngine</span>
+              <span className="text-2xl font-bold tracking-tighter text-black">SETU</span>
             </div>
             <CardTitle className="text-2xl font-semibold tracking-tight">
               {isLogin ? "Welcome back" : "Create an account"}

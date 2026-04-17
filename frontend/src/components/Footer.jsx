@@ -12,7 +12,7 @@ const Footer = () => {
               <Building2 className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-sm font-medium text-black">IntelliEngine by IPO Labs</p>
+              <p className="text-sm font-medium text-black">SETU by IPO Labs</p>
               <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} IPO Labs Private Limited</p>
             </div>
           </div>

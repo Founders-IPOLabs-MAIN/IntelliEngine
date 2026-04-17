@@ -43,6 +43,7 @@ import DRHPOutput from "@/pages/DRHPOutput";
 import ValuationModule from "@/pages/ValuationModule";
 import ValuationWizard from "@/pages/ValuationWizard";
 import ValuationResults from "@/pages/ValuationResults";
+import ComingSoon from "@/pages/ComingSoon";
 
 // Components
 import Footer from "@/components/Footer";
@@ -517,6 +518,24 @@ const AppRouter = () => {
           <ModuleRoute requiredModule="valuation" showFooter={false}>
             {({ user, apiClient }) => <ValuationResults user={user} apiClient={apiClient} />}
           </ModuleRoute>
+        }
+      />
+
+      {/* Coming Soon pages - redirect targets for restricted modules */}
+      <Route
+        path="/drhp1"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <ComingSoon user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/funding1"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <ComingSoon user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
         }
       />
 

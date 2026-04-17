@@ -50,7 +50,7 @@ if RESEND_API_KEY and RESEND_API_KEY != 're_placeholder_key':
 limiter = Limiter(key_func=get_remote_address)
 
 # Create the main app
-app = FastAPI(title="IntelliEngine API", version="1.0.0")
+app = FastAPI(title="SETU API", version="1.0.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -312,7 +312,7 @@ async def send_registration_email(
     
     # Define email content based on action
     if action == "approve":
-        subject = f"🎉 Registration Approved - Welcome to IntelliEngine!"
+        subject = f"🎉 Registration Approved - Welcome to SETU!"
         status_color = "#22c55e"  # Green
         status_text = "APPROVED"
         body_text = f"""
@@ -356,7 +356,7 @@ async def send_registration_email(
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #1DA1F2 0%, #0d8ecf 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">IntelliEngine</h1>
+            <h1 style="color: white; margin: 0; font-size: 24px;">SETU</h1>
             <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0; font-size: 14px;">IPO Readiness Platform</p>
         </div>
         
@@ -422,7 +422,7 @@ async def send_registration_email(
                 {f'<p><strong>Reason:</strong> {reason}</p>' if reason else ''}
                 <p><strong>Timestamp:</strong> {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
                 <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-                <p style="color: #666; font-size: 12px;">This is an automated notification from IntelliEngine Admin Center.</p>
+                <p style="color: #666; font-size: 12px;">This is an automated notification from SETU Admin Center.</p>
             </div>
         </body>
         </html>
@@ -3164,7 +3164,7 @@ AVAILABLE PROFESSIONALS:
         chat = LlmChat(
             api_key=api_key,
             session_id=f"ai_match_{uuid.uuid4().hex[:8]}",
-            system_message="""You are an expert IPO advisor AI assistant for IntelliEngine by IPO Labs. 
+            system_message="""You are an expert IPO advisor AI assistant for SETU by IPO Labs. 
 Your task is to analyze company IPO requirements and recommend the most suitable professionals from the available pool.
 
 Consider these factors when matching:
@@ -4368,9 +4368,9 @@ async def run_ipo_assessment(
         chat = LlmChat(
             api_key=api_key,
             session_id=f"assessment_{uuid.uuid4().hex[:8]}",
-            system_message="""You are an expert Indian IPO advisor at IntelliEngine by IPO Labs. 
+            system_message="""You are an expert Indian IPO advisor at SETU by IPO Labs. 
 Your role is to analyze IPO readiness and provide actionable recommendations.
-Only recommend services available on IntelliEngine platform:
+Only recommend services available on SETU platform:
 1. DRHP Builder - For preparing Draft Red Herring Prospectus
 2. IPO Match Maker - For connecting with CAs, CSs, CFOs, legal experts
 3. IPO Funding Module - For Pre-IPO and Post-IPO funding options
@@ -4415,7 +4415,7 @@ Provide a concise analysis (max 200 words) with:
 1. Key strengths (2 bullet points)
 2. Governance/compliance observations (1-2 bullet points)
 3. Priority actions to improve readiness (2-3 bullet points)
-4. Which IntelliEngine module to use first (DRHP Builder, Match Maker, or IPO Funding)
+4. Which SETU module to use first (DRHP Builder, Match Maker, or IPO Funding)
 
 Use professional Indian financial terminology. Be direct and actionable."""
 
@@ -5538,7 +5538,7 @@ async def get_ai_delay_explanation(
     """Generate AI explanation for a section delay using GPT-5.2"""
     from emergentintegrations.llm.chat import chat, LlmModel
     
-    prompt = f"""You are an IPO readiness assistant for IntelliEngine platform. Generate a brief, professional explanation for why a DRHP section might be delayed.
+    prompt = f"""You are an IPO readiness assistant for SETU platform. Generate a brief, professional explanation for why a DRHP section might be delayed.
 
 Section: {request.section_name}
 Days Delayed: {request.delay_days} days
@@ -7004,7 +7004,7 @@ Return ONLY JSON (no markdown):
 
 @api_router.get("/")
 async def root():
-    return {"message": "IntelliEngine API v1.0", "status": "operational"}
+    return {"message": "SETU API v1.0", "status": "operational"}
 
 @api_router.get("/health")
 async def health_check():
@@ -7033,7 +7033,7 @@ async def add_security_headers(request: Request, call_next):
 
 # CORS Configuration - Use explicit origins in production
 # Set CORS_ORIGINS in .env to comma-separated list of allowed origins
-# Example: CORS_ORIGINS=https://intelliengine.com,https://app.intelliengine.com
+# Example: CORS_ORIGINS=https://setu.com,https://app.setu.com
 cors_origins = os.environ.get('CORS_ORIGINS', '').split(',')
 # Filter out empty strings and strip whitespace
 cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]

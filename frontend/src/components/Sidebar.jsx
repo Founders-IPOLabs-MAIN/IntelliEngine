@@ -42,7 +42,7 @@ const Sidebar = ({ user, apiClient }) => {
   };
 
   const handleDRHPClick = () => {
-    navigate("/drhp");
+    navigate("/drhp1");
   };
 
   const isActive = (itemId) => {
@@ -75,7 +75,7 @@ const Sidebar = ({ user, apiClient }) => {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: "/assessment" },
     { id: "drhp", label: "DRHP Builder", icon: FileText, path: null, onClick: handleDRHPClick },
-    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding" },
+    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding1" },
     { id: "matchmaker", label: "Match Maker", icon: Users, path: "/matchmaker" },
     { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation" },
     { id: "account", label: "Account Details", icon: User, path: "/account" },
@@ -98,7 +98,7 @@ const Sidebar = ({ user, apiClient }) => {
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <div>
-            <span className="text-lg font-bold tracking-tighter text-black block">IntelliEngine</span>
+            <span className="text-lg font-bold tracking-tighter text-black block">SETU</span>
             <span className="text-xs text-muted-foreground">by IPO Labs</span>
           </div>
         </Link>

@@ -1,7 +1,7 @@
-# IntelliEngine - IPO Readiness Platform PRD
+# SETU - IPO Readiness Platform PRD
 
 ## Project Overview
-**Product Name:** IntelliEngine  
+**Product Name:** SETU  
 **Company:** IPO Labs  
 **Platform Type:** Cloud-hosted & secure IPO-readiness platform  
 **Target Market:** Indian market  

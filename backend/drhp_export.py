@@ -127,7 +127,7 @@ class DRHPWordExporter:
         # Set document core properties
         core_props = self.doc.core_properties
         core_props.title = f"DRHP - {self.company_name}"
-        core_props.author = "IntelliEngine DRHP Builder"
+        core_props.author = "SETU DRHP Builder"
         core_props.subject = f"{self.board_type.upper()} Board Draft Red Herring Prospectus"
     
     def _setup_custom_styles(self):
