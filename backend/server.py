@@ -2095,6 +2095,322 @@ async def ensure_master_admin_exists():
 
 # ============ MATCH MAKER MODELS ============
 
+# ---- Wallets & Credit Economy ----
+import re as regex_module
+
+CIN_REGEX = r'^[UL]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$'
+GSTIN_REGEX = r'^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}$'
+
+DEFAULT_ISSUER_CREDITS = 5
+DEFAULT_EXPERT_TOKENS = 3
+COST_PER_UNLOCK = 1
+
+LISTING_INTENT_OPTIONS = ["immediate", "midterm", "discovery"]
+CONTACT_PERSONA_OPTIONS = ["founder", "md", "cfo", "company_ca"]
+
+class IssuerRegisterRequest(BaseModel):
+    company_name: str
+    cin: str
+    gstin: str
+    mobile: str
+    email: str
+    listing_intent: str
+    contact_persona: str
+    hiring: bool = False
+    hiring_experts: Optional[list] = None
+
+class ConnectionRequest(BaseModel):
+    target_id: str
+    target_type: str = "expert"
+
+# --- Wallet endpoints ---
+
+@api_router.get("/matchmaker/wallet")
+async def get_wallet(user: User = Depends(get_current_user)):
+    """Get current user's wallet"""
+    wallet = await db.wallets.find_one({"user_id": user.user_id}, {"_id": 0})
+    if not wallet:
+        wallet = {
+            "user_id": user.user_id,
+            "issuer_credits": DEFAULT_ISSUER_CREDITS,
+            "expert_tokens": DEFAULT_EXPERT_TOKENS,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.wallets.insert_one(wallet)
+        wallet.pop("_id", None)
+    return wallet
+
+@api_router.post("/matchmaker/wallet/topup")
+async def topup_wallet(data: dict = Body(...), user: User = Depends(get_current_user)):
+    """MOCKED - Top up wallet with credits/tokens (Razorpay integration pending)"""
+    credit_type = data.get("type", "issuer_credits")
+    amount = int(data.get("amount", 0))
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be positive")
+    if credit_type not in ["issuer_credits", "expert_tokens"]:
+        raise HTTPException(status_code=400, detail="Invalid credit type")
+
+    wallet = await db.wallets.find_one({"user_id": user.user_id})
+    if not wallet:
+        wallet = {"user_id": user.user_id, "issuer_credits": DEFAULT_ISSUER_CREDITS, "expert_tokens": DEFAULT_EXPERT_TOKENS, "created_at": datetime.now(timezone.utc).isoformat()}
+        await db.wallets.insert_one(wallet)
+
+    await db.wallets.update_one(
+        {"user_id": user.user_id},
+        {"$inc": {credit_type: amount}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+
+    updated = await db.wallets.find_one({"user_id": user.user_id}, {"_id": 0})
+    return {"message": f"MOCKED: Added {amount} {credit_type}", "wallet": updated}
+
+# --- Issuer endpoints ---
+
+@api_router.post("/matchmaker/issuer/register")
+async def register_issuer(data: IssuerRegisterRequest, user: User = Depends(get_current_user)):
+    """Register as an IPO-bound issuer company"""
+    existing = await db.issuer_profiles.find_one({"user_id": user.user_id})
+    if existing:
+        raise HTTPException(status_code=409, detail="Issuer profile already exists")
+
+    cin = data.cin.strip().upper()
+    gstin = data.gstin.strip().upper()
+
+    if not regex_module.match(CIN_REGEX, cin):
+        raise HTTPException(status_code=400, detail="Invalid CIN format")
+    if not regex_module.match(GSTIN_REGEX, gstin):
+        raise HTTPException(status_code=400, detail="Invalid GSTIN format")
+    if data.listing_intent not in LISTING_INTENT_OPTIONS:
+        raise HTTPException(status_code=400, detail="Invalid listing intent")
+    if data.contact_persona not in CONTACT_PERSONA_OPTIONS:
+        raise HTTPException(status_code=400, detail="Invalid contact persona")
+
+    # MOCKED MCA21/GSTN auto-fill
+    mca_data = {
+        "registered_address": "Auto-filled address (MCA API pending)",
+        "date_of_incorporation": "2020-01-15",
+        "authorized_capital": "10,00,00,000"
+    }
+
+    profile = {
+        "issuer_id": f"issuer_{uuid.uuid4().hex[:12]}",
+        "user_id": user.user_id,
+        "company_name": data.company_name.strip(),
+        "cin": cin,
+        "gstin": gstin,
+        "mobile": data.mobile.strip(),
+        "email": data.email.strip().lower(),
+        "listing_intent": data.listing_intent,
+        "contact_persona": data.contact_persona,
+        "hiring": data.hiring,
+        "hiring_experts": data.hiring_experts or [],
+        "mca_data": mca_data,
+        "status": "active",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.issuer_profiles.insert_one(profile)
+    profile.pop("_id", None)
+
+    # Initialize wallet
+    existing_wallet = await db.wallets.find_one({"user_id": user.user_id})
+    if not existing_wallet:
+        await db.wallets.insert_one({
+            "user_id": user.user_id,
+            "issuer_credits": DEFAULT_ISSUER_CREDITS,
+            "expert_tokens": 0,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+
+    # Tag user as external with module
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {"$set": {"registration_module": "matchmaker_issuer"}}
+    )
+
+    return {"message": "Issuer registered successfully", "profile": profile, "mca_data": mca_data}
+
+@api_router.get("/matchmaker/issuer/profile")
+async def get_issuer_profile(user: User = Depends(get_current_user)):
+    """Get current user's issuer profile"""
+    profile = await db.issuer_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
+    if not profile:
+        return {"profile": None}
+    return {"profile": profile}
+
+@api_router.get("/matchmaker/issuer/dashboard")
+async def get_issuer_dashboard(user: User = Depends(get_current_user)):
+    """Get issuer dashboard data"""
+    profile = await db.issuer_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
+    wallet = await db.wallets.find_one({"user_id": user.user_id}, {"_id": 0})
+    if not wallet:
+        wallet = {"issuer_credits": DEFAULT_ISSUER_CREDITS, "expert_tokens": 0}
+
+    connections = await db.connections.find({"requester_id": user.user_id}).to_list(100)
+    total_connections = len(connections)
+    accepted = len([c for c in connections if c.get("status") == "accepted"])
+    pending = len([c for c in connections if c.get("status") == "pending"])
+
+    # Get IPO readiness score if available
+    assessment = await db.ipo_assessments.find_one(
+        {"user_id": user.user_id}, {"_id": 0, "readiness_score": 1}
+    )
+
+    return {
+        "profile": profile,
+        "wallet": wallet,
+        "stats": {
+            "available_credits": wallet.get("issuer_credits", 0),
+            "ipo_readiness_score": assessment.get("readiness_score") if assessment else None,
+            "expert_consultations": accepted,
+            "pending_requests": pending,
+            "total_connections": total_connections
+        }
+    }
+
+# --- Expert dashboard ---
+
+@api_router.get("/matchmaker/expert/dashboard")
+async def get_expert_dashboard(user: User = Depends(get_current_user)):
+    """Get expert dashboard data"""
+    wallet = await db.wallets.find_one({"user_id": user.user_id}, {"_id": 0})
+    if not wallet:
+        wallet = {"issuer_credits": 0, "expert_tokens": DEFAULT_EXPERT_TOKENS}
+
+    # Leads unlocked = connections initiated by this expert
+    connections = await db.connections.find({"requester_id": user.user_id}).to_list(100)
+    leads_unlocked = len([c for c in connections if c.get("status") == "accepted"])
+
+    # Active invitations = connections where this expert is the target
+    invitations = await db.connections.find({"target_id": user.user_id, "status": "pending"}).to_list(100)
+
+    return {
+        "wallet": wallet,
+        "stats": {
+            "available_tokens": wallet.get("expert_tokens", 0),
+            "leads_unlocked": leads_unlocked,
+            "active_invitations": len(invitations)
+        }
+    }
+
+# --- Connection / Handshake endpoints ---
+
+@api_router.post("/matchmaker/connections/request")
+async def create_connection_request(data: ConnectionRequest, user: User = Depends(get_current_user)):
+    """Send a connection request (deducts credits/tokens)"""
+    # Check if connection already exists
+    existing = await db.connections.find_one({
+        "requester_id": user.user_id,
+        "target_id": data.target_id,
+        "status": {"$in": ["pending", "accepted"]}
+    })
+    if existing:
+        raise HTTPException(status_code=409, detail="Connection already exists")
+
+    wallet = await db.wallets.find_one({"user_id": user.user_id})
+    if not wallet:
+        raise HTTPException(status_code=400, detail="No wallet found. Please register first.")
+
+    # Determine deduction type
+    issuer_profile = await db.issuer_profiles.find_one({"user_id": user.user_id})
+    if issuer_profile:
+        if wallet.get("issuer_credits", 0) < COST_PER_UNLOCK:
+            raise HTTPException(status_code=402, detail="Insufficient credits. Please top up.")
+        deduct_field = "issuer_credits"
+    else:
+        if wallet.get("expert_tokens", 0) < COST_PER_UNLOCK:
+            raise HTTPException(status_code=402, detail="Insufficient tokens. Please top up.")
+        deduct_field = "expert_tokens"
+
+    connection = {
+        "connection_id": f"conn_{uuid.uuid4().hex[:12]}",
+        "requester_id": user.user_id,
+        "requester_type": "issuer" if issuer_profile else "expert",
+        "target_id": data.target_id,
+        "target_type": data.target_type,
+        "status": "pending",
+        "credits_deducted": COST_PER_UNLOCK if deduct_field == "issuer_credits" else 0,
+        "tokens_deducted": COST_PER_UNLOCK if deduct_field == "expert_tokens" else 0,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.connections.insert_one(connection)
+    connection.pop("_id", None)
+
+    await db.wallets.update_one(
+        {"user_id": user.user_id},
+        {"$inc": {deduct_field: -COST_PER_UNLOCK}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+
+    return {"message": "Connection request sent", "connection": connection}
+
+@api_router.post("/matchmaker/connections/{connection_id}/accept")
+async def accept_connection(connection_id: str, user: User = Depends(get_current_user)):
+    """Accept a connection request — unlocks PII for both parties"""
+    conn = await db.connections.find_one({"connection_id": connection_id, "target_id": user.user_id, "status": "pending"})
+    if not conn:
+        raise HTTPException(status_code=404, detail="Connection request not found")
+
+    await db.connections.update_one(
+        {"connection_id": connection_id},
+        {"$set": {"status": "accepted", "accepted_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"message": "Connection accepted — contact details unlocked"}
+
+@api_router.post("/matchmaker/connections/{connection_id}/reject")
+async def reject_connection(connection_id: str, user: User = Depends(get_current_user)):
+    """Reject a connection request"""
+    conn = await db.connections.find_one({"connection_id": connection_id, "target_id": user.user_id, "status": "pending"})
+    if not conn:
+        raise HTTPException(status_code=404, detail="Connection request not found")
+
+    await db.connections.update_one(
+        {"connection_id": connection_id},
+        {"$set": {"status": "rejected", "rejected_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"message": "Connection rejected"}
+
+@api_router.get("/matchmaker/connections")
+async def get_connections(user: User = Depends(get_current_user)):
+    """Get all connections for the current user"""
+    sent = await db.connections.find({"requester_id": user.user_id}, {"_id": 0}).to_list(100)
+    received = await db.connections.find({"target_id": user.user_id}, {"_id": 0}).to_list(100)
+    return {"sent": sent, "received": received}
+
+@api_router.get("/matchmaker/issuer/leads")
+async def get_issuer_leads(user: User = Depends(get_current_user)):
+    """Get list of issuers for experts (masked by default)"""
+    issuers = await db.issuer_profiles.find({"status": "active"}, {"_id": 0}).to_list(200)
+
+    # Check which ones the current user has unlocked
+    user_connections = await db.connections.find({
+        "requester_id": user.user_id, "status": "accepted"
+    }).to_list(200)
+    unlocked_ids = {c["target_id"] for c in user_connections}
+
+    result = []
+    for iss in issuers:
+        masked = {
+            "issuer_id": iss["issuer_id"],
+            "user_id": iss["user_id"],
+            "company_name": iss["company_name"],
+            "listing_intent": iss["listing_intent"],
+            "contact_persona": iss["contact_persona"],
+            "hiring": iss.get("hiring", False),
+            "hiring_experts": iss.get("hiring_experts", []),
+            "created_at": iss["created_at"]
+        }
+        if iss["user_id"] in unlocked_ids:
+            masked["mobile"] = iss["mobile"]
+            masked["email"] = iss["email"]
+            masked["cin"] = iss["cin"]
+            masked["gstin"] = iss["gstin"]
+            masked["unlocked"] = True
+        else:
+            masked["mobile"] = iss["mobile"][:3] + "****" + iss["mobile"][-2:] if len(iss.get("mobile", "")) > 5 else "****"
+            masked["email"] = iss["email"][:2] + "****@" + iss["email"].split("@")[-1] if "@" in iss.get("email", "") else "****"
+            masked["unlocked"] = False
+        result.append(masked)
+
+    return {"leads": result}
+
 # Professional Categories for The Match-Making Platform
 PROFESSIONAL_CATEGORIES = [
     {"id": "ipo_consultants", "name": "IPO Consultant", "description": "Expert guidance for IPO journey and SME listings", "icon": "Briefcase"},

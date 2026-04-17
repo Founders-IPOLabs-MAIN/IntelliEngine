@@ -20,6 +20,8 @@ import KMPChecklist from "@/pages/KMPChecklist";
 import PreIPOTracker from "@/pages/PreIPOTracker";
 import NonDRHPTracker from "@/pages/NonDRHPTracker";
 import MatchMaker from "@/pages/MatchMaker";
+import MatchMakingLanding from "@/pages/MatchMakingLanding";
+import IssuerPage from "@/pages/IssuerPage";
 import MatchMakerSearch from "@/pages/MatchMakerSearch";
 import ProfessionalProfile from "@/pages/ProfessionalProfile";
 import ProfessionalRegister from "@/pages/ProfessionalRegister";
@@ -350,7 +352,23 @@ const AppRouter = () => {
         path="/matchmaker"
         element={
           <ModuleRoute requiredModule="matchmaker">
+            {({ user, apiClient }) => <MatchMakingLanding user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/matchmaker/experts"
+        element={
+          <ModuleRoute requiredModule="matchmaker">
             {({ user, apiClient }) => <MatchMaker user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/matchmaker/issuer"
+        element={
+          <ModuleRoute requiredModule="matchmaker">
+            {({ user, apiClient }) => <IssuerPage user={user} apiClient={apiClient} />}
           </ModuleRoute>
         }
       />
