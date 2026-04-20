@@ -183,22 +183,40 @@ const ModuleRoute = ({ children, requiredModule, showFooter = true }) => {
   );
 };
 
-// Admin Gate - dedicated admin login then AdminCenter
+// Admin Gate - checks existing session first, handles OAuth callback, then shows admin login if needed
 const AdminGate = () => {
   const [adminUser, setAdminUser] = useState(null);
   const [checking, setChecking] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const checkAdminStatus = async () => {
+    try {
+      const res = await apiClient.get("/auth/me");
+      if (res.data.is_admin) {
+        setAdminUser(res.data);
+        return true;
+      }
+    } catch {}
+    return false;
+  };
 
   useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const res = await apiClient.get("/auth/me");
-        if (res.data.is_admin) {
-          setAdminUser(res.data);
+    const init = async () => {
+      // Handle OAuth callback on /admin route
+      if (location.hash?.includes("session_id=")) {
+        const sessionId = location.hash.split("session_id=")[1]?.split("&")[0];
+        if (sessionId) {
+          try {
+            await apiClient.post("/auth/session", { session_id: sessionId });
+            window.history.replaceState(null, "", "/admin");
+          } catch {}
         }
-      } catch {}
+      }
+      await checkAdminStatus();
       setChecking(false);
     };
-    checkAdmin();
+    init();
   }, []);
 
   if (checking) {
@@ -216,12 +234,11 @@ const AdminGate = () => {
     return (
       <AdminLogin
         onLoginSuccess={async () => {
-          try {
-            const res = await apiClient.get("/auth/me");
-            if (res.data.is_admin) {
-              setAdminUser(res.data);
-            }
-          } catch {}
+          const ok = await checkAdminStatus();
+          if (!ok) {
+            // Re-check after a brief delay for cookie propagation
+            setTimeout(async () => { await checkAdminStatus(); }, 500);
+          }
         }}
       />
     );
