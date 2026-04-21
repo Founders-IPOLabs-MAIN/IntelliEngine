@@ -6,7 +6,13 @@
 **Platform Type:** Cloud-hosted & secure IPO-readiness platform  
 **Target Market:** Indian market  
 **Date Started:** Feb 17, 2026
-**Last Updated:** Apr 16, 2026
+**Last Updated:** Apr 21, 2026
+
+### Changelog — Apr 21, 2026
+- AboutPage.jsx: swapped section order — **Meet the Founders now sits above Origin Story**
+- Rewrote Origin Story narrative ("A Tech Founder and a financial whiz…")
+- Global font scale bumped +2 across About page; Founders section scaled +4 total (names `text-2xl`, bios `text-base`)
+- Tightened vertical whitespace (section `py-10/12` → `py-8`)
 
 ## Original Problem Statement
 Build a complete IPO-readiness platform with:
