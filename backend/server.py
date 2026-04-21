@@ -713,11 +713,12 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 @api_router.post("/auth/register")
 @limiter.limit("5/minute")
-async def register_email(request: Request, data: EmailAuthRequest, response: Response):
-    """Register a new user with email/password"""
-    email = data.email.strip().lower()
-    password = data.password.strip()
-    name = (data.name or "").strip() or email.split("@")[0]
+async def register_email(request: Request, data: dict = Body(...), response: Response = None):
+    """Register a new user with email/password and optional mobile"""
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "").strip()
+    name = (data.get("name") or "").strip() or email.split("@")[0]
+    mobile = data.get("mobile", "").strip()
 
     if not email or "@" not in email:
         raise HTTPException(status_code=400, detail="Invalid email address")
@@ -743,6 +744,7 @@ async def register_email(request: Request, data: EmailAuthRequest, response: Res
             "user_id": user_id,
             "email": email,
             "name": name,
+            "mobile": mobile or None,
             "picture": None,
             "password_hash": hash_password(password),
             "auth_type": "email",
@@ -779,6 +781,107 @@ async def register_email(request: Request, data: EmailAuthRequest, response: Res
         },
         "session_token": session_token
     }
+
+@api_router.post("/auth/check-email")
+async def check_email_exists(data: dict = Body(...)):
+    """Check if an email already exists in the system"""
+    email = data.get("email", "").strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+    user = await db.users.find_one({"email": email}, {"_id": 0, "email": 1, "auth_type": 1})
+    return {"exists": bool(user), "email": email}
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: dict = Body(...)):
+    """Forgot password — lookup by email or mobile, return masked email"""
+    email = data.get("email", "").strip().lower()
+    mobile = data.get("mobile", "").strip()
+
+    user = None
+    if email:
+        user = await db.users.find_one({"email": email}, {"_id": 0, "email": 1, "user_id": 1, "name": 1})
+    elif mobile:
+        user = await db.users.find_one({"mobile": mobile}, {"_id": 0, "email": 1, "user_id": 1, "name": 1})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="No account found with this email or mobile number")
+
+    found_email = user.get("email", "")
+    # Mask email: show first 2 chars + ****@domain
+    if "@" in found_email:
+        local, domain = found_email.split("@", 1)
+        masked = local[:2] + "****@" + domain
+    else:
+        masked = "****"
+
+    # Generate reset token
+    reset_token = str(uuid.uuid4())
+    await db.password_resets.insert_one({
+        "user_id": user["user_id"],
+        "email": found_email,
+        "token": reset_token,
+        "expires_at": (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    return {"email_found": masked, "reset_token": reset_token, "message": "Password reset ready"}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: dict = Body(...)):
+    """Reset password using token"""
+    token = data.get("token", "").strip()
+    new_password = data.get("new_password", "").strip()
+
+    if not token or not new_password:
+        raise HTTPException(status_code=400, detail="Token and new password are required")
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
+    reset = await db.password_resets.find_one({"token": token})
+    if not reset:
+        raise HTTPException(status_code=404, detail="Invalid or expired reset token")
+
+    expires = reset.get("expires_at", "")
+    if isinstance(expires, str):
+        expires = datetime.fromisoformat(expires)
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    if datetime.now(timezone.utc) > expires:
+        raise HTTPException(status_code=410, detail="Reset token has expired")
+
+    await db.users.update_one(
+        {"user_id": reset["user_id"]},
+        {"$set": {"password_hash": hash_password(new_password)}}
+    )
+    await db.password_resets.delete_many({"user_id": reset["user_id"]})
+
+    return {"message": "Password reset successfully. You can now sign in."}
+
+@api_router.post("/auth/lookup-mobile")
+async def lookup_mobile(data: dict = Body(...)):
+    """Lookup email by mobile number"""
+    mobile = data.get("mobile", "").strip()
+    if not mobile:
+        raise HTTPException(status_code=400, detail="Mobile number is required")
+    user = await db.users.find_one({"mobile": mobile}, {"_id": 0, "email": 1})
+    if not user:
+        raise HTTPException(status_code=404, detail="No account found with this mobile number")
+    email = user.get("email", "")
+    if "@" in email:
+        local, domain = email.split("@", 1)
+        masked = local[:2] + "****@" + domain
+    else:
+        masked = "****"
+    return {"email_found": masked}
+
+@api_router.post("/auth/save-mobile")
+async def save_mobile(data: dict = Body(...), user: User = Depends(get_current_user)):
+    """Save mobile number for authenticated user (post Google Auth)"""
+    mobile = data.get("mobile", "").strip()
+    if not mobile or len(mobile) < 10:
+        raise HTTPException(status_code=400, detail="Valid mobile number is required")
+    await db.users.update_one({"user_id": user.user_id}, {"$set": {"mobile": mobile}})
+    return {"message": "Mobile number saved"}
 
 @api_router.post("/auth/login")
 @limiter.limit("10/minute")

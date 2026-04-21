@@ -2,21 +2,49 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Shield, Users, UserCheck, UserPlus, Eye, EyeOff, Loader2, Lock } from "lucide-react";
+import { Shield, Users, UserCheck, UserPlus, Eye, EyeOff, Loader2, Lock, Phone, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
-const LoginPanel = ({ roles, selectedRole, onSelectRole, onLogin, loading, error }) => {
+const LoginPanel = ({ selectedRole, onLogin, loading, error, onForgotPassword }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mobile, setMobile] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [emailChecked, setEmailChecked] = useState(false);
   const off = !selectedRole;
 
-  const submit = (e) => { e.preventDefault(); if (!off) onLogin({ email, password, name, isSignup }); };
+  const checkAndSignup = async () => {
+    if (!email) { toast.error("Enter your email"); return; }
+    setCheckingEmail(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/check-email`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data.exists) {
+        toast.error("This email already exists. Please sign in or use Forgot Password.");
+        setIsSignup(false);
+        setCheckingEmail(false);
+        return;
+      }
+      setEmailChecked(true);
+    } catch { toast.error("Could not verify email"); }
+    setCheckingEmail(false);
+  };
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (off) return;
+    if (isSignup && !emailChecked) { checkAndSignup(); return; }
+    onLogin({ email, password, name, mobile, isSignup });
+  };
 
   const google = () => {
     if (off) return;
@@ -38,20 +66,65 @@ const LoginPanel = ({ roles, selectedRole, onSelectRole, onLogin, loading, error
       </button>
       <div className="relative mb-3"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"/></div><div className="relative flex justify-center"><span className="bg-white px-2 text-[9px] text-gray-300 uppercase">or</span></div></div>
       <form onSubmit={submit} className="space-y-2">
-        {isSignup && <Input value={name} onChange={e=>setName(e.target.value)} placeholder="Full name" className="h-8 text-xs" />}
-        <Input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" className="h-8 text-xs" data-testid="login-email" />
-        <div className="relative">
-          <Input type={showPw?"text":"password"} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password" className="h-8 text-xs pr-8" data-testid="login-password" />
-          <button type="button" onClick={()=>setShowPw(!showPw)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">{showPw?<EyeOff className="w-3 h-3"/>:<Eye className="w-3 h-3"/>}</button>
-        </div>
-        {error && <p className="text-[10px] text-red-500 bg-red-50 p-1.5 rounded" data-testid="login-error">{error}</p>}
-        <Button type="submit" disabled={loading||off} className="w-full h-8 text-xs bg-[#003366] hover:bg-[#002244]" data-testid="login-submit">
-          {loading?<Loader2 className="w-3 h-3 animate-spin"/>:isSignup?"Create Account":"Sign In"}
-        </Button>
+        {isSignup && !emailChecked && (
+          <>
+            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" className="h-8 text-xs" data-testid="login-email" />
+            <div className="relative">
+              <Phone className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
+              <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="Mobile number" className="h-8 text-xs pl-7" data-testid="login-mobile" />
+            </div>
+            {error && <p className="text-[10px] text-red-500 bg-red-50 p-1.5 rounded">{error}</p>}
+            <Button type="submit" disabled={checkingEmail || off} className="w-full h-8 text-xs bg-[#003366] hover:bg-[#002244]">
+              {checkingEmail ? <Loader2 className="w-3 h-3 animate-spin" /> : "Verify & Continue"}
+            </Button>
+          </>
+        )}
+        {isSignup && emailChecked && (
+          <>
+            <div className="flex items-center gap-1.5 p-1.5 bg-green-50 rounded text-[10px] text-green-700"><CheckCircle2 className="w-3 h-3" /> {email} — available</div>
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" className="h-8 text-xs" />
+            <div className="relative">
+              <Phone className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
+              <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="Mobile number" className="h-8 text-xs pl-7" />
+            </div>
+            <div className="relative">
+              <Input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Create password (min 6 chars)" className="h-8 text-xs pr-8" data-testid="login-password" />
+              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300">{showPw ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}</button>
+            </div>
+            {error && <p className="text-[10px] text-red-500 bg-red-50 p-1.5 rounded">{error}</p>}
+            <Button type="submit" disabled={loading || off} className="w-full h-8 text-xs bg-[#003366] hover:bg-[#002244]" data-testid="login-submit">
+              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Create Account"}
+            </Button>
+          </>
+        )}
+        {!isSignup && (
+          <>
+            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" className="h-8 text-xs" data-testid="login-email" />
+            <div className="relative">
+              <Phone className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
+              <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="Mobile number (optional)" className="h-8 text-xs pl-7" data-testid="login-mobile" />
+            </div>
+            <div className="relative">
+              <Input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" className="h-8 text-xs pr-8" data-testid="login-password" />
+              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300">{showPw ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}</button>
+            </div>
+            {error && <p className="text-[10px] text-red-500 bg-red-50 p-1.5 rounded" data-testid="login-error">{error}</p>}
+            <Button type="submit" disabled={loading || off} className="w-full h-8 text-xs bg-[#003366] hover:bg-[#002244]" data-testid="login-submit">
+              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Sign In"}
+            </Button>
+          </>
+        )}
       </form>
-      <p className="text-center text-[10px] text-gray-400 mt-2">
-        {isSignup?<>Have an account? <button onClick={()=>setIsSignup(false)} className="text-[#003366] font-medium">Sign in</button></>:<>New here? <button onClick={()=>setIsSignup(true)} className="text-[#003366] font-medium">Sign up</button></>}
-      </p>
+      <div className="flex items-center justify-between mt-2">
+        <p className="text-[10px] text-gray-400">
+          {isSignup
+            ? <>Have an account? <button onClick={() => { setIsSignup(false); setEmailChecked(false); }} className="text-[#003366] font-medium">Sign in</button></>
+            : <>New here? <button onClick={() => setIsSignup(true)} className="text-[#003366] font-medium">Sign up</button></>}
+        </p>
+        {!isSignup && (
+          <button onClick={onForgotPassword} className="text-[10px] text-orange-600 font-medium hover:underline" data-testid="forgot-password-btn">Forgot password?</button>
+        )}
+      </div>
     </div>
   );
 };
@@ -62,27 +135,82 @@ const Login = ({ apiClient }) => {
   const [rightRole, setRightRole] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // Forgot Password state
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotMode, setForgotMode] = useState("email");
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotMobile, setForgotMobile] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotResult, setForgotResult] = useState(null);
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [resetDone, setResetDone] = useState(false);
 
-  const handleLogin = async ({ email, password, name, isSignup }, loginRole) => {
-    if (!email||!password) { setError("Email and password required"); return; }
+  const handleLogin = async ({ email, password, name, mobile, isSignup }, loginRole) => {
+    if (!email || !password) { setError("Email and password required"); return; }
     setError(""); setLoading(true);
     try {
       if (isSignup) {
-        await fetch(`${API_URL}/api/auth/register`, {
-          method:"POST", headers:{"Content-Type":"application/json"}, credentials:"include",
-          body: JSON.stringify({ email, password, name: name||email.split("@")[0] })
+        const regRes = await fetch(`${API_URL}/api/auth/register`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+          body: JSON.stringify({ email, password, name: name || email.split("@")[0], mobile })
         });
+        const regData = await regRes.json();
+        if (!regRes.ok) { setError(regData.detail || "Registration failed"); setLoading(false); return; }
       }
       const res = await fetch(`${API_URL}/api/auth/login`, {
-        method:"POST", headers:{"Content-Type":"application/json"}, credentials:"include",
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
         body: JSON.stringify({ email, password, login_role: loginRole })
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.detail||"Login failed"); setLoading(false); return; }
+      if (!res.ok) { setError(data.detail || "Login failed"); setLoading(false); return; }
       if (data.session_token) localStorage.setItem("session_token", data.session_token);
+      // Save mobile if provided
+      if (mobile && data.session_token) {
+        fetch(`${API_URL}/api/auth/save-mobile`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+          body: JSON.stringify({ mobile })
+        }).catch(() => {});
+      }
       navigate("/dashboard", { state: { user: data.user } });
     } catch { setError("Connection error"); }
     setLoading(false);
+  };
+
+  const handleForgotSubmit = async () => {
+    setForgotLoading(true);
+    try {
+      const body = forgotMode === "email" ? { email: forgotEmail } : { mobile: forgotMobile };
+      const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.detail || "Not found"); setForgotLoading(false); return; }
+      setForgotResult(data.email_found);
+      setResetToken(data.reset_token);
+    } catch { toast.error("Connection error"); }
+    setForgotLoading(false);
+  };
+
+  const handleResetPassword = async () => {
+    if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    setForgotLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/reset-password`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: resetToken, new_password: newPassword })
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.detail || "Reset failed"); setForgotLoading(false); return; }
+      setResetDone(true);
+      toast.success("Password reset! You can now sign in.");
+    } catch { toast.error("Connection error"); }
+    setForgotLoading(false);
+  };
+
+  const closeForgot = () => {
+    setShowForgot(false); setForgotResult(null); setResetToken(""); setNewPassword("");
+    setResetDone(false); setForgotEmail(""); setForgotMobile(""); setForgotMode("email");
   };
 
   // Handle Google OAuth callback
@@ -93,10 +221,10 @@ const Login = ({ apiClient }) => {
       (async () => {
         try {
           const res = await fetch(`${API_URL}/api/auth/session`, {
-            method:"POST", headers:{"Content-Type":"application/json"}, credentials:"include",
+            method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
             body: JSON.stringify({ session_id: sessionId })
           });
-          if (res.ok) { window.history.replaceState(null,"","/login"); navigate("/dashboard"); }
+          if (res.ok) { window.history.replaceState(null, "", "/login"); navigate("/dashboard"); }
         } catch {}
       })();
     }
@@ -106,60 +234,117 @@ const Login = ({ apiClient }) => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4" data-testid="login-page">
       <div className="w-full max-w-2xl">
         {/* Header */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-5">
           <div className="flex items-center justify-center gap-1.5 mb-1">
-            <div className="w-7 h-7 bg-[#003366] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-[10px]">S</span>
-            </div>
+            <div className="w-7 h-7 bg-[#003366] rounded-lg flex items-center justify-center"><span className="text-white font-bold text-[10px]">S</span></div>
             <span className="text-xl font-bold text-[#003366]">SETU</span>
           </div>
           <h1 className="text-sm font-bold text-black">Login Page</h1>
           <p className="text-[10px] text-gray-400">Select your role to continue</p>
         </div>
 
-        {/* Split panels side by side */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* LEFT: Internal */}
+        {/* Split panels */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* LEFT */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="bg-[#003366]/[0.04] px-4 py-2 border-b text-center">
+            <div className="bg-[#003366]/[0.04] px-3 py-1.5 border-b text-center">
               <p className="text-[9px] tracking-widest uppercase text-[#003366] font-bold">Internal Access</p>
             </div>
             <div className="p-4">
-              <div className="flex gap-1.5 mb-4">
-                {[{id:"admin",label:"Admins",icon:Shield},{id:"employee",label:"Employees",icon:Users}].map(r=>(
-                  <button key={r.id} onClick={()=>{setLeftRole(r.id);setRightRole(null);setError("");}}
-                    className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] font-semibold border transition-all ${leftRole===r.id?"border-[#003366] bg-[#003366] text-white":"border-gray-200 text-gray-400 hover:border-gray-300"}`}
+              <div className="flex gap-1.5 mb-3">
+                {[{ id: "admin", label: "Admins", icon: Shield }, { id: "employee", label: "Employees", icon: Users }].map(r => (
+                  <button key={r.id} onClick={() => { setLeftRole(r.id); setRightRole(null); setError(""); }}
+                    className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] font-semibold border transition-all ${leftRole === r.id ? "border-[#003366] bg-[#003366] text-white" : "border-gray-200 text-gray-400 hover:border-gray-300"}`}
                     data-testid={`role-btn-${r.id}`}>
-                    <r.icon className="w-3 h-3"/>{r.label}
+                    <r.icon className="w-3 h-3" />{r.label}
                   </button>
                 ))}
               </div>
-              <LoginPanel roles={[]} selectedRole={leftRole} onSelectRole={()=>{}}
-                onLogin={(d)=>handleLogin(d,leftRole)} loading={loading} error={leftRole?error:""} />
+              <LoginPanel selectedRole={leftRole}
+                onLogin={(d) => handleLogin(d, leftRole)} loading={loading} error={leftRole ? error : ""}
+                onForgotPassword={() => setShowForgot(true)} />
             </div>
           </div>
 
-          {/* RIGHT: Users */}
+          {/* RIGHT */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="bg-orange-500/[0.04] px-4 py-2 border-b text-center">
+            <div className="bg-orange-500/[0.04] px-3 py-1.5 border-b text-center">
               <p className="text-[9px] tracking-widest uppercase text-orange-600 font-bold">User Access</p>
             </div>
             <div className="p-4">
-              <div className="flex gap-1.5 mb-4">
-                {[{id:"existing_user",label:"Existing Users",icon:UserCheck},{id:"new_user",label:"New Users",icon:UserPlus}].map(r=>(
-                  <button key={r.id} onClick={()=>{setRightRole(r.id);setLeftRole(null);setError("");}}
-                    className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] font-semibold border transition-all ${rightRole===r.id?"border-[#003366] bg-[#003366] text-white":"border-gray-200 text-gray-400 hover:border-gray-300"}`}
+              <div className="flex gap-1.5 mb-3">
+                {[{ id: "existing_user", label: "Existing Users", icon: UserCheck }, { id: "new_user", label: "New Users", icon: UserPlus }].map(r => (
+                  <button key={r.id} onClick={() => { setRightRole(r.id); setLeftRole(null); setError(""); }}
+                    className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] font-semibold border transition-all ${rightRole === r.id ? "border-[#003366] bg-[#003366] text-white" : "border-gray-200 text-gray-400 hover:border-gray-300"}`}
                     data-testid={`role-btn-${r.id}`}>
-                    <r.icon className="w-3 h-3"/>{r.label}
+                    <r.icon className="w-3 h-3" />{r.label}
                   </button>
                 ))}
               </div>
-              <LoginPanel roles={[]} selectedRole={rightRole} onSelectRole={()=>{}}
-                onLogin={(d)=>handleLogin(d,rightRole)} loading={loading} error={rightRole?error:""} />
+              <LoginPanel selectedRole={rightRole}
+                onLogin={(d) => handleLogin(d, rightRole)} loading={loading} error={rightRole ? error : ""}
+                onForgotPassword={() => setShowForgot(true)} />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={showForgot} onOpenChange={closeForgot}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base"><KeyRound className="w-4 h-4 text-[#003366]" /> Forgot Password</DialogTitle>
+            <DialogDescription className="text-xs">Recover your account using email or mobile number</DialogDescription>
+          </DialogHeader>
+
+          {resetDone ? (
+            <div className="py-4 text-center">
+              <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-3" />
+              <p className="text-sm font-semibold text-green-700">Password reset successfully!</p>
+              <p className="text-xs text-gray-500 mt-1">You can now sign in with your new password.</p>
+              <Button onClick={closeForgot} className="mt-4 bg-[#003366] hover:bg-[#002244] text-xs h-8">Back to Login</Button>
+            </div>
+          ) : forgotResult ? (
+            <div className="space-y-3 py-2">
+              <div className="p-3 bg-blue-50 rounded text-center">
+                <p className="text-[10px] text-gray-500 mb-1">Email Address Used to Login</p>
+                <p className="text-sm font-bold text-[#003366]">{forgotResult}</p>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium">Set New Password</p>
+                <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="New password (min 6 chars)" className="h-8 text-xs" data-testid="new-password-input" />
+              </div>
+              <Button onClick={handleResetPassword} disabled={forgotLoading} className="w-full h-8 text-xs bg-[#003366] hover:bg-[#002244]" data-testid="reset-password-btn">
+                {forgotLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Reset Password"}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3 py-2">
+              <div className="flex gap-1.5">
+                <button onClick={() => setForgotMode("email")}
+                  className={`flex-1 py-1.5 rounded text-[10px] font-semibold border transition-all ${forgotMode === "email" ? "border-[#003366] bg-[#003366] text-white" : "border-gray-200 text-gray-400"}`}>
+                  By Email
+                </button>
+                <button onClick={() => setForgotMode("mobile")}
+                  className={`flex-1 py-1.5 rounded text-[10px] font-semibold border transition-all ${forgotMode === "mobile" ? "border-[#003366] bg-[#003366] text-white" : "border-gray-200 text-gray-400"}`}>
+                  By Mobile
+                </button>
+              </div>
+              {forgotMode === "email" ? (
+                <Input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="Enter your registered email" className="h-8 text-xs" data-testid="forgot-email-input" />
+              ) : (
+                <div className="relative">
+                  <Phone className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
+                  <Input value={forgotMobile} onChange={e => setForgotMobile(e.target.value)} placeholder="Enter your registered mobile" className="h-8 text-xs pl-7" data-testid="forgot-mobile-input" />
+                </div>
+              )}
+              <Button onClick={handleForgotSubmit} disabled={forgotLoading} className="w-full h-8 text-xs bg-[#003366] hover:bg-[#002244]" data-testid="forgot-submit-btn">
+                {forgotLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Find Account"}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
