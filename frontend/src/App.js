@@ -49,6 +49,7 @@ import ResourcesPage from "@/pages/ResourcesPage";
 import PricingPage from "@/pages/PricingPage";
 import DisclaimerPage from "@/pages/DisclaimerPage";
 import AboutPage from "@/pages/AboutPage";
+import CareersPage from "@/pages/CareersPage";
 import ComingSoon from "@/pages/ComingSoon";
 
 // Components
@@ -267,6 +268,7 @@ const AppRouter = () => {
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/disclaimer" element={<DisclaimerPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/careers" element={<CareersPage />} />
       <Route path="/login" element={<Login apiClient={apiClient} />} />
       <Route path="/access-denied" element={<AccessDenied />} />
       <Route
