@@ -93,7 +93,7 @@ const LandingPage = () => {
           <button onClick={() => navigate("/resources")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-resources">Resources</button>
           <button onClick={() => navigate("/pricing")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-pricing">Pricing</button>
           <button onClick={() => navigate("/disclaimer")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-disclaimer">Disclaimer</button>
-          <button onClick={() => navigate("/about")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-about">About</button>
+          <button onClick={() => navigate("/about")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-about">About Us</button>
           <button onClick={() => navigate("/careers")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-careers">Careers</button>
           <Button 
             onClick={() => navigate("/login")}
