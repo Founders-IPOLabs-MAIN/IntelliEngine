@@ -55,74 +55,74 @@ const LoginPanel = ({ selectedRole, onLogin, loading, error, onForgotPassword })
   return (
     <div className={`transition-all duration-300 ${off ? "opacity-30 pointer-events-none" : ""}`}>
       {off && (
-        <div className="flex items-center justify-center gap-1.5 py-2 mb-3 text-[10px] text-gray-400 bg-gray-50 rounded border border-dashed border-gray-200">
-          <Lock className="w-3 h-3" /> Select a role above
+        <div className="flex items-center justify-center gap-1.5 py-2.5 mb-3 text-xs text-gray-400 bg-gray-50 rounded border border-dashed border-gray-200">
+          <Lock className="w-3.5 h-3.5" /> Select a role above
         </div>
       )}
       <button onClick={google} disabled={off}
-        className="w-full flex items-center justify-center gap-1.5 py-2 border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors mb-3">
+        className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors mb-3">
         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         Google
       </button>
-      <div className="relative mb-3"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"/></div><div className="relative flex justify-center"><span className="bg-white px-2 text-[9px] text-gray-300 uppercase">or</span></div></div>
-      <form onSubmit={submit} className="space-y-2">
+      <div className="relative mb-3"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100"/></div><div className="relative flex justify-center"><span className="bg-white px-2 text-[11px] text-gray-300 uppercase">or</span></div></div>
+      <form onSubmit={submit} className="space-y-2.5">
         {isSignup && !emailChecked && (
           <>
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" className="h-8 text-xs" data-testid="login-email" />
+            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" className="h-9 text-sm" data-testid="login-email" />
             <div className="relative">
-              <Phone className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
-              <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="Mobile number" className="h-8 text-xs pl-7" data-testid="login-mobile" />
+              <Phone className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
+              <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="Mobile number" className="h-9 text-sm pl-8" data-testid="login-mobile" />
             </div>
-            {error && <p className="text-[10px] text-red-500 bg-red-50 p-1.5 rounded">{error}</p>}
-            <Button type="submit" disabled={checkingEmail || off} className="w-full h-8 text-xs bg-[#003366] hover:bg-[#002244]">
-              {checkingEmail ? <Loader2 className="w-3 h-3 animate-spin" /> : "Verify & Continue"}
+            {error && <p className="text-xs text-red-500 bg-red-50 p-1.5 rounded">{error}</p>}
+            <Button type="submit" disabled={checkingEmail || off} className="w-full h-9 text-sm bg-[#003366] hover:bg-[#002244]">
+              {checkingEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Verify & Continue"}
             </Button>
           </>
         )}
         {isSignup && emailChecked && (
           <>
-            <div className="flex items-center gap-1.5 p-1.5 bg-green-50 rounded text-[10px] text-green-700"><CheckCircle2 className="w-3 h-3" /> {email} — available</div>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" className="h-8 text-xs" />
+            <div className="flex items-center gap-1.5 p-2 bg-green-50 rounded text-xs text-green-700"><CheckCircle2 className="w-3.5 h-3.5" /> {email} — available</div>
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" className="h-9 text-sm" />
             <div className="relative">
-              <Phone className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
-              <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="Mobile number" className="h-8 text-xs pl-7" />
+              <Phone className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
+              <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="Mobile number" className="h-9 text-sm pl-8" />
             </div>
             <div className="relative">
-              <Input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Create password (min 6 chars)" className="h-8 text-xs pr-8" data-testid="login-password" />
-              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300">{showPw ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}</button>
+              <Input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Create password (min 6 chars)" className="h-9 text-sm pr-8" data-testid="login-password" />
+              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300">{showPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}</button>
             </div>
-            {error && <p className="text-[10px] text-red-500 bg-red-50 p-1.5 rounded">{error}</p>}
-            <Button type="submit" disabled={loading || off} className="w-full h-8 text-xs bg-[#003366] hover:bg-[#002244]" data-testid="login-submit">
-              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Create Account"}
+            {error && <p className="text-xs text-red-500 bg-red-50 p-1.5 rounded">{error}</p>}
+            <Button type="submit" disabled={loading || off} className="w-full h-9 text-sm bg-[#003366] hover:bg-[#002244]" data-testid="login-submit">
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Create Account"}
             </Button>
           </>
         )}
         {!isSignup && (
           <>
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" className="h-8 text-xs" data-testid="login-email" />
+            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" className="h-9 text-sm" data-testid="login-email" />
             <div className="relative">
-              <Phone className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
-              <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="Mobile number (optional)" className="h-8 text-xs pl-7" data-testid="login-mobile" />
+              <Phone className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300" />
+              <Input value={mobile} onChange={e => setMobile(e.target.value)} placeholder="Mobile number (optional)" className="h-9 text-sm pl-8" data-testid="login-mobile" />
             </div>
             <div className="relative">
-              <Input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" className="h-8 text-xs pr-8" data-testid="login-password" />
-              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300">{showPw ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}</button>
+              <Input type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" className="h-9 text-sm pr-8" data-testid="login-password" />
+              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300">{showPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}</button>
             </div>
-            {error && <p className="text-[10px] text-red-500 bg-red-50 p-1.5 rounded" data-testid="login-error">{error}</p>}
-            <Button type="submit" disabled={loading || off} className="w-full h-8 text-xs bg-[#003366] hover:bg-[#002244]" data-testid="login-submit">
-              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Sign In"}
+            {error && <p className="text-xs text-red-500 bg-red-50 p-1.5 rounded" data-testid="login-error">{error}</p>}
+            <Button type="submit" disabled={loading || off} className="w-full h-9 text-sm bg-[#003366] hover:bg-[#002244]" data-testid="login-submit">
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Sign In"}
             </Button>
           </>
         )}
       </form>
-      <div className="flex items-center justify-between mt-2">
-        <p className="text-[10px] text-gray-400">
+      <div className="flex items-center justify-between mt-3">
+        <p className="text-xs text-gray-400">
           {isSignup
             ? <>Have an account? <button onClick={() => { setIsSignup(false); setEmailChecked(false); }} className="text-[#003366] font-medium">Sign in</button></>
             : <>New here? <button onClick={() => setIsSignup(true)} className="text-[#003366] font-medium">Sign up</button></>}
         </p>
         {!isSignup && (
-          <button onClick={onForgotPassword} className="text-[10px] text-orange-600 font-medium hover:underline" data-testid="forgot-password-btn">Forgot password?</button>
+          <button onClick={onForgotPassword} className="text-xs text-orange-600 font-medium hover:underline" data-testid="forgot-password-btn">Forgot password?</button>
         )}
       </div>
     </div>
@@ -239,24 +239,24 @@ const Login = ({ apiClient }) => {
             <div className="w-7 h-7 bg-[#003366] rounded-lg flex items-center justify-center"><span className="text-white font-bold text-[10px]">S</span></div>
             <span className="text-xl font-bold text-[#003366]">SETU</span>
           </div>
-          <h1 className="text-sm font-bold text-black">Login Page</h1>
-          <p className="text-[10px] text-gray-400">Select your role to continue</p>
+          <h1 className="text-base font-bold text-black">Login Page</h1>
+          <p className="text-xs text-gray-400">Select your role to continue</p>
         </div>
 
         {/* Split panels */}
         <div className="grid grid-cols-2 gap-3">
           {/* LEFT */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="bg-[#003366]/[0.04] px-3 py-1.5 border-b text-center">
-              <p className="text-[9px] tracking-widest uppercase text-[#003366] font-bold">Internal Access</p>
+            <div className="bg-[#003366]/[0.04] px-3 py-2 border-b text-center">
+              <p className="text-[11px] tracking-widest uppercase text-[#003366] font-bold">Internal Access</p>
             </div>
-            <div className="p-4">
-              <div className="flex gap-1.5 mb-3">
-                {[{ id: "admin", label: "Admins", icon: Shield }, { id: "employee", label: "Employees", icon: Users }].map(r => (
+            <div className="p-5">
+              <div className="flex gap-2 mb-4">
+                {[{ id: "admin", label: "Admins", icon: Shield, active: "border-[#003366] bg-[#003366] text-white", idle: "border-gray-200 text-gray-400 hover:border-[#003366]/40 hover:bg-[#003366]/5" }, { id: "employee", label: "Employees", icon: Users, active: "border-indigo-600 bg-indigo-600 text-white", idle: "border-gray-200 text-gray-400 hover:border-indigo-400/40 hover:bg-indigo-50" }].map(r => (
                   <button key={r.id} onClick={() => { setLeftRole(r.id); setRightRole(null); setError(""); }}
-                    className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] font-semibold border transition-all ${leftRole === r.id ? "border-[#003366] bg-[#003366] text-white" : "border-gray-200 text-gray-400 hover:border-gray-300"}`}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border-2 transition-all ${leftRole === r.id ? r.active : r.idle}`}
                     data-testid={`role-btn-${r.id}`}>
-                    <r.icon className="w-3 h-3" />{r.label}
+                    <r.icon className="w-3.5 h-3.5" />{r.label}
                   </button>
                 ))}
               </div>
@@ -269,15 +269,15 @@ const Login = ({ apiClient }) => {
           {/* RIGHT */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="bg-orange-500/[0.04] px-3 py-1.5 border-b text-center">
-              <p className="text-[9px] tracking-widest uppercase text-orange-600 font-bold">User Access</p>
+              <p className="text-[11px] tracking-widest uppercase text-orange-600 font-bold">User Access</p>
             </div>
-            <div className="p-4">
-              <div className="flex gap-1.5 mb-3">
-                {[{ id: "existing_user", label: "Existing Users", icon: UserCheck }, { id: "new_user", label: "New Users", icon: UserPlus }].map(r => (
+            <div className="p-5">
+              <div className="flex gap-2 mb-4">
+                {[{ id: "existing_user", label: "Existing Users", icon: UserCheck, active: "border-teal-600 bg-teal-600 text-white", idle: "border-gray-200 text-gray-400 hover:border-teal-400/40 hover:bg-teal-50" }, { id: "new_user", label: "New Users", icon: UserPlus, active: "border-orange-500 bg-orange-500 text-white", idle: "border-gray-200 text-gray-400 hover:border-orange-400/40 hover:bg-orange-50" }].map(r => (
                   <button key={r.id} onClick={() => { setRightRole(r.id); setLeftRole(null); setError(""); }}
-                    className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[10px] font-semibold border transition-all ${rightRole === r.id ? "border-[#003366] bg-[#003366] text-white" : "border-gray-200 text-gray-400 hover:border-gray-300"}`}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border-2 transition-all ${rightRole === r.id ? r.active : r.idle}`}
                     data-testid={`role-btn-${r.id}`}>
-                    <r.icon className="w-3 h-3" />{r.label}
+                    <r.icon className="w-3.5 h-3.5" />{r.label}
                   </button>
                 ))}
               </div>
