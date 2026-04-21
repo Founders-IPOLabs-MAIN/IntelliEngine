@@ -81,65 +81,67 @@ const AboutPage = () => {
             <h2 className="text-xl font-bold text-black">Meet the Founders</h2>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-0 rounded-2xl overflow-hidden border border-gray-100 shadow-lg">
+          <div className="grid grid-cols-2 gap-4">
             {/* Jagruti */}
             <div
-              className="relative group bg-gradient-to-br from-[#f8f9fa] to-[#eef1f5] p-8 transition-all duration-500 hover:from-[#003366]/[0.03] hover:to-[#003366]/[0.07]"
+              className="relative group bg-gradient-to-br from-[#f8f9fa] to-[#eef1f5] rounded-2xl p-6 border border-gray-100 transition-all duration-500 hover:border-[#003366]/20 hover:shadow-md"
               onMouseEnter={() => setHoveredFounder("jagruti")}
               onMouseLeave={() => setHoveredFounder(null)}
             >
-              <div className="relative mb-5">
-                <div className="w-28 h-28 rounded-2xl overflow-hidden shadow-xl group-hover:scale-105 transition-transform duration-500 bg-gray-200">
-                  <img src={JAGRUTI_IMG} alt="CA Jagruti Sahu" className="w-full h-full object-cover object-top" />
+              <div className="flex items-start gap-5">
+                <div className="relative flex-shrink-0">
+                  <div className="w-24 h-24 rounded-xl overflow-hidden shadow-lg group-hover:scale-105 transition-transform duration-500 bg-gray-200">
+                    <img src={JAGRUTI_IMG} alt="CA Jagruti Sahu" className="w-full h-full object-cover object-top" />
+                  </div>
+                  <a href="https://www.linkedin.com/in/ca-jagruti-sahu-523a948/" target="_blank" rel="noopener noreferrer"
+                    className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#0A66C2] rounded-md flex items-center justify-center text-white shadow-md hover:scale-110 transition-transform" title="LinkedIn">
+                    <Linkedin className="w-3 h-3" />
+                  </a>
                 </div>
-                <a href="https://www.linkedin.com/in/ca-jagruti-sahu-523a948/" target="_blank" rel="noopener noreferrer"
-                  className="absolute -bottom-1.5 left-24 w-7 h-7 bg-[#0A66C2] rounded-md flex items-center justify-center text-white shadow-md hover:scale-110 transition-transform" title="LinkedIn">
-                  <Linkedin className="w-3.5 h-3.5" />
-                </a>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] tracking-[0.2em] uppercase text-[#003366] font-bold mb-0.5">Guardian of Trust & Compliance</p>
+                  <h3 className="text-base font-bold text-black">CA Jagruti Sahu</h3>
+                  <p className="text-[11px] text-gray-400 font-medium mb-2">Co-Founder & Director</p>
+                  <p className="text-gray-600 text-[11px] leading-relaxed">
+                    A Chartered Accountant forged in Indian financial compliance, Jagruti brings deep expertise across corporate governance, SEBI regulatory frameworks, and audit-grade precision. She doesn't just understand the rules &mdash; she anticipates how SEBI interprets them.
+                  </p>
+                </div>
               </div>
-              <p className="text-[9px] tracking-[0.2em] uppercase text-[#003366] font-bold mb-1">Guardian of Trust & Compliance</p>
-              <h3 className="text-lg font-bold text-black">CA Jagruti Sahu</h3>
-              <p className="text-xs text-gray-400 font-medium mb-3">Co-Founder & Director</p>
-              <p className="text-gray-600 text-xs leading-relaxed">
-                A Chartered Accountant forged in Indian financial compliance, Jagruti brings deep expertise across corporate governance, SEBI regulatory frameworks, and audit-grade precision to every line of DRHP that passes through SETU.
-              </p>
-              <p className="text-gray-500 text-xs leading-relaxed mt-2">
-                She doesn't just understand the rules &mdash; she anticipates how SEBI interprets them. While others automate process, Jagruti automates <em>trust</em>.
-              </p>
-              <div className={`mt-4 flex flex-wrap gap-1.5 transition-all duration-500 ${hoveredFounder === "jagruti" ? "opacity-100" : "opacity-50"}`}>
+              <div className={`mt-3 flex flex-wrap gap-1.5 transition-all duration-500 ${hoveredFounder === "jagruti" ? "opacity-100" : "opacity-40"}`}>
                 {["SEBI ICDR", "Corporate Governance", "Financial Audits", "DRHP Compliance", "Risk Assessment"].map(t => (
-                  <Badge key={t} variant="outline" className="text-[9px] bg-white/80 py-0">{t}</Badge>
+                  <Badge key={t} variant="outline" className="text-[8px] bg-white/80 py-0">{t}</Badge>
                 ))}
               </div>
             </div>
 
             {/* Ronak */}
             <div
-              className="relative group bg-gradient-to-br from-[#f8f9fa] to-[#eef1f5] p-8 lg:border-l border-t lg:border-t-0 border-gray-100 transition-all duration-500 hover:from-[#003366]/[0.03] hover:to-[#003366]/[0.07]"
+              className="relative group bg-gradient-to-br from-[#f8f9fa] to-[#eef1f5] rounded-2xl p-6 border border-gray-100 transition-all duration-500 hover:border-orange-500/20 hover:shadow-md"
               onMouseEnter={() => setHoveredFounder("ronak")}
               onMouseLeave={() => setHoveredFounder(null)}
             >
-              <div className="relative mb-5">
-                <div className="w-28 h-28 rounded-2xl overflow-hidden shadow-xl group-hover:scale-105 transition-transform duration-500 bg-gray-200">
-                  <img src={RONAK_IMG} alt="Ronak Rajan" className="w-full h-full object-cover object-top" />
+              <div className="flex items-start gap-5">
+                <div className="relative flex-shrink-0">
+                  <div className="w-24 h-24 rounded-xl overflow-hidden shadow-lg group-hover:scale-105 transition-transform duration-500 bg-gray-200">
+                    <img src={RONAK_IMG} alt="Ronak Rajan" className="w-full h-full object-cover object-top" />
+                  </div>
+                  <a href="https://www.linkedin.com/in/ronakrajan/" target="_blank" rel="noopener noreferrer"
+                    className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#0A66C2] rounded-md flex items-center justify-center text-white shadow-md hover:scale-110 transition-transform" title="LinkedIn">
+                    <Linkedin className="w-3 h-3" />
+                  </a>
                 </div>
-                <a href="https://www.linkedin.com/in/ronakrajan/" target="_blank" rel="noopener noreferrer"
-                  className="absolute -bottom-1.5 left-24 w-7 h-7 bg-[#0A66C2] rounded-md flex items-center justify-center text-white shadow-md hover:scale-110 transition-transform" title="LinkedIn">
-                  <Linkedin className="w-3.5 h-3.5" />
-                </a>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] tracking-[0.2em] uppercase text-orange-600 font-bold mb-0.5">Architect of Innovation</p>
+                  <h3 className="text-base font-bold text-black">Ronak Rajan</h3>
+                  <p className="text-[11px] text-gray-400 font-medium mb-2">Co-Founder & Director</p>
+                  <p className="text-gray-600 text-[11px] leading-relaxed">
+                    A tech-driven entrepreneur and B2B strategist, Ronak builds at the intersection of AI and enterprise SaaS. He turns complex regulatory workflows into products people want to use. He believes compliance software should feel like <em>magic, not paperwork</em>.
+                  </p>
+                </div>
               </div>
-              <p className="text-[9px] tracking-[0.2em] uppercase text-orange-600 font-bold mb-1">Architect of Innovation</p>
-              <h3 className="text-lg font-bold text-black">Ronak Rajan</h3>
-              <p className="text-xs text-gray-400 font-medium mb-3">Co-Founder & Director</p>
-              <p className="text-gray-600 text-xs leading-relaxed">
-                A tech-driven entrepreneur and B2B strategist, Ronak builds at the intersection of AI and enterprise SaaS. From vibe-coding prototypes to architecting scalable PaaS infrastructure, he turns complex regulatory workflows into products people want to use.
-              </p>
-              <p className="text-gray-500 text-xs leading-relaxed mt-2">
-                He believes the best compliance software should feel like <em>magic, not paperwork</em>. Every pixel and API in SETU carries that conviction.
-              </p>
-              <div className={`mt-4 flex flex-wrap gap-1.5 transition-all duration-500 ${hoveredFounder === "ronak" ? "opacity-100" : "opacity-50"}`}>
+              <div className={`mt-3 flex flex-wrap gap-1.5 transition-all duration-500 ${hoveredFounder === "ronak" ? "opacity-100" : "opacity-40"}`}>
                 {["AI / ML", "B2B SaaS", "Platform Architecture", "Vibe Coding", "Go-to-Market"].map(t => (
-                  <Badge key={t} variant="outline" className="text-[9px] bg-white/80 py-0">{t}</Badge>
+                  <Badge key={t} variant="outline" className="text-[8px] bg-white/80 py-0">{t}</Badge>
                 ))}
               </div>
             </div>
