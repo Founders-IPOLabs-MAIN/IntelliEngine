@@ -98,6 +98,7 @@ const AdminCenter = ({ user, apiClient }) => {
   const [addUserEmail, setAddUserEmail] = useState("");
   const [addUserName, setAddUserName] = useState("");
   const [addUserRole, setAddUserRole] = useState("editor");
+  const [addUserType, setAddUserType] = useState("existing_user");
   const [addUserLoading, setAddUserLoading] = useState(false);
 
   // External users state
@@ -298,13 +299,15 @@ const AdminCenter = ({ user, apiClient }) => {
       await apiClient.post("/admin/users/add", {
         email: addUserEmail.trim(),
         name: addUserName.trim() || null,
-        role: addUserRole
+        role: addUserRole,
+        user_type: addUserType
       });
       toast.success(`User ${addUserEmail} added successfully`);
       setShowAddUserDialog(false);
       setAddUserEmail("");
       setAddUserName("");
       setAddUserRole("editor");
+      setAddUserType("existing_user");
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Failed to add user");
@@ -1438,6 +1441,26 @@ const AdminCenter = ({ user, apiClient }) => {
                   </SelectItem>
                   <SelectItem value="viewer">
                     <Badge className="bg-gray-100 text-gray-700 text-xs">Viewer</Badge>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>User Type *</Label>
+              <Select value={addUserType} onValueChange={setAddUserType}>
+                <SelectTrigger data-testid="add-user-type-select">
+                  <SelectValue placeholder="Select user type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="employee">
+                    <Badge className="bg-indigo-100 text-indigo-700 text-xs">Employee</Badge>
+                  </SelectItem>
+                  <SelectItem value="existing_user">
+                    <Badge className="bg-teal-100 text-teal-700 text-xs">Registered User</Badge>
+                  </SelectItem>
+                  <SelectItem value="new_user">
+                    <Badge className="bg-cyan-100 text-cyan-700 text-xs">New User</Badge>
                   </SelectItem>
                 </SelectContent>
               </Select>

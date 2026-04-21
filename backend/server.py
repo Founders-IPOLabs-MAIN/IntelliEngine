@@ -575,6 +575,16 @@ async def get_current_user(request: Request) -> User:
     
     return User(**user_doc)
 
+async def promote_new_user(user_id: str):
+    """Auto-promote new_user to existing_user when they save module data"""
+    user_doc = await db.users.find_one({"user_id": user_id, "user_type": "new_user"})
+    if user_doc:
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"user_type": "existing_user", "promoted_at": datetime.now(timezone.utc).isoformat()}}
+        )
+
+
 # ============ AUTH ENDPOINTS ============
 
 @api_router.post("/auth/session")
@@ -624,7 +634,7 @@ async def process_session(request: Request, session_request: SessionRequest, res
             "picture": picture,
             "role": auto_role,
             "company_id": None,
-            "user_type": "internal" if is_admin_user else "external",
+            "user_type": "internal" if is_admin_user else "new_user",
             "registration_module": "google_oauth",
             "status": "active",
             "created_at": datetime.now(timezone.utc).isoformat()
@@ -738,7 +748,7 @@ async def register_email(request: Request, data: EmailAuthRequest, response: Res
             "auth_type": "email",
             "role": "Editor",
             "company_id": None,
-            "user_type": "external",
+            "user_type": "new_user",
             "registration_module": "email_signup",
             "status": "active",
             "created_at": datetime.now(timezone.utc).isoformat()
@@ -889,6 +899,9 @@ async def create_project(project_data: ProjectCreate, user: User = Depends(get_c
     }
     
     await db.projects.insert_one(project_doc)
+    
+    # Auto-promote new_user to existing_user
+    await promote_new_user(user.user_id)
     
     # Create default DRHP sections
     drhp_sections = [
@@ -2233,6 +2246,7 @@ async def register_issuer(data: IssuerRegisterRequest, user: User = Depends(get_
     }
     await db.issuer_profiles.insert_one(profile)
     profile.pop("_id", None)
+    await promote_new_user(user.user_id)
 
     # Initialize wallet
     existing_wallet = await db.wallets.find_one({"user_id": user.user_id})
@@ -4800,6 +4814,7 @@ Use professional Indian financial terminology. Be direct and actionable."""
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.ipo_assessments.insert_one(assessment_doc)
+    await promote_new_user(user.user_id)
     
     return {
         "assessment_id": assessment_id,
@@ -5188,8 +5203,8 @@ async def admin_transfer_user(user_id: str, user: User = Depends(require_admin))
     target = await db.users.find_one({"user_id": user_id})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
-    if target.get("user_type") != "external":
-        raise HTTPException(status_code=400, detail="Only external users can be transferred to internal")
+    if target.get("user_type") not in ["external", "new_user"]:
+        raise HTTPException(status_code=400, detail="Only external/new users can be transferred")
 
     await db.users.update_one(
         {"user_id": user_id},
@@ -5247,10 +5262,11 @@ class AddUserRequest(BaseModel):
     email: str
     name: Optional[str] = None
     role: str = "editor"
+    user_type: str = "existing_user"
 
 @api_router.post("/admin/users/add")
 async def admin_add_user(data: AddUserRequest, user: User = Depends(require_admin)):
-    """Admin adds a new user by email with a role"""
+    """Admin adds a new user by email with a role and user_type"""
     email = data.email.strip().lower()
     if not email or "@" not in email:
         raise HTTPException(status_code=400, detail="Invalid email address")
@@ -5264,6 +5280,7 @@ async def admin_add_user(data: AddUserRequest, user: User = Depends(require_admi
     if role_id not in valid_roles:
         raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {', '.join(valid_roles)}")
 
+    user_type = data.user_type if data.user_type in ["employee", "existing_user", "new_user"] else "existing_user"
     name = (data.name or "").strip() or email.split("@")[0]
     user_id = f"user_{uuid.uuid4().hex[:12]}"
 
@@ -5273,7 +5290,9 @@ async def admin_add_user(data: AddUserRequest, user: User = Depends(require_admi
         "name": name,
         "picture": None,
         "role": role_id,
+        "user_type": user_type,
         "auth_type": "invited",
+        "status": "active",
         "company_id": None,
         "module_permissions": DEFAULT_MODULE_PERMISSIONS.copy(),
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -5283,12 +5302,12 @@ async def admin_add_user(data: AddUserRequest, user: User = Depends(require_admi
 
     await log_audit_action(
         user.user_id, "create", "user_management",
-        f"Added user {email} with role '{role_id}'",
+        f"Added {user_type} user {email} with role '{role_id}'",
         user_id
     )
 
     new_user.pop("_id", None)
-    return {"message": f"User {email} added with role '{role_id}'", "user": new_user}
+    return {"message": f"User {email} added as {user_type} with role '{role_id}'", "user": new_user}
 
 @api_router.get("/admin/audit-logs")
 async def get_audit_logs(
@@ -7070,6 +7089,7 @@ async def create_valuation_project(data: dict = Body(...), user: User = Depends(
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
     await db.valuation_projects.insert_one(doc)
+    await promote_new_user(user.user_id)
     return {"valuation_id": valuation_id, "status": "draft"}
 
 @api_router.get("/valuation/projects")
