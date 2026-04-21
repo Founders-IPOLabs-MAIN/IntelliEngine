@@ -123,7 +123,14 @@ const Dashboard = ({ user, apiClient }) => {
                 <Card
                   key={module.id}
                   className={`border border-border cursor-pointer transition-all duration-200 ${module.hoverBg} ${module.hoverBorder} hover:shadow-lg group ${idx === modules.length - 1 && modules.length % 2 !== 0 ? "col-span-2" : ""}`}
-                  onClick={() => navigate(module.path)}
+                  onClick={() => {
+                    // Admins access real DRHP Builder; others see Coming Soon
+                    if (module.id === "drhp" && user?.is_admin) {
+                      navigate("/drhp");
+                    } else {
+                      navigate(module.path);
+                    }
+                  }}
                   data-testid={`module-${module.id}`}
                 >
                   <CardContent className="p-6 h-full flex flex-col">

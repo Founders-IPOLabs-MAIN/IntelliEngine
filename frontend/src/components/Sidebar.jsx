@@ -42,7 +42,8 @@ const Sidebar = ({ user, apiClient }) => {
   };
 
   const handleDRHPClick = () => {
-    navigate("/drhp1");
+    const isAdminUser = user?.is_admin === true;
+    navigate(isAdminUser ? "/drhp" : "/drhp1");
   };
 
   const isActive = (itemId) => {
