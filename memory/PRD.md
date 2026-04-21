@@ -17,6 +17,8 @@
 - New component `ContactLeadDialog.jsx` — Full Name / Mobile / Email (required) + 5-module dropdown (optional: Free IPO Assessment, DRHP Builder, IPO Funding, Match-Making Platform, Business Valuation) + query textarea
 - New backend endpoint `POST /api/contact/lead` — stores to `contact_leads` collection with `recipient: founders@ipo-labs.com`; ready to dispatch via Resend once API key is set (currently MOCKED, leads still captured)
 - New admin endpoint `GET /api/contact/leads` for listing submissions
+- **New "Contact Leads" tab in AdminCenter** — filters by type (sales/support) and status (new/contacted/closed), search by name/email/mobile, per-row status dropdown, view dialog, delete, stats strip
+- New admin endpoints: `PATCH /api/contact/leads/{lead_id}` (status update) and `DELETE /api/contact/leads/{lead_id}`
 
 ## Original Problem Statement
 Build a complete IPO-readiness platform with:

@@ -7790,6 +7790,37 @@ async def list_contact_leads(user: User = Depends(require_admin)):
     leads = await db.contact_leads.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return {"leads": leads}
 
+
+class ContactLeadStatusUpdate(BaseModel):
+    status: str  # "new" | "contacted" | "closed"
+    notes: Optional[str] = None
+
+
+@api_router.patch("/contact/leads/{lead_id}")
+async def update_contact_lead_status(lead_id: str, payload: ContactLeadStatusUpdate, user: User = Depends(require_admin)):
+    if payload.status not in ("new", "contacted", "closed"):
+        raise HTTPException(status_code=400, detail="status must be 'new', 'contacted', or 'closed'")
+    update = {
+        "status": payload.status,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": user.email,
+    }
+    if payload.notes is not None:
+        update["admin_notes"] = payload.notes
+    result = await db.contact_leads.update_one({"lead_id": lead_id}, {"$set": update})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    lead = await db.contact_leads.find_one({"lead_id": lead_id}, {"_id": 0})
+    return {"message": "Lead updated", "lead": lead}
+
+
+@api_router.delete("/contact/leads/{lead_id}")
+async def delete_contact_lead(lead_id: str, user: User = Depends(require_admin)):
+    result = await db.contact_leads.delete_one({"lead_id": lead_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    return {"message": "Lead deleted"}
+
 # Include the router in the main app
 app.include_router(api_router)
 

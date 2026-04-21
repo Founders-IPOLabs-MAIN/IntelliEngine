@@ -45,7 +45,9 @@ import {
   Ban,
   UserX,
   Globe,
-  Home
+  Home,
+  MessageSquare,
+  Phone
 } from "lucide-react";
 
 const ACTION_ICONS = {
@@ -113,6 +115,14 @@ const AdminCenter = ({ user, apiClient }) => {
   const [newUsers, setNewUsers] = useState([]);
   const [newUserSearch, setNewUserSearch] = useState("");
 
+  // Contact Leads state
+  const [contactLeads, setContactLeads] = useState([]);
+  const [leadSearch, setLeadSearch] = useState("");
+  const [leadStatusFilter, setLeadStatusFilter] = useState("all");
+  const [leadTypeFilter, setLeadTypeFilter] = useState("all");
+  const [updatingLeadId, setUpdatingLeadId] = useState(null);
+  const [viewLead, setViewLead] = useState(null);
+
   // User action dialog state
   const [showUserActionDialog, setShowUserActionDialog] = useState(false);
   const [userActionType, setUserActionType] = useState("");
@@ -170,6 +180,9 @@ const AdminCenter = ({ user, apiClient }) => {
       } else if (activeTab === "audit") {
         const logsRes = await apiClient.get("/admin/audit-logs?limit=100");
         setAuditLogs(logsRes.data.logs);
+      } else if (activeTab === "leads") {
+        const leadsRes = await apiClient.get("/contact/leads");
+        setContactLeads(leadsRes.data.leads || []);
       }
     } catch (error) {
       console.error("Failed to fetch admin data:", error);
@@ -218,6 +231,34 @@ const AdminCenter = ({ user, apiClient }) => {
     setActionType(action);
     setActionReason("");
     setShowActionDialog(true);
+  };
+
+  // Contact Leads handlers
+  const updateLeadStatus = async (leadId, newStatus) => {
+    setUpdatingLeadId(leadId);
+    try {
+      await apiClient.patch(`/contact/leads/${leadId}`, { status: newStatus });
+      setContactLeads((prev) => prev.map((l) => (l.lead_id === leadId ? { ...l, status: newStatus } : l)));
+      toast.success(`Lead marked as ${newStatus}`);
+    } catch (e) {
+      toast.error("Failed to update lead status");
+    } finally {
+      setUpdatingLeadId(null);
+    }
+  };
+
+  const deleteLead = async (leadId) => {
+    if (!window.confirm("Delete this lead permanently?")) return;
+    setUpdatingLeadId(leadId);
+    try {
+      await apiClient.delete(`/contact/leads/${leadId}`);
+      setContactLeads((prev) => prev.filter((l) => l.lead_id !== leadId));
+      toast.success("Lead deleted");
+    } catch (e) {
+      toast.error("Failed to delete lead");
+    } finally {
+      setUpdatingLeadId(null);
+    }
   };
 
   const handleSendEmail = async (professional_id, professional_name) => {
@@ -521,6 +562,10 @@ const AdminCenter = ({ user, apiClient }) => {
               <TabsTrigger value="newusers" className="gap-1.5 flex-1 text-xs" data-testid="new-users-tab">
                 <Plus className="w-3.5 h-3.5" />
                 New Users
+              </TabsTrigger>
+              <TabsTrigger value="leads" className="gap-1.5 flex-1 text-xs" data-testid="contact-leads-tab">
+                <MessageSquare className="w-3.5 h-3.5" />
+                Contact Leads
               </TabsTrigger>
               <TabsTrigger value="roles" className="gap-1.5 flex-1 text-xs">
                 <Shield className="w-3.5 h-3.5" />
@@ -1193,6 +1238,198 @@ const AdminCenter = ({ user, apiClient }) => {
               </Card>
             </TabsContent>
 
+            {/* Contact Leads Tab */}
+            <TabsContent value="leads">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageSquare className="w-5 h-5 text-[#003366]" />
+                        Contact Leads
+                      </CardTitle>
+                      <CardDescription>
+                        Sales & support submissions from the Landing Page. Recipient:{" "}
+                        <span className="font-mono text-[#003366]">founders@ipo-labs.com</span>
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="relative">
+                        <Search className="w-4 h-4 absolute left-2.5 top-2.5 text-gray-400" />
+                        <Input
+                          placeholder="Search name, email, mobile..."
+                          value={leadSearch}
+                          onChange={(e) => setLeadSearch(e.target.value)}
+                          className="pl-8 h-9 w-56"
+                          data-testid="leads-search-input"
+                        />
+                      </div>
+                      <Select value={leadTypeFilter} onValueChange={setLeadTypeFilter}>
+                        <SelectTrigger className="h-9 w-32" data-testid="leads-type-filter">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All types</SelectItem>
+                          <SelectItem value="sales">Sales</SelectItem>
+                          <SelectItem value="support">Support</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={leadStatusFilter} onValueChange={setLeadStatusFilter}>
+                        <SelectTrigger className="h-9 w-36" data-testid="leads-status-filter">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All statuses</SelectItem>
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="contacted">Contacted</SelectItem>
+                          <SelectItem value="closed">Closed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button variant="outline" size="sm" onClick={fetchData} className="h-9" data-testid="leads-refresh-btn">
+                        <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Refresh
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Stats strip */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                    {[
+                      { label: "Total", value: contactLeads.length, color: "text-[#003366]" },
+                      { label: "New", value: contactLeads.filter((l) => (l.status || "new") === "new").length, color: "text-orange-600" },
+                      { label: "Contacted", value: contactLeads.filter((l) => l.status === "contacted").length, color: "text-blue-600" },
+                      { label: "Closed", value: contactLeads.filter((l) => l.status === "closed").length, color: "text-green-600" },
+                    ].map((s) => (
+                      <div key={s.label} className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                        <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">{s.label}</p>
+                        <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-6 h-6 animate-spin text-[#003366]" />
+                    </div>
+                  ) : (() => {
+                      const q = leadSearch.trim().toLowerCase();
+                      const filtered = contactLeads.filter((l) => {
+                        if (leadTypeFilter !== "all" && l.lead_type !== leadTypeFilter) return false;
+                        const effectiveStatus = l.status || "new";
+                        if (leadStatusFilter !== "all" && effectiveStatus !== leadStatusFilter) return false;
+                        if (!q) return true;
+                        return [l.full_name, l.email, l.mobile, l.module, l.query]
+                          .filter(Boolean)
+                          .some((v) => String(v).toLowerCase().includes(q));
+                      });
+                      if (filtered.length === 0) {
+                        return (
+                          <div className="text-center py-12 text-gray-500" data-testid="leads-empty-state">
+                            <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                            <p className="text-sm">No leads match your filters.</p>
+                          </div>
+                        );
+                      }
+                      return (
+                        <Table data-testid="leads-table">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Contact</TableHead>
+                              <TableHead>Module</TableHead>
+                              <TableHead>Received</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filtered.map((l) => {
+                              const effectiveStatus = l.status || "new";
+                              return (
+                                <TableRow key={l.lead_id} data-testid={`lead-row-${l.lead_id}`}>
+                                  <TableCell>
+                                    <Badge
+                                      className={
+                                        l.lead_type === "sales"
+                                          ? "bg-orange-100 text-orange-700 hover:bg-orange-100"
+                                          : "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                                      }
+                                    >
+                                      {l.lead_type?.toUpperCase()}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="font-medium">{l.full_name}</TableCell>
+                                  <TableCell>
+                                    <div className="flex flex-col gap-0.5">
+                                      <a href={`mailto:${l.email}`} className="text-xs text-[#003366] hover:underline flex items-center gap-1">
+                                        <Mail className="w-3 h-3" /> {l.email}
+                                      </a>
+                                      <a href={`tel:${l.mobile}`} className="text-xs text-gray-600 hover:underline flex items-center gap-1">
+                                        <Phone className="w-3 h-3" /> {l.mobile}
+                                      </a>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {l.module ? (
+                                      <Badge variant="outline" className="text-xs">{l.module}</Badge>
+                                    ) : (
+                                      <span className="text-xs text-gray-400">—</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-xs text-muted-foreground">
+                                    {new Date(l.created_at).toLocaleString()}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Select
+                                      value={effectiveStatus}
+                                      onValueChange={(v) => updateLeadStatus(l.lead_id, v)}
+                                      disabled={updatingLeadId === l.lead_id}
+                                    >
+                                      <SelectTrigger className="h-8 w-32 text-xs" data-testid={`lead-status-select-${l.lead_id}`}>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="new">New</SelectItem>
+                                        <SelectItem value="contacted">Contacted</SelectItem>
+                                        <SelectItem value="closed">Closed</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setViewLead(l)}
+                                        className="h-8"
+                                        data-testid={`lead-view-btn-${l.lead_id}`}
+                                      >
+                                        <Eye className="w-3.5 h-3.5" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => deleteLead(l.lead_id)}
+                                        disabled={updatingLeadId === l.lead_id}
+                                        className="h-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                        data-testid={`lead-delete-btn-${l.lead_id}`}
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      );
+                    })()}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             {/* Audit Log Tab */}
             <TabsContent value="audit">
               <Card className="border border-border">
@@ -1542,6 +1779,73 @@ const AdminCenter = ({ user, apiClient }) => {
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Contact Lead Dialog */}
+      <Dialog open={!!viewLead} onOpenChange={(o) => !o && setViewLead(null)}>
+        <DialogContent className="sm:max-w-[560px]" data-testid="lead-view-dialog">
+          {viewLead && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Badge
+                    className={
+                      viewLead.lead_type === "sales"
+                        ? "bg-orange-100 text-orange-700 hover:bg-orange-100"
+                        : "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                    }
+                  >
+                    {viewLead.lead_type?.toUpperCase()}
+                  </Badge>
+                  Lead from {viewLead.full_name}
+                </DialogTitle>
+                <DialogDescription>
+                  Submitted {new Date(viewLead.created_at).toLocaleString()} • ID: <span className="font-mono">{viewLead.lead_id}</span>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 py-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-[10px] uppercase tracking-wider text-gray-500">Email</Label>
+                    <a href={`mailto:${viewLead.email}`} className="block text-sm text-[#003366] hover:underline">{viewLead.email}</a>
+                  </div>
+                  <div>
+                    <Label className="text-[10px] uppercase tracking-wider text-gray-500">Mobile</Label>
+                    <a href={`tel:${viewLead.mobile}`} className="block text-sm text-[#003366] hover:underline">{viewLead.mobile}</a>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wider text-gray-500">Module of Interest</Label>
+                  <p className="text-sm mt-0.5">{viewLead.module || <span className="text-gray-400">Not specified</span>}</p>
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wider text-gray-500">Query</Label>
+                  <div className="mt-1 text-sm bg-gray-50 border border-gray-200 rounded-lg p-3 whitespace-pre-wrap min-h-[80px]">
+                    {viewLead.query || <span className="text-gray-400">No query provided</span>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 pt-1 text-xs text-gray-500">
+                  <span>Email dispatch:</span>
+                  {viewLead.email_sent ? (
+                    <Badge className="bg-green-100 text-green-700">Sent</Badge>
+                  ) : (
+                    <Badge variant="outline">Queued (Resend not configured)</Badge>
+                  )}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setViewLead(null)} data-testid="lead-view-close-btn">Close</Button>
+                <Button
+                  className="bg-[#003366] hover:bg-[#002244]"
+                  onClick={() => window.open(`mailto:${viewLead.email}?subject=Re: Your SETU ${viewLead.lead_type} inquiry`, "_blank")}
+                  data-testid="lead-view-reply-btn"
+                >
+                  <Mail className="w-4 h-4 mr-1.5" /> Reply via Email
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
