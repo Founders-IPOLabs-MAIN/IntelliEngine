@@ -124,9 +124,11 @@ const Dashboard = ({ user, apiClient }) => {
                   key={module.id}
                   className={`border border-border cursor-pointer transition-all duration-200 ${module.hoverBg} ${module.hoverBorder} hover:shadow-lg group ${idx === modules.length - 1 && modules.length % 2 !== 0 ? "col-span-2" : ""}`}
                   onClick={() => {
-                    // Admins access real DRHP Builder; others see Coming Soon
+                    // Admins access real modules; others see Coming Soon
                     if (module.id === "drhp" && user?.is_admin) {
                       navigate("/drhp");
+                    } else if (module.id === "funding" && user?.is_admin) {
+                      navigate("/funding");
                     } else {
                       navigate(module.path);
                     }

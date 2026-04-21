@@ -20,6 +20,7 @@
 - **New "Contact Leads" tab in AdminCenter** — filters by type (sales/support) and status (new/contacted/closed), search by name/email/mobile, per-row status dropdown, view dialog, delete, stats strip
 - New admin endpoints: `PATCH /api/contact/leads/{lead_id}` (status update) and `DELETE /api/contact/leads/{lead_id}`
 - **DRHP Builder access for admins**: Sidebar & Dashboard now route admins directly to `/drhp` (real builder) instead of `/drhp1` (Coming Soon). Non-admin users still see Coming Soon. Verified with ronraj2312@gmail.com — 3 existing projects load successfully.
+- **IPO Funding access for admins**: Same admin-bypass treatment — Sidebar & Dashboard route admins to `/funding` (real IPO Funding Engine with Pre-IPO / Post-IPO / Partners / Eligibility Quiz) instead of `/funding1` Coming Soon. Verified live.
 
 ## Original Problem Statement
 Build a complete IPO-readiness platform with:

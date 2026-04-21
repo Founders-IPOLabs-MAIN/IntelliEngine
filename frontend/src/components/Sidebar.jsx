@@ -46,6 +46,11 @@ const Sidebar = ({ user, apiClient }) => {
     navigate(isAdminUser ? "/drhp" : "/drhp1");
   };
 
+  const handleFundingClick = () => {
+    const isAdminUser = user?.is_admin === true;
+    navigate(isAdminUser ? "/funding" : "/funding1");
+  };
+
   const isActive = (itemId) => {
     const path = location.pathname;
     switch (itemId) {
@@ -79,7 +84,7 @@ const Sidebar = ({ user, apiClient }) => {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: "/assessment" },
     { id: "drhp", label: "DRHP Builder", icon: FileText, path: null, onClick: handleDRHPClick },
-    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding1" },
+    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: null, onClick: handleFundingClick },
     { id: "matchmaker", label: "The Match-Making Platform", icon: Users, path: "/matchmaker" },
     { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation" },
   ];
