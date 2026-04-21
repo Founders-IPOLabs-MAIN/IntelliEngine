@@ -661,13 +661,23 @@ async def process_session(request: Request, session_request: SessionRequest, res
     return {"user": user_doc, "session_token": session_token}
 
 @api_router.get("/auth/me")
-async def get_me(user: User = Depends(get_current_user)):
+async def get_me(request: Request, user: User = Depends(get_current_user)):
     """Get current authenticated user"""
     data = user.model_dump()
     if not data.get("module_permissions"):
         data["module_permissions"] = DEFAULT_MODULE_PERMISSIONS.copy()
     is_admin = data.get("role") in ["admin", "super_admin", "master_admin", "Admin", "Super Admin"] or is_master_admin(data.get("email", ""))
     data["is_admin"] = is_admin
+
+    # Get login_role from session
+    session_token = request.cookies.get("session_token")
+    if session_token:
+        session = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
+        if session:
+            data["login_role"] = session.get("login_role", "existing_user")
+    if not data.get("user_type"):
+        data["user_type"] = "existing_user"
+
     return data
 
 @api_router.post("/auth/logout")
@@ -762,10 +772,11 @@ async def register_email(request: Request, data: EmailAuthRequest, response: Res
 
 @api_router.post("/auth/login")
 @limiter.limit("10/minute")
-async def login_email(request: Request, data: EmailAuthRequest, response: Response):
-    """Login with email/password"""
-    email = data.email.strip().lower()
-    password = data.password.strip()
+async def login_email(request: Request, data: dict = Body(...), response: Response = None):
+    """Login with email/password and role selection"""
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "").strip()
+    login_role = data.get("login_role", "existing_user")
 
     if not email or not password:
         raise HTTPException(status_code=400, detail="Email and password are required")
@@ -788,7 +799,6 @@ async def login_email(request: Request, data: EmailAuthRequest, response: Respon
 
     user = await db.users.find_one({"email": email}, {"_id": 0})
     if not user or not user.get("password_hash"):
-        # Increment failed attempts
         await db.login_attempts.update_one(
             {"identifier": attempt_key},
             {"$inc": {"count": 1}, "$set": {"locked_at": datetime.now(timezone.utc).isoformat()}},
@@ -804,6 +814,18 @@ async def login_email(request: Request, data: EmailAuthRequest, response: Respon
         )
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
+    # Validate login_role against actual user role
+    user_role = user.get("role", "Editor").lower().replace(" ", "_")
+    user_type = user.get("user_type", "existing_user")
+    is_admin_user = user_role in ["admin", "super_admin", "master_admin"] or is_master_admin(email)
+
+    if login_role == "admin":
+        if not is_admin_user:
+            raise HTTPException(status_code=403, detail="This account does not have admin access. Please use a different login option.")
+    elif login_role == "employee":
+        if user_type != "employee" and not is_admin_user:
+            raise HTTPException(status_code=403, detail="This account is not registered as an employee. Please contact your admin.")
+
     # Clear failed attempts on success
     await db.login_attempts.delete_many({"identifier": attempt_key})
 
@@ -812,6 +834,7 @@ async def login_email(request: Request, data: EmailAuthRequest, response: Respon
         "session_id": str(uuid.uuid4()),
         "user_id": user["user_id"],
         "session_token": session_token,
+        "login_role": login_role,
         "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
         "created_at": datetime.now(timezone.utc).isoformat()
     })
@@ -824,7 +847,8 @@ async def login_email(request: Request, data: EmailAuthRequest, response: Respon
     return {
         "user": {
             "user_id": user["user_id"], "email": user["email"], "name": user.get("name", ""),
-            "role": user.get("role", "Editor"), "picture": user.get("picture")
+            "role": user.get("role", "Editor"), "picture": user.get("picture"),
+            "user_type": user_type, "login_role": login_role
         },
         "session_token": session_token
     }
@@ -5076,9 +5100,15 @@ async def get_all_users(user: User = Depends(require_admin), user_type: Optional
     """Get all users with their roles. Filter by user_type: internal or external"""
     query = {}
     if user_type == "internal":
-        query["user_type"] = {"$in": ["internal", None]}
+        query["$or"] = [{"user_type": "internal"}, {"user_type": {"$exists": False}}, {"role": {"$in": ["admin", "super_admin", "master_admin"]}}]
     elif user_type == "external":
         query["user_type"] = "external"
+    elif user_type == "employee":
+        query["user_type"] = "employee"
+    elif user_type == "existing_user":
+        query["user_type"] = "existing_user"
+    elif user_type == "new_user":
+        query["user_type"] = "new_user"
 
     users = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(500)
     

@@ -103,6 +103,14 @@ const AdminCenter = ({ user, apiClient }) => {
   // External users state
   const [externalUsers, setExternalUsers] = useState([]);
   const [extSearch, setExtSearch] = useState("");
+  
+  // Employees state
+  const [employees, setEmployees] = useState([]);
+  const [empSearch, setEmpSearch] = useState("");
+  
+  // New users state
+  const [newUsers, setNewUsers] = useState([]);
+  const [newUserSearch, setNewUserSearch] = useState("");
 
   // User action dialog state
   const [showUserActionDialog, setShowUserActionDialog] = useState(false);
@@ -147,8 +155,14 @@ const AdminCenter = ({ user, apiClient }) => {
         const rolesRes = await apiClient.get("/admin/roles");
         setRoles(rolesRes.data.roles);
       } else if (activeTab === "external") {
-        const extRes = await apiClient.get("/admin/users?user_type=external");
+        const extRes = await apiClient.get("/admin/users?user_type=existing_user");
         setExternalUsers(extRes.data.users);
+      } else if (activeTab === "employees") {
+        const empRes = await apiClient.get("/admin/users?user_type=employee");
+        setEmployees(empRes.data.users);
+      } else if (activeTab === "newusers") {
+        const newRes = await apiClient.get("/admin/users?user_type=new_user");
+        setNewUsers(newRes.data.users);
       } else if (activeTab === "access") {
         const usersRes = await apiClient.get("/admin/users");
         setModuleUsers(usersRes.data.users);
@@ -398,6 +412,16 @@ const AdminCenter = ({ user, apiClient }) => {
     u.email?.toLowerCase().includes(extSearch.toLowerCase())
   );
 
+  const filteredEmployees = employees.filter(u =>
+    u.name?.toLowerCase().includes(empSearch.toLowerCase()) ||
+    u.email?.toLowerCase().includes(empSearch.toLowerCase())
+  );
+
+  const filteredNewUsers = newUsers.filter(u =>
+    u.name?.toLowerCase().includes(newUserSearch.toLowerCase()) ||
+    u.email?.toLowerCase().includes(newUserSearch.toLowerCase())
+  );
+
   const getRegModuleLabel = (mod) => {
     const map = { google_oauth: "Google Sign-in", email_signup: "Email Sign-up", matchmaker: "The Match-Making Platform", assessment: "Assessment", drhp: "DRHP Builder", funding: "Funding", valuation: "Valuation", invited: "Invited" };
     return map[mod] || mod || "—";
@@ -481,11 +505,19 @@ const AdminCenter = ({ user, apiClient }) => {
               </TabsTrigger>
               <TabsTrigger value="users" className="gap-1.5 flex-1 text-xs" data-testid="internal-users-tab">
                 <Home className="w-3.5 h-3.5" />
-                Internal Users
+                Admin
+              </TabsTrigger>
+              <TabsTrigger value="employees" className="gap-1.5 flex-1 text-xs" data-testid="employees-tab">
+                <Users className="w-3.5 h-3.5" />
+                Employees
               </TabsTrigger>
               <TabsTrigger value="external" className="gap-1.5 flex-1 text-xs" data-testid="external-users-tab">
                 <Globe className="w-3.5 h-3.5" />
-                External Users
+                Registered Users
+              </TabsTrigger>
+              <TabsTrigger value="newusers" className="gap-1.5 flex-1 text-xs" data-testid="new-users-tab">
+                <Plus className="w-3.5 h-3.5" />
+                New Users
               </TabsTrigger>
               <TabsTrigger value="roles" className="gap-1.5 flex-1 text-xs">
                 <Shield className="w-3.5 h-3.5" />
@@ -886,9 +918,9 @@ const AdminCenter = ({ user, apiClient }) => {
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         <Home className="w-5 h-5 text-blue-500" />
-                        Internal Users
+                        Admin Users
                       </CardTitle>
-                      <CardDescription>{filteredUsers.length} internal users</CardDescription>
+                      <CardDescription>{filteredUsers.length} admin users</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="relative">
@@ -978,9 +1010,9 @@ const AdminCenter = ({ user, apiClient }) => {
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         <Globe className="w-5 h-5 text-teal-500" />
-                        External Users
+                        Registered Users
                       </CardTitle>
-                      <CardDescription>{filteredExternalUsers.length} external users (new visitors & registrations)</CardDescription>
+                      <CardDescription>{filteredExternalUsers.length} registered users</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="relative">
@@ -1050,6 +1082,104 @@ const AdminCenter = ({ user, apiClient }) => {
                               <TableCell className="text-right">
                                 <UserActionButtons u={u} showTransfer={true} />
                               </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Employees Tab */}
+            <TabsContent value="employees">
+              <Card className="border border-border">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2"><Users className="w-5 h-5 text-indigo-500" /> Employees</CardTitle>
+                      <CardDescription>{filteredEmployees.length} employees</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input placeholder="Search employees..." value={empSearch} onChange={(e) => setEmpSearch(e.target.value)} className="pl-9 w-64" />
+                      </div>
+                      <Button variant="outline" size="icon" onClick={fetchData}><RefreshCw className="w-4 h-4" /></Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {filteredEmployees.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p className="text-lg">No employees yet</p>
+                      <p className="text-sm">Use "Add User" to add employees with the "editor" role and "employee" user type</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader><TableRow><TableHead>User</TableHead><TableHead>Email</TableHead><TableHead>Role</TableHead><TableHead>Status</TableHead><TableHead>Joined</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {filteredEmployees.map((u) => {
+                          const isSuspended = u.status === "suspended";
+                          return (
+                            <TableRow key={u.user_id} className={isSuspended ? "opacity-50" : ""}>
+                              <TableCell><div className="flex items-center gap-3">{u.picture ? <img src={u.picture} alt={u.name} className="w-8 h-8 rounded-full" /> : <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"><User className="w-4 h-4 text-gray-500" /></div>}<span className="font-medium">{u.name}</span></div></TableCell>
+                              <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                              <TableCell><Badge className={getRoleBadgeColor(u.role?.toLowerCase().replace(" ", "_"))}>{u.role || "Editor"}</Badge></TableCell>
+                              <TableCell>{isSuspended ? <Badge className="bg-red-100 text-red-600">Suspended</Badge> : <Badge className="bg-green-100 text-green-700">Active</Badge>}</TableCell>
+                              <TableCell className="text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</TableCell>
+                              <TableCell className="text-right"><UserActionButtons u={u} /></TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* New Users Tab */}
+            <TabsContent value="newusers">
+              <Card className="border border-border">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2"><Plus className="w-5 h-5 text-cyan-500" /> New Users</CardTitle>
+                      <CardDescription>{filteredNewUsers.length} new users (auto-moved to Registered Users after saving data)</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Input placeholder="Search new users..." value={newUserSearch} onChange={(e) => setNewUserSearch(e.target.value)} className="pl-9 w-64" />
+                      </div>
+                      <Button variant="outline" size="icon" onClick={fetchData}><RefreshCw className="w-4 h-4" /></Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {filteredNewUsers.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Plus className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p className="text-lg">No new users</p>
+                      <p className="text-sm">New users are auto-promoted to Registered Users after verifying email and saving module data</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader><TableRow><TableHead>User</TableHead><TableHead>Email</TableHead><TableHead>Registered Via</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {filteredNewUsers.map((u) => {
+                          const isSuspended = u.status === "suspended";
+                          return (
+                            <TableRow key={u.user_id} className={isSuspended ? "opacity-50" : ""}>
+                              <TableCell><div className="flex items-center gap-3">{u.picture ? <img src={u.picture} alt={u.name} className="w-8 h-8 rounded-full" /> : <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"><User className="w-4 h-4 text-gray-500" /></div>}<span className="font-medium">{u.name}</span></div></TableCell>
+                              <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                              <TableCell><Badge variant="outline" className="text-xs">{getRegModuleLabel(u.registration_module)}</Badge></TableCell>
+                              <TableCell>{isSuspended ? <Badge className="bg-red-100 text-red-600">Suspended</Badge> : <Badge className="bg-green-100 text-green-700">Active</Badge>}</TableCell>
+                              <TableCell className="text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</TableCell>
+                              <TableCell className="text-right"><UserActionButtons u={u} showTransfer={true} /></TableCell>
                             </TableRow>
                           );
                         })}

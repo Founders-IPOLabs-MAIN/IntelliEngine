@@ -70,21 +70,31 @@ const Sidebar = ({ user, apiClient }) => {
   };
 
   const isAdmin = user?.is_admin || false;
+  const loginRole = user?.login_role || user?.user_type || "existing_user";
+  const isEmployee = loginRole === "employee";
+  const isRegularUser = loginRole === "existing_user" || loginRole === "new_user";
 
-  const allNavItems = [
+  const moduleItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: "/assessment" },
     { id: "drhp", label: "DRHP Builder", icon: FileText, path: null, onClick: handleDRHPClick },
     { id: "funding", label: "IPO Funding", icon: TrendingUp, path: "/funding1" },
     { id: "matchmaker", label: "The Match-Making Platform", icon: Users, path: "/matchmaker" },
     { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation" },
-    { id: "account", label: "Account Details", icon: User, path: "/account" },
   ];
 
-  // Only show Admin Center in sidebar for admin users
-  const navItems = isAdmin
-    ? [...allNavItems.slice(0, -1), { id: "admin", label: "Admin Center", icon: Shield, path: "/admin" }, allNavItems[allNavItems.length - 1]]
-    : allNavItems;
+  let navItems = [...moduleItems];
+
+  if (isAdmin) {
+    // Admins see everything: modules + admin center + account details
+    navItems.push({ id: "admin", label: "Admin Center", icon: Shield, path: "/admin" });
+    navItems.push({ id: "account", label: "Account Details", icon: User, path: "/account" });
+  } else if (isEmployee) {
+    // Employees see modules but Admin Center and Account Details are greyed out
+    navItems.push({ id: "admin", label: "Admin Center", icon: Shield, path: "/admin", disabled: true });
+    navItems.push({ id: "account", label: "Account Details", icon: User, path: "/account", disabled: true });
+  }
+  // Regular users (existing_user / new_user) see only the 5 modules + dashboard
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-border flex flex-col z-20" data-testid="sidebar">
@@ -183,12 +193,14 @@ const Sidebar = ({ user, apiClient }) => {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem asChild>
-              <Link to="/account" className="flex items-center cursor-pointer" data-testid="account-settings-link">
-                <User className="w-4 h-4 mr-2" />
-                Account Details
-              </Link>
-            </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem asChild>
+                <Link to="/account" className="flex items-center cursor-pointer" data-testid="account-settings-link">
+                  <User className="w-4 h-4 mr-2" />
+                  Account Details
+                </Link>
+              </DropdownMenuItem>
+            )}
             {isAdmin && (
               <DropdownMenuItem asChild>
                 <Link to="/admin" className="flex items-center cursor-pointer" data-testid="admin-center-dropdown-link">
