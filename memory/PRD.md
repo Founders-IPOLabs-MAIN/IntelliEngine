@@ -13,6 +13,10 @@
 - Rewrote Origin Story narrative ("A Tech Founder and a financial whiz…")
 - Global font scale bumped +2 across About page; Founders section scaled +4 total (names `text-2xl`, bios `text-base`)
 - Tightened vertical whitespace (section `py-10/12` → `py-8`)
+- **Contact Sales & Contact Support buttons** on LandingPage now open a unified lead-gen dialog
+- New component `ContactLeadDialog.jsx` — Full Name / Mobile / Email (required) + 5-module dropdown (optional: Free IPO Assessment, DRHP Builder, IPO Funding, Match-Making Platform, Business Valuation) + query textarea
+- New backend endpoint `POST /api/contact/lead` — stores to `contact_leads` collection with `recipient: founders@ipo-labs.com`; ready to dispatch via Resend once API key is set (currently MOCKED, leads still captured)
+- New admin endpoint `GET /api/contact/leads` for listing submissions
 
 ## Original Problem Statement
 Build a complete IPO-readiness platform with:

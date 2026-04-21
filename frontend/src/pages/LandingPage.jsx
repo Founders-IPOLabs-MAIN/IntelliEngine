@@ -10,11 +10,14 @@ import {
   MessageCircle,
   Scale
 } from "lucide-react";
+import ContactLeadDialog from "@/components/ContactLeadDialog";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [showNotification, setShowNotification] = useState(true);
   const [shimmerIndex, setShimmerIndex] = useState(0);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactType, setContactType] = useState("support");
 
   // Shimmer effect every 5 seconds
   useEffect(() => {
@@ -152,10 +155,18 @@ const LandingPage = () => {
               </Button>
               <Button 
                 variant="outline"
-                onClick={() => window.open("mailto:support@ipolabs.com", "_blank")}
+                onClick={() => { setContactType("support"); setContactOpen(true); }}
                 className="border-[#003366] text-[#003366] hover:bg-[#003366] hover:text-white px-6 py-6 rounded-full text-base"
+                data-testid="landing-contact-support-btn"
               >
                 Contact Support
+              </Button>
+              <Button 
+                onClick={() => { setContactType("sales"); setContactOpen(true); }}
+                className="bg-[#FF6B1A] hover:bg-[#e55a0a] text-white px-6 py-6 rounded-full text-base font-semibold shadow-lg shadow-orange-200/50 transition-all hover:shadow-xl hover:shadow-orange-300/50"
+                data-testid="landing-contact-sales-btn"
+              >
+                Contact Sales
               </Button>
             </div>
           </div>
@@ -352,6 +363,12 @@ const LandingPage = () => {
           animation: slide-up 0.5s ease-out;
         }
       `}</style>
+
+      <ContactLeadDialog
+        open={contactOpen}
+        onOpenChange={setContactOpen}
+        leadType={contactType}
+      />
     </div>
   );
 };

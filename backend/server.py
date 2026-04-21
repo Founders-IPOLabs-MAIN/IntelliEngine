@@ -7716,6 +7716,80 @@ async def get_career_applications(user: User = Depends(require_admin)):
     apps = await db.career_applications.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
     return {"applications": apps}
 
+# ============ CONTACT LEAD (Sales / Support) ============
+
+class ContactLeadRequest(BaseModel):
+    full_name: str
+    mobile: str
+    email: EmailStr
+    module: Optional[str] = None
+    query: Optional[str] = ""
+    lead_type: str = "support"  # "sales" or "support"
+
+
+@api_router.post("/contact/lead")
+async def submit_contact_lead(payload: ContactLeadRequest):
+    full_name = (payload.full_name or "").strip()
+    mobile = (payload.mobile or "").strip()
+    email = (payload.email or "").strip().lower()
+    if not full_name or not mobile or not email:
+        raise HTTPException(status_code=400, detail="Full name, mobile, and email are required")
+    if payload.lead_type not in ("sales", "support"):
+        raise HTTPException(status_code=400, detail="lead_type must be 'sales' or 'support'")
+
+    lead = {
+        "lead_id": f"lead_{uuid.uuid4().hex[:12]}",
+        "lead_type": payload.lead_type,
+        "full_name": full_name,
+        "mobile": mobile,
+        "email": email,
+        "module": (payload.module or "").strip() or None,
+        "query": (payload.query or "").strip(),
+        "recipient": "founders@ipo-labs.com",
+        "status": "new",
+        "email_sent": False,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.contact_leads.insert_one(lead)
+    lead.pop("_id", None)
+
+    email_sent = False
+    # Resend is MOCKED — dispatch only if a real key is configured
+    if RESEND_API_KEY and RESEND_API_KEY != 're_placeholder_key':
+        try:
+            email_params = {
+                "from": SENDER_EMAIL,
+                "to": ["founders@ipo-labs.com"],
+                "subject": f"[SETU • {payload.lead_type.upper()}] New lead from {full_name}",
+                "html": (
+                    f"<h2>New {payload.lead_type.title()} Lead</h2>"
+                    f"<p><b>Name:</b> {full_name}</p>"
+                    f"<p><b>Mobile:</b> {mobile}</p>"
+                    f"<p><b>Email:</b> {email}</p>"
+                    f"<p><b>Module of Interest:</b> {lead['module'] or 'N/A'}</p>"
+                    f"<p><b>Query:</b><br/>{(lead['query'] or 'N/A').replace(chr(10), '<br/>')}</p>"
+                    f"<hr/><p style='font-size:12px;color:#888'>Lead ID: {lead['lead_id']}</p>"
+                ),
+            }
+            await asyncio.to_thread(resend.Emails.send, email_params)
+            email_sent = True
+            await db.contact_leads.update_one({"lead_id": lead["lead_id"]}, {"$set": {"email_sent": True}})
+        except Exception as e:
+            print(f"Contact lead email send failed: {e}")
+
+    return {
+        "message": "Thanks! Your request has been received. Our team will reach out shortly.",
+        "lead_id": lead["lead_id"],
+        "email_sent": email_sent,
+        "email_note": "Email delivered" if email_sent else "Lead stored — email queued (Resend not configured)",
+    }
+
+
+@api_router.get("/contact/leads")
+async def list_contact_leads(user: User = Depends(require_admin)):
+    leads = await db.contact_leads.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return {"leads": leads}
+
 # Include the router in the main app
 app.include_router(api_router)
 
