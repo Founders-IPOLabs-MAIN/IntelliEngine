@@ -89,13 +89,19 @@ const LandingPage = () => {
           </div>
           <span className="text-xl font-bold text-[#003366] tracking-tight">IPO Labs</span>
         </div>
-        <Button 
-          onClick={() => navigate("/login")}
-          className="bg-[#003366] hover:bg-[#002244] text-white px-6 py-2 rounded-full font-medium text-sm shadow-lg"
-          data-testid="landing-sign-in-btn"
-        >
-          Sign In
-        </Button>
+        <div className="flex items-center gap-6">
+          <button onClick={() => navigate("/resources")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-resources">Resources</button>
+          <button onClick={() => navigate("/pricing")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-pricing">Pricing</button>
+          <button onClick={() => navigate("/disclaimer")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-disclaimer">Disclaimer</button>
+          <button onClick={() => navigate("/about")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-about">About</button>
+          <Button 
+            onClick={() => navigate("/login")}
+            className="bg-[#003366] hover:bg-[#002244] text-white px-6 py-2 rounded-full font-medium text-sm shadow-lg"
+            data-testid="landing-sign-in-btn"
+          >
+            Sign In
+          </Button>
+        </div>
       </nav>
 
       {/* Main Content */}
@@ -230,11 +236,75 @@ const LandingPage = () => {
       </div>
 
       {/* Footer */}
-      <div className="relative z-10 bg-white border-t border-gray-200 py-4 text-center">
-        <p className="text-gray-400 text-xs">
-          &copy; {new Date().getFullYear()} IPO Labs. All rights reserved.
-        </p>
-      </div>
+      <footer className="relative z-10 bg-[#003366] text-white">
+        <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+            {/* Brand Column */}
+            <div className="md:col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                  <span className="text-[#003366] font-bold text-sm">IP</span>
+                </div>
+                <span className="text-lg font-bold tracking-tight">IPO Labs</span>
+              </div>
+              <p className="text-sm text-white/70 leading-relaxed">
+                India's first AI-powered IPO Operating System. End-to-end DRHP journey with complete privacy, expert marketplace, and funding solutions.
+              </p>
+            </div>
+
+            {/* Platform Column */}
+            <div>
+              <h4 className="font-semibold text-sm mb-4 text-white/90">Platform</h4>
+              <ul className="space-y-2.5 text-sm text-white/60">
+                <li><button onClick={() => navigate("/login?module=drhp")} className="hover:text-white transition-colors">DRHP Builder</button></li>
+                <li><button onClick={() => navigate("/login?module=assessment")} className="hover:text-white transition-colors">IPO Readiness Test</button></li>
+                <li><button onClick={() => navigate("/login?module=matchmaker")} className="hover:text-white transition-colors">Expert Marketplace</button></li>
+                <li><button onClick={() => navigate("/login?module=funding")} className="hover:text-white transition-colors">IPO Funding</button></li>
+                <li><button onClick={() => navigate("/login?module=valuation")} className="hover:text-white transition-colors">Business Valuation</button></li>
+              </ul>
+            </div>
+
+            {/* Company Column */}
+            <div>
+              <h4 className="font-semibold text-sm mb-4 text-white/90">Company</h4>
+              <ul className="space-y-2.5 text-sm text-white/60">
+                <li><button onClick={() => navigate("/about")} className="hover:text-white transition-colors">About Us</button></li>
+                <li><button onClick={() => navigate("/pricing")} className="hover:text-white transition-colors">Pricing</button></li>
+                <li><button onClick={() => navigate("/resources")} className="hover:text-white transition-colors">Resources</button></li>
+                <li><button onClick={() => navigate("/disclaimer")} className="hover:text-white transition-colors">Disclaimer</button></li>
+                <li><a href="https://ipo-labs.com/contact" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Contact Us</a></li>
+              </ul>
+            </div>
+
+            {/* Contact Column */}
+            <div>
+              <h4 className="font-semibold text-sm mb-4 text-white/90">Get in Touch</h4>
+              <ul className="space-y-2.5 text-sm text-white/60">
+                <li>Mumbai, Maharashtra, India</li>
+                <li><a href="mailto:founders.ipolabs@gmail.com" className="hover:text-white transition-colors">founders.ipolabs@gmail.com</a></li>
+              </ul>
+              <div className="flex gap-3 mt-5">
+                <a href="https://www.linkedin.com/company/ipo-labs" target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+                <a href="https://twitter.com/ipolabs" target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-white/10 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-xs text-white/50">&copy; {new Date().getFullYear()} IPO Labs Private Limited. All rights reserved.</p>
+            <div className="flex gap-6 text-xs text-white/50">
+              <button onClick={() => navigate("/disclaimer")} className="hover:text-white transition-colors">Privacy Policy</button>
+              <button onClick={() => navigate("/disclaimer")} className="hover:text-white transition-colors">Terms of Service</button>
+              <button onClick={() => navigate("/disclaimer")} className="hover:text-white transition-colors">SEBI Compliance</button>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* Floating Notification Bar - Sniply Touch */}
       {showNotification && (
