@@ -89,7 +89,15 @@ const LandingPage = () => {
           </div>
           <span className="text-xl font-bold text-[#003366] tracking-tight">IPO Labs</span>
         </div>
-        <div className="flex items-center gap-6">
+        {/* Mobile menu toggle */}
+        <button className="lg:hidden p-2" onClick={() => {
+          const menu = document.getElementById("mobile-nav");
+          menu.classList.toggle("hidden");
+        }} data-testid="mobile-menu-btn">
+          <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+        </button>
+        {/* Desktop nav */}
+        <div className="hidden lg:flex items-center gap-6">
           <button onClick={() => navigate("/resources")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-resources">Resources</button>
           <button onClick={() => navigate("/pricing")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-pricing">Pricing</button>
           <button onClick={() => navigate("/disclaimer")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-disclaimer">Disclaimer</button>
@@ -104,6 +112,15 @@ const LandingPage = () => {
           </Button>
         </div>
       </nav>
+      {/* Mobile nav dropdown */}
+      <div id="mobile-nav" className="hidden lg:hidden bg-white border-b px-8 py-4 space-y-3 relative z-10">
+        <button onClick={() => navigate("/resources")} className="block w-full text-left text-sm font-medium text-gray-600 hover:text-[#003366]">Resources</button>
+        <button onClick={() => navigate("/pricing")} className="block w-full text-left text-sm font-medium text-gray-600 hover:text-[#003366]">Pricing</button>
+        <button onClick={() => navigate("/disclaimer")} className="block w-full text-left text-sm font-medium text-gray-600 hover:text-[#003366]">Disclaimer</button>
+        <button onClick={() => navigate("/about")} className="block w-full text-left text-sm font-medium text-gray-600 hover:text-[#003366]">About Us</button>
+        <button onClick={() => navigate("/careers")} className="block w-full text-left text-sm font-medium text-gray-600 hover:text-[#003366]">Careers</button>
+        <Button onClick={() => navigate("/login")} className="w-full bg-[#003366] hover:bg-[#002244] text-white rounded-full font-medium text-sm">Sign In</Button>
+      </div>
 
       {/* Main Content */}
       <div className="relative z-10 flex-1 flex items-center px-8 lg:px-16 py-8">

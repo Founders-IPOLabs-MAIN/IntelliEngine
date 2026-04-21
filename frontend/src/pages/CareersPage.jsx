@@ -165,7 +165,7 @@ const CareersPage = () => {
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)" }} />
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <Badge className="bg-white/10 text-white/90 border-white/20 mb-6 px-4 py-1.5 text-sm">Join the team building India's IPO Operating System</Badge>
-          <h1 className="text-5xl font-bold mb-4 tracking-tight">Build the Future of<br />Indian Capital Markets</h1>
+          <h1 className="text-3xl lg:text-5xl font-bold mb-4 tracking-tight">Build the Future of<br />Indian Capital Markets</h1>
           <p className="text-white/70 text-lg max-w-2xl mx-auto mb-8">We're a small, high-impact team transforming how companies go public in India. If you're driven by ambition and want to make a real dent in the $100B+ IPO ecosystem, we want to talk.</p>
           <Button onClick={() => document.getElementById("positions")?.scrollIntoView({ behavior: "smooth" })}
             className="bg-white text-[#003366] hover:bg-gray-100 rounded-full px-8 py-3 font-semibold text-sm gap-2">

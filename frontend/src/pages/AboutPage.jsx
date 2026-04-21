@@ -81,7 +81,7 @@ const AboutPage = () => {
             <h2 className="text-xl font-bold text-black">Meet the Founders</h2>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Jagruti */}
             <div
               className="relative group bg-gradient-to-br from-[#f8f9fa] to-[#eef1f5] rounded-2xl p-6 border border-gray-100 transition-all duration-500 hover:border-[#003366]/20 hover:shadow-md"
@@ -179,7 +179,7 @@ const AboutPage = () => {
           </div>
 
           {/* 4 Vertical Stacked Cards */}
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* By the Numbers */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col">
               <p className="text-[9px] tracking-[0.2em] uppercase text-gray-400 font-bold mb-4">By the Numbers</p>

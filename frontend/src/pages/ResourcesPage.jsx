@@ -355,11 +355,11 @@ const ResourcesPage = () => {
             <Card className="mb-8 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow group border-0 shadow-sm"
               onClick={() => setSelectedArticle(featuredArticle)} data-testid="featured-article">
               <div className="grid md:grid-cols-2">
-                <img src={featuredArticle.image} alt={featuredArticle.title} className="w-full h-64 md:h-full object-cover" />
-                <CardContent className="p-6 flex flex-col justify-center">
-                  <Badge className="bg-[#003366] text-white w-fit mb-3">Featured</Badge>
-                  <h3 className="text-xl font-bold text-black mb-2 group-hover:text-[#003366] transition-colors leading-tight">{featuredArticle.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{featuredArticle.description}</p>
+                <img src={featuredArticle.image} alt={featuredArticle.title} className="w-full h-48 md:h-full object-cover" />
+                <CardContent className="p-5">
+                  <Badge className="bg-[#003366] text-white w-fit mb-2">Featured</Badge>
+                  <h3 className="text-lg font-bold text-black mb-1.5 group-hover:text-[#003366] transition-colors leading-tight line-clamp-2">{featuredArticle.title}</h3>
+                  <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{featuredArticle.description}</p>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span>{featuredArticle.author}</span>
                     <span>{featuredArticle.readTime}</span>
