@@ -7915,24 +7915,58 @@ async def get_document_repository(project_id: str, request: Request, user: User 
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     await _ensure_repository_seeded(project_id, user.user_id)
-    items = await db.document_repository.find({"project_id": project_id}, {"_id": 0}).sort([("category_order", 1), ("sub_order", 1)]).to_list(500)
-    # hide gridfs_id from the client
-    items = [_sanitise_repo_item(i) for i in items]
-    # Group by category for easier rendering
-    grouped = {}
-    for it in items:
-        grouped.setdefault(it["category"], {"category": it["category"], "order": it["category_order"], "items": []})
-        grouped[it["category"]]["items"].append(it)
+    raw = await db.document_repository.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
+    items = [_sanitise_repo_item(i) for i in raw]
+
+    # Split parents vs children
+    parents = [i for i in items if not i.get("parent_item_id")]
+    children_map: dict = {}
+    for i in items:
+        pid = i.get("parent_item_id")
+        if pid:
+            children_map.setdefault(pid, []).append(i)
+    for pid in children_map:
+        children_map[pid].sort(key=lambda x: (x.get("sub_line_order") or 0, x.get("created_at", "")))
+
+    parents.sort(key=lambda p: (p.get("category_order") or 0, p.get("sub_order") or 0))
+    for p in parents:
+        p["children"] = children_map.get(p["item_id"], [])
+
+    # Group by category
+    grouped: dict = {}
+    for p in parents:
+        grouped.setdefault(p["category"], {"category": p["category"], "order": p["category_order"], "items": []})
+        grouped[p["category"]]["items"].append(p)
     groups = sorted(grouped.values(), key=lambda g: g["order"])
+
+    total_lines = len(items)  # parents + children all count
+    uploaded_count = sum(1 for i in items if i.get("file"))
+    pending_count = total_lines - uploaded_count
+
     await _log_project_audit(project_id, user, "view_repository", "document_repository", request=request)
-    return {"project": {"project_id": project_id, "company_name": project.get("company_name")}, "groups": groups}
+    return {
+        "project": {"project_id": project_id, "company_name": project.get("company_name")},
+        "groups": groups,
+        "summary": {
+            "total_lines": total_lines,
+            "uploaded": uploaded_count,
+            "pending": pending_count,
+        },
+    }
 
 
 class DocRepoCustomItem(BaseModel):
-    category: str
-    title: str
+    category: Optional[str] = None
+    title: Optional[str] = None
     remarks: Optional[str] = ""
-    after_item_id: Optional[str] = None
+    description: Optional[str] = ""
+    parent_item_id: Optional[str] = None
+
+
+class DocRepoItemPatch(BaseModel):
+    description: Optional[str] = None
+    title: Optional[str] = None
+    remarks: Optional[str] = None
 
 
 @api_router.post("/projects/{project_id}/document-repository/items")
@@ -7940,35 +7974,63 @@ async def add_repository_item(project_id: str, payload: DocRepoCustomItem, reque
     project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    if not payload.title.strip():
+    if not (payload.title or "").strip() and not payload.parent_item_id:
         raise HTTPException(status_code=400, detail="Title is required")
 
-    # Determine category order (use existing category order or next after max)
-    cat_entry = await db.document_repository.find_one({"project_id": project_id, "category": payload.category}, {"category_order": 1, "_id": 0}, sort=[("category_order", 1)])
-    if cat_entry:
-        category_order = cat_entry["category_order"]
-    else:
-        last = await db.document_repository.find_one({"project_id": project_id}, {"category_order": 1, "_id": 0}, sort=[("category_order", -1)])
-        category_order = (last["category_order"] + 1) if last else 1
-
-    # sub_order: append at end of the category
-    last_sub = await db.document_repository.find_one(
-        {"project_id": project_id, "category": payload.category},
-        {"sub_order": 1, "_id": 0},
-        sort=[("sub_order", -1)],
-    )
-    sub_order = (last_sub["sub_order"] + 1) if last_sub else 1
-
     now = datetime.now(timezone.utc).isoformat()
+    parent = None
+    if payload.parent_item_id:
+        parent = await db.document_repository.find_one({"item_id": payload.parent_item_id, "project_id": project_id}, {"_id": 0})
+        if not parent:
+            raise HTTPException(status_code=404, detail="Parent line item not found")
+        # Disallow nesting beyond one level
+        if parent.get("parent_item_id"):
+            raise HTTPException(status_code=400, detail="Sub-items cannot have further sub-items")
+
+        category = parent["category"]
+        category_order = parent["category_order"]
+        sub_order = parent["sub_order"]
+        # Compute next sub_line_order among siblings
+        last_sib = await db.document_repository.find_one(
+            {"project_id": project_id, "parent_item_id": payload.parent_item_id},
+            {"sub_line_order": 1, "_id": 0},
+            sort=[("sub_line_order", -1)],
+        )
+        sub_line_order = (last_sib.get("sub_line_order") or 0) + 1 if last_sib else 1
+        # Default title if not provided
+        title = (payload.title or "").strip() or f"Additional document for: {parent.get('title')}"
+    else:
+        # Top-level custom item (existing behaviour)
+        category = (payload.category or "").strip()
+        if not category:
+            raise HTTPException(status_code=400, detail="Category is required for top-level lines")
+        cat_entry = await db.document_repository.find_one({"project_id": project_id, "category": category}, {"category_order": 1, "_id": 0}, sort=[("category_order", 1)])
+        if cat_entry:
+            category_order = cat_entry["category_order"]
+        else:
+            last = await db.document_repository.find_one({"project_id": project_id}, {"category_order": 1, "_id": 0}, sort=[("category_order", -1)])
+            category_order = (last["category_order"] + 1) if last else 1
+        last_sub = await db.document_repository.find_one(
+            {"project_id": project_id, "category": category, "parent_item_id": None},
+            {"sub_order": 1, "_id": 0},
+            sort=[("sub_order", -1)],
+        )
+        sub_order = (last_sub["sub_order"] + 1) if last_sub else 1
+        sub_line_order = None
+        title = payload.title.strip()
+
     item = {
         "item_id": f"dri_{uuid.uuid4().hex[:12]}",
         "project_id": project_id,
         "project_owner_id": user.user_id,
-        "category": payload.category.strip(),
+        "category": category,
         "category_order": category_order,
         "sub_order": sub_order,
-        "title": payload.title.strip(),
+        "sub_line_order": sub_line_order,
+        "parent_item_id": payload.parent_item_id,
+        "title": title,
         "remarks": (payload.remarks or "").strip(),
+        "description": (payload.description or "").strip(),
         "is_custom": True,
         "file": None,
         "created_at": now,
@@ -7977,11 +8039,48 @@ async def add_repository_item(project_id: str, payload: DocRepoCustomItem, reque
     await db.document_repository.insert_one(item)
     item.pop("_id", None)
     await _log_project_audit(
-        project_id, user, "add_line", "document_repository",
-        details={"item_id": item["item_id"], "title": item["title"], "category": item["category"]},
+        project_id, user,
+        "add_sub_line" if payload.parent_item_id else "add_line",
+        "document_repository",
+        details={
+            "item_id": item["item_id"],
+            "title": item["title"],
+            "category": item["category"],
+            "parent_item_id": payload.parent_item_id,
+        },
         request=request,
     )
     return {"message": "Line item added", "item": item}
+
+
+@api_router.patch("/projects/{project_id}/document-repository/items/{item_id}")
+async def patch_repository_item(project_id: str, item_id: str, payload: DocRepoItemPatch, request: Request, user: User = Depends(get_current_user)):
+    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    item = await db.document_repository.find_one({"item_id": item_id, "project_id": project_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Line item not found")
+    update = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    changed_fields = []
+    if payload.description is not None and payload.description != item.get("description"):
+        update["description"] = payload.description
+        changed_fields.append("description")
+    if payload.title is not None and payload.title.strip() and payload.title != item.get("title"):
+        update["title"] = payload.title.strip()
+        changed_fields.append("title")
+    if payload.remarks is not None and payload.remarks != item.get("remarks"):
+        update["remarks"] = payload.remarks
+        changed_fields.append("remarks")
+    if not changed_fields:
+        return {"message": "No changes"}
+    await db.document_repository.update_one({"item_id": item_id, "project_id": project_id}, {"$set": update})
+    await _log_project_audit(
+        project_id, user, "edit_line", "document_repository",
+        details={"item_id": item_id, "title": item.get("title"), "fields": changed_fields},
+        request=request,
+    )
+    return {"message": "Updated", "fields": changed_fields}
 
 
 @api_router.delete("/projects/{project_id}/document-repository/items/{item_id}")

@@ -30,6 +30,12 @@
   - `project_audit_logs` collection records user email, user_id, name, IP, user agent, action, module, details, timestamp
   - New backend endpoints: `GET/POST/DELETE /api/projects/{id}/document-repository[/items[/{id}[/upload|/file|/download]]]`, `GET /api/projects/{id}/audit-log`
   - `drhp_checklist_seed.py` — static SEBI checklist with all 14 categories & item metadata
+- **Document Repository v2 (nested sub-items)**:
+  - "Add line" now creates **nested sub-items** under each parent (e.g., 2.4.1, 2.4.2, 2.4.3 ...) via `parent_item_id` + auto-incrementing `sub_line_order`
+  - Each sub-item has its own editable **description textbox** (auto-saves via new `PATCH /items/{id}` endpoint)
+  - Each uploaded row now shows **"Last upload: {timestamp}"** sourced from `file.uploaded_at`
+  - Header tracker: **Total / Uploaded / Pending + Progress bar** (from backend `summary` payload)
+  - Nesting depth capped at 1 level (sub-items can't have further sub-items)
 - **DRHP Builder user profile selector**: New `/drhp` landing shows 3 profile cards — **Merchant Banker**, **Company**, **CA Firm** (light-color rectangular cards with distinct icons/accents). Clicking any routes to `/drhp/:userLoginType` which renders the identical DRHP Builder workflow scoped to that profile.
 - **New DRHP Project dialog** now captures 3 additional classification fields:
   - **Board Type**: SME · Main Board
