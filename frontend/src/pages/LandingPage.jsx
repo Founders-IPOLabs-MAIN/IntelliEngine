@@ -8,7 +8,9 @@ import {
   CheckCircle2,
   ArrowRight,
   MessageCircle,
-  Scale
+  Scale,
+  PlayCircle,
+  Film
 } from "lucide-react";
 import ContactLeadDialog from "@/components/ContactLeadDialog";
 import WaveDotsBackground from "@/components/WaveDotsBackground";
@@ -121,7 +123,7 @@ const LandingPage = () => {
 
       {/* Main Content */}
       <div className="relative z-10 flex-1 flex items-center px-8 lg:px-16 py-8">
-        <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-stretch">
           
           {/* Left Side - Power Hero */}
           <div className="space-y-5">
@@ -179,56 +181,94 @@ const LandingPage = () => {
             </div>
           </div>
 
-          {/* Right Side - Bento-Style Action Center */}
-          <div className="grid grid-cols-2 gap-4">
-            {modules.map((module, index) => (
-              <button
-                key={module.id}
-                onClick={() => navigate(module.path)}
-                className={`group relative p-5 rounded-[32px] bg-white border border-gray-200 
-                           hover:scale-[1.03] hover:shadow-xl hover:border-[#00D1FF] 
-                           transition-all duration-300 text-left overflow-hidden
-                           ${index === 4 ? 'col-span-2' : ''}
-                           ${shimmerIndex === index ? 'shimmer-active' : ''}`}
-                data-testid={`landing-module-${module.id}`}
-              >
-                {/* Shimmer Effect Overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent 
-                                 transform -skew-x-12 transition-transform duration-1000
-                                 ${shimmerIndex === index ? 'translate-x-full' : '-translate-x-full'}`} 
-                     style={{transitionDelay: shimmerIndex === index ? '0ms' : '1000ms'}} />
-                
-                {/* Icon */}
-                <div className={`w-12 h-12 ${module.iconBg} rounded-2xl flex items-center justify-center mb-3 relative`}>
-                  {module.hasProgress ? (
-                    // Radial Progress Ring for Readiness Test
-                    <div className="relative w-10 h-10">
-                      <svg className="w-10 h-10 transform -rotate-90">
-                        <circle cx="20" cy="20" r="16" stroke="#e5e7eb" strokeWidth="3" fill="none" />
-                        <circle cx="20" cy="20" r="16" stroke="#00D1FF" strokeWidth="3" fill="none"
-                                strokeDasharray="100.53" strokeDashoffset="25" strokeLinecap="round" />
-                      </svg>
-                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-[#00D1FF]">75</span>
-                    </div>
-                  ) : (
-                    <module.icon className={`w-6 h-6 ${module.iconColor}`} />
-                  )}
+          {/* Right Side — Corporate Video + Compact Modules */}
+          <div className="flex flex-col gap-5 h-full">
+            {/* Corporate Video Placeholder — rectangular, top-aligns with H1 / bottom-aligns with bullets */}
+            <div
+              className="relative flex-1 min-h-[380px] rounded-[28px] overflow-hidden bg-gradient-to-br from-[#001a33] via-[#003366] to-[#002244] shadow-2xl shadow-[#003366]/20 group cursor-pointer"
+              data-testid="landing-corporate-video-placeholder"
+              title="Corporate video — upload coming soon"
+            >
+              {/* Soft decorative grid overlay */}
+              <div className="absolute inset-0 opacity-[0.12]"
+                   style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)', backgroundSize: '36px 36px' }} />
+              {/* Corner accent gradient blobs */}
+              <div className="absolute -top-20 -right-20 w-60 h-60 bg-[#00D1FF]/15 rounded-full blur-3xl" />
+              <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-[#D8BFD8]/15 rounded-full blur-3xl" />
+
+              {/* Top-left meta badge */}
+              <div className="absolute top-5 left-5 flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-[#00D1FF]"></span>
+                <span className="text-[10px] tracking-[0.22em] uppercase text-white/70 font-semibold">Corporate Film</span>
+              </div>
+              {/* Top-right tag */}
+              <div className="absolute top-5 right-5">
+                <span className="text-[10px] tracking-[0.2em] uppercase text-white/50 font-medium bg-white/5 border border-white/10 rounded-full px-3 py-1">
+                  Coming Soon
+                </span>
+              </div>
+
+              {/* Centered play + title */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
+                <div className="relative">
+                  {/* Pulse rings */}
+                  <span className="absolute inset-0 rounded-full border border-white/20 animate-ping" />
+                  <span className="absolute inset-0 rounded-full border border-white/10" />
+                  <div className="relative w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 group-hover:scale-110 group-hover:bg-white/20 transition-all duration-300">
+                    <PlayCircle className="w-10 h-10 text-white" strokeWidth={1.5} />
+                  </div>
                 </div>
-                
-                {/* Content */}
-                <h3 className="font-semibold text-[#003366] text-sm mb-1 group-hover:text-[#00D1FF] transition-colors">
-                  {module.title}
+                <h3 className="mt-6 text-white text-xl lg:text-2xl font-semibold tracking-tight">
+                  The IPO Labs Story
                 </h3>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  {module.description}
+                <p className="mt-2 text-white/55 text-sm max-w-xs leading-relaxed">
+                  A 90-second film on how we're democratising India's IPO ecosystem &mdash; releasing shortly.
                 </p>
-                
-                {/* Hover Arrow */}
-                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ArrowRight className="w-4 h-4 text-[#00D1FF]" />
+              </div>
+
+              {/* Bottom brand strip */}
+              <div className="absolute bottom-0 left-0 right-0 px-5 py-3 flex items-center justify-between bg-gradient-to-t from-black/40 to-transparent">
+                <div className="flex items-center gap-2 text-white/70 text-[11px]">
+                  <Film className="w-3.5 h-3.5" />
+                  <span className="tracking-wide uppercase font-semibold">IPO Labs</span>
                 </div>
-              </button>
-            ))}
+                <div className="text-white/40 text-[10px] tracking-wider">1920 &times; 1080 &middot; 16:9</div>
+              </div>
+            </div>
+
+            {/* Compact Module Buttons — smaller, single row, 5 across */}
+            <div className="grid grid-cols-5 gap-2.5" data-testid="landing-compact-modules">
+              {modules.map((module, index) => (
+                <button
+                  key={module.id}
+                  onClick={() => navigate(module.path)}
+                  className={`group relative p-2.5 rounded-2xl bg-white border border-gray-200
+                              hover:border-[#00D1FF] hover:shadow-lg hover:-translate-y-0.5
+                              transition-all duration-200 text-center overflow-hidden
+                              ${shimmerIndex === index ? 'shimmer-active' : ''}`}
+                  data-testid={`landing-module-${module.id}`}
+                  title={`${module.title} — ${module.description}`}
+                >
+                  <div className={`w-9 h-9 ${module.iconBg} rounded-xl flex items-center justify-center mx-auto mb-1.5`}>
+                    {module.hasProgress ? (
+                      <div className="relative w-7 h-7">
+                        <svg className="w-7 h-7 transform -rotate-90">
+                          <circle cx="14" cy="14" r="11" stroke="#e5e7eb" strokeWidth="2.5" fill="none" />
+                          <circle cx="14" cy="14" r="11" stroke="#00D1FF" strokeWidth="2.5" fill="none"
+                                  strokeDasharray="69.1" strokeDashoffset="17" strokeLinecap="round" />
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-[#00D1FF]">75</span>
+                      </div>
+                    ) : (
+                      <module.icon className={`w-4 h-4 ${module.iconColor}`} />
+                    )}
+                  </div>
+                  <p className="text-[11px] font-semibold text-[#003366] leading-tight group-hover:text-[#00D1FF] transition-colors line-clamp-2">
+                    {module.title.replace("The ", "")}
+                  </p>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
