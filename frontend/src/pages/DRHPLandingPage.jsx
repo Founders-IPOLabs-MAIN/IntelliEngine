@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,8 @@ import {
   Loader2,
   Building2,
   FolderOpen,
-  Sparkles
+  Briefcase,
+  Calculator
 } from "lucide-react";
 
 const SECTORS = [
@@ -34,21 +35,49 @@ const SECTORS = [
   "Other"
 ];
 
+const BOARD_TYPES = ["SME", "Main Board"];
+const EXCHANGES = ["NSE", "BSE"];
+const ISSUE_TYPES = [
+  "Book Building Issue",
+  "Fixed Price Issue",
+  "Offer for Sale (OFS)",
+  "Fresh Issue",
+];
+
+const USER_TYPE_META = {
+  merchant_banker: { label: "Merchant Banker", icon: Briefcase, accent: "#1DA1F2", tag: "bg-blue-50 text-blue-700 border-blue-200" },
+  company:         { label: "Company",         icon: Building2, accent: "#059669", tag: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  ca_firm:         { label: "CA Firm",         icon: Calculator, accent: "#D97706", tag: "bg-amber-50 text-amber-700 border-amber-200" },
+};
+
 const DRHPLandingPage = ({ user, apiClient }) => {
   const navigate = useNavigate();
+  const { userLoginType } = useParams();
+  const typeMeta = USER_TYPE_META[userLoginType] || USER_TYPE_META.company;
+  const HeaderIcon = typeMeta.icon;
+
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newProject, setNewProject] = useState({ company_name: "", sector: "" });
+  const [newProject, setNewProject] = useState({
+    company_name: "",
+    sector: "",
+    board_type: "",
+    exchange: "",
+    issue_type: "",
+  });
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userLoginType]);
 
   const fetchProjects = async () => {
+    setLoading(true);
     try {
-      const response = await apiClient.get("/projects");
+      const url = userLoginType ? `/projects?user_login_type=${userLoginType}` : "/projects";
+      const response = await apiClient.get(url);
       setProjects(response.data);
     } catch (error) {
       console.error("Failed to fetch projects:", error);
@@ -59,13 +88,21 @@ const DRHPLandingPage = ({ user, apiClient }) => {
 
   const handleCreateProject = async () => {
     if (!newProject.company_name || !newProject.sector) return;
-    
+
     setCreating(true);
     try {
-      const response = await apiClient.post("/projects", newProject);
+      const payload = {
+        company_name: newProject.company_name,
+        sector: newProject.sector,
+        user_login_type: userLoginType || null,
+        board_type: newProject.board_type || null,
+        exchange: newProject.exchange || null,
+        issue_type: newProject.issue_type || null,
+      };
+      const response = await apiClient.post("/projects", payload);
       setProjects([...projects, response.data]);
       setCreateDialogOpen(false);
-      setNewProject({ company_name: "", sector: "" });
+      setNewProject({ company_name: "", sector: "", board_type: "", exchange: "", issue_type: "" });
       toast.success("Project created successfully!");
       navigate(`/project/${response.data.project_id}/command-center`);
     } catch (error) {
@@ -95,11 +132,12 @@ const DRHPLandingPage = ({ user, apiClient }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button 
-                onClick={() => navigate("/dashboard")} 
+                onClick={() => navigate("/drhp")} 
                 className="text-gray-500 hover:text-gray-700 flex items-center gap-1 text-sm"
+                data-testid="drhp-back-to-selector-btn"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Back to Dashboard
+                Change Profile
               </button>
               <div className="w-px h-6 bg-gray-200" />
               <div className="flex items-center gap-3">
@@ -108,7 +146,12 @@ const DRHPLandingPage = ({ user, apiClient }) => {
                 </div>
                 <div>
                   <h1 className="text-xl font-semibold tracking-tight text-black">DRHP Builder</h1>
-                  <p className="text-xs text-muted-foreground">Centralised Corporate Repository</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <HeaderIcon className="w-3.5 h-3.5" style={{ color: typeMeta.accent }} />
+                    <p className="text-xs text-muted-foreground">
+                      {typeMeta.label} workspace • Centralised Corporate Repository
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -194,6 +237,26 @@ const DRHPLandingPage = ({ user, apiClient }) => {
                             {project.company_name}
                           </CardTitle>
                           <CardDescription className="text-xs">{project.sector}</CardDescription>
+                          {/* Classification badges directly under project name */}
+                          {(project.board_type || project.exchange || project.issue_type) && (
+                            <div className="flex flex-wrap gap-1 mt-1.5" data-testid={`project-badges-${project.project_id}`}>
+                              {project.board_type && (
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-5 bg-indigo-50 text-indigo-700 border-indigo-200 font-medium">
+                                  {project.board_type}
+                                </Badge>
+                              )}
+                              {project.exchange && (
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-5 bg-cyan-50 text-cyan-700 border-cyan-200 font-medium">
+                                  {project.exchange}
+                                </Badge>
+                              )}
+                              {project.issue_type && (
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-5 bg-rose-50 text-rose-700 border-rose-200 font-medium">
+                                  {project.issue_type}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -226,16 +289,16 @@ const DRHPLandingPage = ({ user, apiClient }) => {
 
         {/* Create Project Dialog */}
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[540px]">
             <DialogHeader>
               <DialogTitle>Create New DRHP Project</DialogTitle>
               <DialogDescription>
                 Start a new Draft Red Herring Prospectus project for your company
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto pr-1">
               <div className="space-y-2">
-                <Label htmlFor="company_name">Company Name</Label>
+                <Label htmlFor="company_name">Company Name <span className="text-red-500">*</span></Label>
                 <Input
                   id="company_name"
                   placeholder="Enter company name"
@@ -245,7 +308,7 @@ const DRHPLandingPage = ({ user, apiClient }) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="sector">Sector</Label>
+                <Label htmlFor="sector">Sector <span className="text-red-500">*</span></Label>
                 <Select
                   value={newProject.sector}
                   onValueChange={(value) => setNewProject({ ...newProject, sector: value })}
@@ -261,6 +324,63 @@ const DRHPLandingPage = ({ user, apiClient }) => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="board_type">Board Type</Label>
+                  <Select
+                    value={newProject.board_type}
+                    onValueChange={(value) => setNewProject({ ...newProject, board_type: value })}
+                  >
+                    <SelectTrigger id="board_type" data-testid="board-type-select">
+                      <SelectValue placeholder="SME or Main Board" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BOARD_TYPES.map((b) => (
+                        <SelectItem key={b} value={b} data-testid={`board-opt-${b.toLowerCase().replace(/\s+/g,"-")}`}>{b}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="exchange">Exchange</Label>
+                  <Select
+                    value={newProject.exchange}
+                    onValueChange={(value) => setNewProject({ ...newProject, exchange: value })}
+                  >
+                    <SelectTrigger id="exchange" data-testid="exchange-select">
+                      <SelectValue placeholder="NSE or BSE" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EXCHANGES.map((e) => (
+                        <SelectItem key={e} value={e} data-testid={`exchange-opt-${e.toLowerCase()}`}>{e}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="issue_type">Issue Type</Label>
+                <Select
+                  value={newProject.issue_type}
+                  onValueChange={(value) => setNewProject({ ...newProject, issue_type: value })}
+                >
+                  <SelectTrigger id="issue_type" data-testid="issue-type-select">
+                    <SelectValue placeholder="Select issue structure" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ISSUE_TYPES.map((i) => (
+                      <SelectItem key={i} value={i} data-testid={`issue-opt-${i.toLowerCase().replace(/[^a-z0-9]+/g,"-")}`}>
+                        {i}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-gray-500 leading-snug">
+                  Book Building (price range bidding) · Fixed Price (predetermined) · OFS (existing shares by promoters) · Fresh Issue (new shares for capital raising).
+                </p>
               </div>
             </div>
             <DialogFooter>

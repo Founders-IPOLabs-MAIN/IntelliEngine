@@ -472,6 +472,11 @@ class Project(BaseModel):
     sector: str
     current_stage: str = "Assessment"  # Assessment/Drafting/Filed
     progress_percentage: int = 0
+    # Optional classification fields (introduced Apr 2026)
+    user_login_type: Optional[str] = None   # merchant_banker | company | ca_firm
+    board_type: Optional[str] = None        # SME | Main Board
+    exchange: Optional[str] = None          # NSE | BSE
+    issue_type: Optional[str] = None        # Book Building | Fixed Price | OFS | Fresh Issue
     created_at: datetime
     updated_at: datetime
 
@@ -514,6 +519,10 @@ class EmailAuthRequest(BaseModel):
 class ProjectCreate(BaseModel):
     company_name: str
     sector: str
+    user_login_type: Optional[str] = None
+    board_type: Optional[str] = None
+    exchange: Optional[str] = None
+    issue_type: Optional[str] = None
 
 class ProjectUpdate(BaseModel):
     company_name: Optional[str] = None
@@ -969,12 +978,12 @@ async def login_email(request: Request, data: dict = Body(...), response: Respon
 # ============ PROJECT ENDPOINTS ============
 
 @api_router.get("/projects", response_model=List[Project])
-async def get_projects(user: User = Depends(get_current_user)):
-    """Get all projects for current user"""
-    projects = await db.projects.find(
-        {"user_id": user.user_id},
-        {"_id": 0}
-    ).to_list(100)
+async def get_projects(user: User = Depends(get_current_user), user_login_type: Optional[str] = None):
+    """Get all projects for current user. Optionally filter by user_login_type."""
+    query = {"user_id": user.user_id}
+    if user_login_type:
+        query["user_login_type"] = user_login_type
+    projects = await db.projects.find(query, {"_id": 0}).to_list(100)
     
     for project in projects:
         if isinstance(project.get('created_at'), str):
@@ -997,6 +1006,10 @@ async def create_project(project_data: ProjectCreate, user: User = Depends(get_c
         "sector": project_data.sector,
         "current_stage": "Assessment",
         "progress_percentage": 0,
+        "user_login_type": project_data.user_login_type,
+        "board_type": project_data.board_type,
+        "exchange": project_data.exchange,
+        "issue_type": project_data.issue_type,
         "created_at": now.isoformat(),
         "updated_at": now.isoformat()
     }

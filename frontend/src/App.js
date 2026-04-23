@@ -10,6 +10,7 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import DRHPBuilder from "@/pages/DRHPBuilder";
 import DRHPLandingPage from "@/pages/DRHPLandingPage";
+import DRHPUserTypeSelector from "@/pages/DRHPUserTypeSelector";
 import DRHPSection from "@/pages/DRHPSection";
 import DRHPContent from "@/pages/DRHPContent";
 import SectionEditor from "@/pages/SectionEditor";
@@ -337,6 +338,14 @@ const AppRouter = () => {
       />
       <Route
         path="/drhp"
+        element={
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
+            {({ user, apiClient }) => <DRHPUserTypeSelector user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/drhp/:userLoginType"
         element={
           <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <DRHPLandingPage user={user} apiClient={apiClient} />}

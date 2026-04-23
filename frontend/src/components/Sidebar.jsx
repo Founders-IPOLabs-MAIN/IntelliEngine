@@ -59,7 +59,7 @@ const Sidebar = ({ user, apiClient }) => {
       case 'assessment':
         return path.startsWith('/assessment');
       case 'drhp':
-        return path === '/drhp' || path.includes('drhp-builder') || path.includes('command-center');
+        return path === '/drhp' || path.startsWith('/drhp/') || path.includes('drhp-builder') || path.includes('command-center');
       case 'funding':
         return path.startsWith('/funding');
       case 'matchmaker':
