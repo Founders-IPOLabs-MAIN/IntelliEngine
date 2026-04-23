@@ -121,25 +121,22 @@ const LandingPage = () => {
             
             {/* Sub-headline */}
             <p className="text-gray-600 text-base lg:text-lg leading-relaxed">
-              Empowering ambitious companies across India, including Tier 2, 3 & 4 cities, to easily build SEBI approved, NSE/BSE worthy DRHP's, get real-time access to top IPO Subject Matter Experts, raise Growth or IPO Capital and meet "Talent to Hire" across India and the globe.
+              Empowering ambitious companies across Tier 2, 3 &amp; 4 cities in India, to build complex DRHP's, get access to top Subject Matter Experts, raise Growth or IPO Capital and meet &ldquo;Talent to Hire&rdquo; or &ldquo;win Projects&rdquo; across India.
             </p>
             
-            {/* Utility Description - 5 Bullet Points */}
+            {/* Utility Description - Category Bullets */}
             <div className="border-l-4 border-[#00D1FF] pl-4 py-3 bg-white/50 rounded-r-lg space-y-2">
               <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">BUILD:</strong> End-to-End DRHP's in a Safe, Version Controlled Platform.
+                <strong className="text-[#003366]">DRHP:</strong> Build entire DRHP's in a safe and collaborative Platform. Work with teams across India, track progress real-time, and control every step.
               </p>
               <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">COLLABORATE:</strong> with multiple teams across India, track progress real-time, and manage every step with minute detail.
+                <strong className="text-[#003366]">FUNDING:</strong> Raise Pre-IPO, Post-IPO or Bridge Funding Rounds, working closely with our expert Funding Team, who will provide personalised care &amp; attention.
               </p>
               <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">RAISE:</strong> Funds for Pre-IPO, Post-IPO or Bridge Rounds, with personalised support of our expert Funding Team.
+                <strong className="text-[#003366]">HIRE &amp; CONSULT:</strong> Experienced Experts like CA, CS, Auditors, Directors, CFO's, Merchant Bankers across India. Work with Subject-Matter-Experts who are experts in YOUR industry.
               </p>
               <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">HIRE:</strong> Experienced & SEBI Registered Experts like CA, CS, Auditors, Ind. Directors, CFO, Merchant Bankers...
-              </p>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">MATCHMAKING:</strong> Experts can join our platform of Subject Matter Experts to connect to "New Clients", win New Projects, offer consulting and grow your IPO Consulting Business.
+                <strong className="text-[#003366]">MATCHMAKING:</strong> Experts can join our platform to win New Clients, New Projects, and offer short term consulting across India.
               </p>
             </div>
             
