@@ -11,6 +11,7 @@ import {
   Scale
 } from "lucide-react";
 import ContactLeadDialog from "@/components/ContactLeadDialog";
+import WaveDotsBackground from "@/components/WaveDotsBackground";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -82,6 +83,16 @@ const LandingPage = () => {
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-0 left-0 w-full h-full" 
              style={{backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,51,102,0.05) 1px, transparent 0)', backgroundSize: '40px 40px'}} />
+      </div>
+
+      {/* Animated wave-dot data-stream — half the viewport width, 3/4 height, offset to the right */}
+      <div
+        className="pointer-events-none absolute top-0 right-0 hidden lg:block"
+        style={{ width: "55%", height: "75%", zIndex: 0 }}
+        aria-hidden="true"
+        data-testid="landing-wave-bg"
+      >
+        <WaveDotsBackground />
       </div>
 
       {/* Top Navigation */}
