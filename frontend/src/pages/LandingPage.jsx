@@ -106,6 +106,7 @@ const LandingPage = () => {
           <span className="text-xl font-bold text-[#003366] tracking-tight">IPO Labs</span>
         </div>
         <div className="flex items-center gap-6">
+          <button onClick={() => navigate("/advisors")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-advisors">Advisors</button>
           <button onClick={() => navigate("/resources")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-resources">Resources</button>
           <button onClick={() => navigate("/pricing")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-pricing">Pricing</button>
           <button onClick={() => navigate("/disclaimer")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-disclaimer">Disclaimer</button>

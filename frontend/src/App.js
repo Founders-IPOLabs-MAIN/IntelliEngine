@@ -49,6 +49,7 @@ import ValuationModule from "@/pages/ValuationModule";
 import ValuationWizard from "@/pages/ValuationWizard";
 import ValuationResults from "@/pages/ValuationResults";
 import ResourcesPage from "@/pages/ResourcesPage";
+import AdvisorsPage from "@/pages/AdvisorsPage";
 import PricingPage from "@/pages/PricingPage";
 import DisclaimerPage from "@/pages/DisclaimerPage";
 import AboutPage from "@/pages/AboutPage";
@@ -268,6 +269,7 @@ const AppRouter = () => {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/resources" element={<ResourcesPage />} />
+      <Route path="/advisors" element={<AdvisorsPage />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/disclaimer" element={<DisclaimerPage />} />
       <Route path="/about" element={<AboutPage />} />
