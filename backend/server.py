@@ -6068,6 +6068,10 @@ async def get_command_center_data(
             "project_id": project.get("project_id"),
             "company_name": project.get("company_name"),
             "sector": project.get("sector"),
+            "board_type": project.get("board_type"),
+            "exchange": project.get("exchange"),
+            "issue_type": project.get("issue_type"),
+            "user_login_type": project.get("user_login_type"),
             "target_filing_date": "2026-12-31"
         },
         "kpi_ribbon": {

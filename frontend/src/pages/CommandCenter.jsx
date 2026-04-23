@@ -163,9 +163,16 @@ const CommandCenter = ({ user, apiClient }) => {
             ))}
           </div>
 
-          {/* DRHP Output Modules - Main Board and SME Board */}
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          {/* DRHP Output Modules - Show only the selected board (falls back to both when unset) */}
+          {(() => {
+            const boardRaw = (project?.board_type || "").toLowerCase();
+            const showMainBoard = !boardRaw || boardRaw === "main board" || boardRaw === "mainboard";
+            const showSME = !boardRaw || boardRaw === "sme";
+            const gridCols = showMainBoard && showSME ? "grid-cols-2" : "grid-cols-1";
+            return (
+          <div className={`grid ${gridCols} gap-6 mb-6`}>
             {/* Main Board DRHP Output */}
+            {showMainBoard && (
             <button
               onClick={() => navigate(`/project/${projectId}/drhp-output?board=mainboard`)}
               className="flex items-center justify-between p-5 rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-lg hover:border-blue-300 transition-all group"
@@ -187,8 +194,10 @@ const CommandCenter = ({ user, apiClient }) => {
                 <ChevronRight className="w-5 h-5 text-blue-500" />
               </div>
             </button>
+            )}
 
             {/* SME Board DRHP Output */}
+            {showSME && (
             <button
               onClick={() => navigate(`/project/${projectId}/drhp-output?board=sme`)}
               className="flex items-center justify-between p-5 rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 hover:shadow-lg hover:border-emerald-300 transition-all group"
@@ -210,7 +219,10 @@ const CommandCenter = ({ user, apiClient }) => {
                 <ChevronRight className="w-5 h-5 text-emerald-500" />
               </div>
             </button>
+            )}
           </div>
+            );
+          })()}
         </div>
       </main>
     </div>
