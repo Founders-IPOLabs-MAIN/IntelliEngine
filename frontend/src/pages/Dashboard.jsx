@@ -98,23 +98,6 @@ const Dashboard = ({ user, apiClient }) => {
 
         {/* Main Content - Flex grow to fill space */}
         <div className="flex-1 p-8 flex flex-col">
-          {/* Welcome Banner */}
-          <Card className="border border-border bg-gradient-to-r from-white to-gray-50 mb-6">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#1DA1F2] rounded-2xl flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold tracking-tight text-black">
-                    SETU Platform
-                  </h2>
-                  <p className="text-sm text-muted-foreground">by IPO Labs - Your complete IPO readiness solution</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Modules Grid - 2x2 with larger cards */}
           <div className="flex-1 flex flex-col">
             <h3 className="text-lg font-semibold tracking-tight text-black mb-4">Platform Modules</h3>
