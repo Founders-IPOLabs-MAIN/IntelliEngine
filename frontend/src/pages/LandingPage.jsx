@@ -185,7 +185,7 @@ const LandingPage = () => {
           <div className="flex flex-col gap-5 h-full">
             {/* Corporate Video Placeholder — rectangular, top-aligns with H1 / bottom-aligns with bullets */}
             <div
-              className="relative flex-1 min-h-[380px] rounded-[28px] overflow-hidden bg-gradient-to-br from-[#001a33] via-[#003366] to-[#002244] shadow-2xl shadow-[#003366]/20 group cursor-pointer"
+              className="relative flex-1 min-h-[316px] rounded-[28px] overflow-hidden bg-gradient-to-br from-[#001a33] via-[#003366] to-[#002244] shadow-2xl shadow-[#003366]/20 group cursor-pointer"
               data-testid="landing-corporate-video-placeholder"
               title="Corporate video — upload coming soon"
             >
@@ -236,34 +236,35 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* Compact Module Buttons — smaller, single row, 5 across */}
-            <div className="grid grid-cols-5 gap-2.5" data-testid="landing-compact-modules">
+            {/* Compact Module Buttons — enlarged, cycling dark-blue border animation */}
+            <div className="grid grid-cols-5 gap-3" data-testid="landing-compact-modules">
               {modules.map((module, index) => (
                 <button
                   key={module.id}
                   onClick={() => navigate(module.path)}
-                  className={`group relative p-2.5 rounded-2xl bg-white border border-gray-200
-                              hover:border-[#00D1FF] hover:shadow-lg hover:-translate-y-0.5
-                              transition-all duration-200 text-center overflow-hidden
+                  className={`module-cycle-border group relative p-4 rounded-2xl bg-white border-2
+                              hover:shadow-xl hover:-translate-y-0.5
+                              transition-transform duration-200 text-center overflow-hidden
                               ${shimmerIndex === index ? 'shimmer-active' : ''}`}
+                  style={{ animationDelay: `${index * 0.4}s` }}
                   data-testid={`landing-module-${module.id}`}
                   title={`${module.title} — ${module.description}`}
                 >
-                  <div className={`w-9 h-9 ${module.iconBg} rounded-xl flex items-center justify-center mx-auto mb-1.5`}>
+                  <div className={`w-12 h-12 ${module.iconBg} rounded-xl flex items-center justify-center mx-auto mb-2 relative`}>
                     {module.hasProgress ? (
-                      <div className="relative w-7 h-7">
-                        <svg className="w-7 h-7 transform -rotate-90">
-                          <circle cx="14" cy="14" r="11" stroke="#e5e7eb" strokeWidth="2.5" fill="none" />
-                          <circle cx="14" cy="14" r="11" stroke="#00D1FF" strokeWidth="2.5" fill="none"
-                                  strokeDasharray="69.1" strokeDashoffset="17" strokeLinecap="round" />
+                      <div className="relative w-10 h-10">
+                        <svg className="w-10 h-10 transform -rotate-90">
+                          <circle cx="20" cy="20" r="16" stroke="#e5e7eb" strokeWidth="3" fill="none" />
+                          <circle cx="20" cy="20" r="16" stroke="#00D1FF" strokeWidth="3" fill="none"
+                                  strokeDasharray="100.53" strokeDashoffset="25" strokeLinecap="round" />
                         </svg>
-                        <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-[#00D1FF]">75</span>
+                        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-[#00D1FF]">75</span>
                       </div>
                     ) : (
-                      <module.icon className={`w-4 h-4 ${module.iconColor}`} />
+                      <module.icon className={`w-6 h-6 ${module.iconColor}`} />
                     )}
                   </div>
-                  <p className="text-[11px] font-semibold text-[#003366] leading-tight group-hover:text-[#00D1FF] transition-colors line-clamp-2">
+                  <p className="text-xs font-semibold text-[#003366] leading-tight group-hover:text-[#00D1FF] transition-colors line-clamp-2">
                     {module.title.replace("The ", "")}
                   </p>
                 </button>
@@ -409,6 +410,28 @@ const LandingPage = () => {
         }
         .animate-slide-up {
           animation: slide-up 0.5s ease-out;
+        }
+
+        /* Cycling dark-blue border for module buttons (logo navy family) */
+        @keyframes module-border-cycle {
+          0%   { border-color: #003366; box-shadow: 0 0 0 0 rgba(0, 51, 102, 0.00); }
+          20%  { border-color: #0052A3; box-shadow: 0 0 0 3px rgba(0, 82, 163, 0.18); }
+          40%  { border-color: #00D1FF; box-shadow: 0 0 0 3px rgba(0, 209, 255, 0.18); }
+          60%  { border-color: #1E40AF; box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.18); }
+          80%  { border-color: #002244; box-shadow: 0 0 0 2px rgba(0, 34, 68, 0.15); }
+          100% { border-color: #003366; box-shadow: 0 0 0 0 rgba(0, 51, 102, 0.00); }
+        }
+        .module-cycle-border {
+          border-color: #003366;
+          animation: module-border-cycle 2.4s ease-in-out infinite;
+        }
+        .module-cycle-border:hover {
+          animation-play-state: paused;
+          border-color: #00D1FF !important;
+          box-shadow: 0 10px 24px -6px rgba(0, 209, 255, 0.35) !important;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .module-cycle-border { animation: none; border-color: #003366; }
         }
       `}</style>
 
