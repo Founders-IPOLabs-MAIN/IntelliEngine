@@ -103,18 +103,38 @@ const MatchMakingLanding = ({ user, apiClient }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 pointer-events-none" />
 
         <div className="relative z-10 min-h-screen flex flex-col">
-          {/* ── FIVERR-STYLE HERO ── */}
-          <section className="px-8 lg:px-16 pt-16 lg:pt-24 pb-8 max-w-5xl" data-testid="matchmaker-hero">
-            <p className="text-[11px] tracking-[0.22em] uppercase text-[#00D1FF] font-semibold mb-4 flex items-center gap-2">
-              <span className="w-8 h-px bg-[#00D1FF]" /> The Match-Making Platform
-            </p>
+          {/* ── STICKY PAGE HEADER ── */}
+          <header
+            className="sticky top-0 z-20 backdrop-blur-md bg-black/35 border-b border-white/10 px-8 lg:px-16 py-4 flex items-center justify-between"
+            data-testid="matchmaker-top-header"
+          >
             <h1
+              className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white"
+              style={{ letterSpacing: "-0.02em" }}
+              data-testid="matchmaker-header-title"
+            >
+              The Match-Making Platform
+            </h1>
+            <button
+              onClick={() => navigate("/matchmaker/experts/register")}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold text-sm lg:text-base px-5 lg:px-7 py-2.5 lg:py-3 rounded-full shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all"
+              data-testid="btn-register-as-expert"
+            >
+              <Briefcase className="w-4 h-4 lg:w-5 lg:h-5" />
+              Register as an Expert
+              <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
+            </button>
+          </header>
+
+          {/* ── FIVERR-STYLE HERO ── */}
+          <section className="px-8 lg:px-16 pt-12 lg:pt-16 pb-8 max-w-5xl" data-testid="matchmaker-hero">
+            <h2
               className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08]"
               data-testid="matchmaker-hero-h1"
             >
               Looking for Experts or<br className="hidden sm:block" /> Planning your IPO journey?{" "}
               <span className="text-[#00D1FF]">Look no further.</span>
-            </h1>
+            </h2>
             <p className="mt-5 text-white/75 text-base lg:text-lg leading-relaxed max-w-2xl">
               Connect with India's most trusted IPO advisors, compliance experts and legal counsel &mdash; all under one roof.
             </p>
