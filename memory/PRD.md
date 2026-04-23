@@ -21,6 +21,15 @@
 - New admin endpoints: `PATCH /api/contact/leads/{lead_id}` (status update) and `DELETE /api/contact/leads/{lead_id}`
 - **DRHP Builder access for admins**: Sidebar & Dashboard now route admins directly to `/drhp` (real builder) instead of `/drhp1` (Coming Soon). Non-admin users still see Coming Soon. Verified with ronraj2312@gmail.com — 3 existing projects load successfully.
 - **IPO Funding access for admins**: Same admin-bypass treatment — Sidebar & Dashboard route admins to `/funding` (real IPO Funding Engine with Pre-IPO / Post-IPO / Partners / Eligibility Quiz) instead of `/funding1` Coming Soon. Verified live.
+- **Document Repository + Project Audit Log** in Command Center:
+  - 2 new buttons in every project's Command Center (Document Repository + Project Audit Log)
+  - Document Repository seeded from SEBI Detailed DRHP Checklist (14 categories, ~94 items)
+  - Per-line Upload / Re-Upload / Delete + inline Add line / Remove line controls
+  - File validation: PDF, Word (.doc/.docx), Images only; max 5MB — returns 413/415 with actionable messages
+  - AlertDialog "Are you sure?" Yes/No confirmation for Re-Upload and Delete
+  - `project_audit_logs` collection records user email, user_id, name, IP, user agent, action, module, details, timestamp
+  - New backend endpoints: `GET/POST/DELETE /api/projects/{id}/document-repository[/items[/{id}[/upload|/file|/download]]]`, `GET /api/projects/{id}/audit-log`
+  - `drhp_checklist_seed.py` — static SEBI checklist with all 14 categories & item metadata
 - **DRHP Builder user profile selector**: New `/drhp` landing shows 3 profile cards — **Merchant Banker**, **Company**, **CA Firm** (light-color rectangular cards with distinct icons/accents). Clicking any routes to `/drhp/:userLoginType` which renders the identical DRHP Builder workflow scoped to that profile.
 - **New DRHP Project dialog** now captures 3 additional classification fields:
   - **Board Type**: SME · Main Board

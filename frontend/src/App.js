@@ -11,6 +11,8 @@ import Dashboard from "@/pages/Dashboard";
 import DRHPBuilder from "@/pages/DRHPBuilder";
 import DRHPLandingPage from "@/pages/DRHPLandingPage";
 import DRHPUserTypeSelector from "@/pages/DRHPUserTypeSelector";
+import DocumentRepository from "@/pages/DocumentRepository";
+import ProjectAuditLog from "@/pages/ProjectAuditLog";
 import DRHPSection from "@/pages/DRHPSection";
 import DRHPContent from "@/pages/DRHPContent";
 import SectionEditor from "@/pages/SectionEditor";
@@ -285,6 +287,22 @@ const AppRouter = () => {
         element={
           <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <CommandCenter user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/document-repository"
+        element={
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
+            {({ user, apiClient }) => <DocumentRepository user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/audit-log"
+        element={
+          <ModuleRoute requiredModule="drhp" showFooter={false}>
+            {({ user, apiClient }) => <ProjectAuditLog user={user} apiClient={apiClient} />}
           </ModuleRoute>
         }
       />

@@ -11,7 +11,9 @@ import {
   Building2,
   Landmark,
   Eye,
-  Download
+  Download,
+  FolderOpen,
+  ScrollText
 } from "lucide-react";
 
 const CommandCenter = ({ user, apiClient }) => {
@@ -223,6 +225,53 @@ const CommandCenter = ({ user, apiClient }) => {
           </div>
             );
           })()}
+
+          {/* Project-scoped Operational Tools */}
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            <button
+              onClick={() => navigate(`/project/${projectId}/document-repository`)}
+              className="flex items-center justify-between p-5 rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50 hover:shadow-lg hover:border-indigo-300 transition-all group"
+              data-testid="cc-document-repository-btn"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                  <FolderOpen className="w-7 h-7 text-white" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-gray-900">Document Repository</h3>
+                  <p className="text-sm text-gray-600">Upload &amp; track SEBI DRHP checklist documents</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200">
+                  PDF · Word · Image
+                </Badge>
+                <ChevronRight className="w-5 h-5 text-indigo-500" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => navigate(`/project/${projectId}/audit-log`)}
+              className="flex items-center justify-between p-5 rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50 hover:shadow-lg hover:border-purple-300 transition-all group"
+              data-testid="cc-audit-log-btn"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                  <ScrollText className="w-7 h-7 text-white" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-gray-900">Project Audit Log</h3>
+                  <p className="text-sm text-gray-600">Track every user action scoped to this project</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-purple-100 text-purple-700 border-purple-200">
+                  Scoped
+                </Badge>
+                <ChevronRight className="w-5 h-5 text-purple-500" />
+              </div>
+            </button>
+          </div>
         </div>
       </main>
     </div>
