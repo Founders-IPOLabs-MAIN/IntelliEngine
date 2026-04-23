@@ -182,10 +182,10 @@ const LandingPage = () => {
           </div>
 
           {/* Right Side — Corporate Video + Compact Modules */}
-          <div className="flex flex-col gap-5 h-full">
-            {/* Corporate Video Placeholder — rectangular, top-aligns with H1 / bottom-aligns with bullets */}
+          <div className="flex flex-col-reverse gap-5 h-full" data-testid="landing-right-column">
+            {/* Corporate Video Placeholder — now BELOW the modules */}
             <div
-              className="relative flex-1 min-h-[316px] rounded-[28px] overflow-hidden bg-gradient-to-br from-[#001a33] via-[#003366] to-[#002244] shadow-2xl shadow-[#003366]/20 group cursor-pointer"
+              className="relative flex-1 min-h-[252px] rounded-[28px] overflow-hidden bg-gradient-to-br from-[#001a33] via-[#003366] to-[#002244] shadow-2xl shadow-[#003366]/20 group cursor-pointer"
               data-testid="landing-corporate-video-placeholder"
               title="Corporate video — upload coming soon"
             >
@@ -236,13 +236,13 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* Compact Module Buttons — enlarged, cycling dark-blue border animation */}
+            {/* Module Buttons — enlarged further, now sit ABOVE the video */}
             <div className="grid grid-cols-5 gap-3" data-testid="landing-compact-modules">
               {modules.map((module, index) => (
                 <button
                   key={module.id}
                   onClick={() => navigate(module.path)}
-                  className={`module-cycle-border group relative p-4 rounded-2xl bg-white border-2
+                  className={`module-cycle-border group relative p-5 rounded-2xl bg-white border-2
                               hover:shadow-xl hover:-translate-y-0.5
                               transition-transform duration-200 text-center overflow-hidden
                               ${shimmerIndex === index ? 'shimmer-active' : ''}`}
@@ -250,21 +250,21 @@ const LandingPage = () => {
                   data-testid={`landing-module-${module.id}`}
                   title={`${module.title} — ${module.description}`}
                 >
-                  <div className={`w-12 h-12 ${module.iconBg} rounded-xl flex items-center justify-center mx-auto mb-2 relative`}>
+                  <div className={`w-14 h-14 ${module.iconBg} rounded-2xl flex items-center justify-center mx-auto mb-3 relative`}>
                     {module.hasProgress ? (
-                      <div className="relative w-10 h-10">
-                        <svg className="w-10 h-10 transform -rotate-90">
-                          <circle cx="20" cy="20" r="16" stroke="#e5e7eb" strokeWidth="3" fill="none" />
-                          <circle cx="20" cy="20" r="16" stroke="#00D1FF" strokeWidth="3" fill="none"
-                                  strokeDasharray="100.53" strokeDashoffset="25" strokeLinecap="round" />
+                      <div className="relative w-12 h-12">
+                        <svg className="w-12 h-12 transform -rotate-90">
+                          <circle cx="24" cy="24" r="19" stroke="#e5e7eb" strokeWidth="3" fill="none" />
+                          <circle cx="24" cy="24" r="19" stroke="#00D1FF" strokeWidth="3" fill="none"
+                                  strokeDasharray="119.38" strokeDashoffset="30" strokeLinecap="round" />
                         </svg>
-                        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-[#00D1FF]">75</span>
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#00D1FF]">75</span>
                       </div>
                     ) : (
-                      <module.icon className={`w-6 h-6 ${module.iconColor}`} />
+                      <module.icon className={`w-7 h-7 ${module.iconColor}`} />
                     )}
                   </div>
-                  <p className="text-xs font-semibold text-[#003366] leading-tight group-hover:text-[#00D1FF] transition-colors line-clamp-2">
+                  <p className="text-sm font-semibold text-[#003366] leading-tight group-hover:text-[#00D1FF] transition-colors line-clamp-2">
                     {module.title.replace("The ", "")}
                   </p>
                 </button>
