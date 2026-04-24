@@ -19,6 +19,7 @@
   - Frontend `/account` route restricted to admin users
   - Sidebar hides Admin Center / Account Details for non-admins
   - Test suite: `/app/backend/tests/test_admin_access_restriction.py` (8 tests, 100% pass)
+- **Dashboard Redesign**: Full-page video background (user-provided flowing animation), "Build your IPO Journey with us" hero header, compact glass-morphism module cards (Fiverr/matchmaker-style), dark navy gradient overlay
 
 ### Changelog — Apr 21, 2026
 - AboutPage.jsx: swapped section order — Meet the Founders now sits above Origin Story
