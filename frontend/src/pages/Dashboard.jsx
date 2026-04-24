@@ -155,9 +155,9 @@ const Dashboard = ({ user, apiClient }) => {
             </p>
           </section>
 
-          {/* Module Cards — compact, left-aligned with sidebar */}
-          <section className="px-8 pb-6" data-testid="dashboard-modules">
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl">
+          {/* Module Cards — grow to fill available space */}
+          <section className="px-8 pb-6 flex-1 flex flex-col" data-testid="dashboard-modules">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl flex-1">
               {MODULES.map((mod) => {
                 const Icon = mod.icon;
                 return (
@@ -175,16 +175,16 @@ const Dashboard = ({ user, apiClient }) => {
                     }}
                     data-testid={mod.testid}
                   >
-                    <CardContent className="p-4 flex flex-col h-full">
+                    <CardContent className="p-5 flex flex-col h-full">
                       <div
-                        className={`w-10 h-10 rounded-lg bg-gradient-to-br ${mod.iconGrad} flex items-center justify-center mb-3 shadow group-hover:scale-105 transition-transform`}
+                        className={`w-11 h-11 rounded-lg bg-gradient-to-br ${mod.iconGrad} flex items-center justify-center mb-4 shadow group-hover:scale-105 transition-transform`}
                       >
                         <Icon className="w-5 h-5 text-white" />
                       </div>
-                      <h3 className="text-sm font-bold text-black leading-snug mb-1">
+                      <h3 className="text-sm font-bold text-black leading-snug mb-2">
                         {mod.title}
                       </h3>
-                      <p className="text-[11px] text-gray-500 leading-relaxed mb-3 flex-1">
+                      <p className="text-xs text-gray-500 leading-relaxed mb-4 flex-1">
                         {mod.desc}
                       </p>
                       <div
@@ -200,8 +200,8 @@ const Dashboard = ({ user, apiClient }) => {
             </div>
           </section>
 
-          {/* Copyright — right-aligned, pinned to bottom */}
-          <footer className="mt-auto px-8 pb-4 flex justify-end">
+          {/* Copyright — far right */}
+          <footer className="px-8 pb-4 flex justify-end pr-12">
             <span className="text-[11px] text-gray-400">
               &copy; 2026 IPO Labs Private Limited
             </span>
