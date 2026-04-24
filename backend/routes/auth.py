@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Request, Response, Body
 from shared import (db, limiter, logger, User, get_current_user, is_master_admin,
-    CENTRAL_ADMIN_EMAILS, DEFAULT_MODULE_PERMISSIONS, hash_password, verify_password,
+    is_approved_admin, CENTRAL_ADMIN_EMAILS, DEFAULT_MODULE_PERMISSIONS, hash_password, verify_password,
     promote_new_user, SessionRequest, EmailAuthRequest,
     datetime, timezone, timedelta, uuid)
 import httpx
@@ -96,8 +96,8 @@ async def get_me(request: Request, user: User = Depends(get_current_user)):
     data = user.model_dump()
     if not data.get("module_permissions"):
         data["module_permissions"] = DEFAULT_MODULE_PERMISSIONS.copy()
-    is_admin = data.get("role") in ["admin", "super_admin", "master_admin", "Admin", "Super Admin"] or is_master_admin(data.get("email", ""))
-    data["is_admin"] = is_admin
+    # Admin access: only users in Admin tab (user_type=internal, admin roles, or CENTRAL_ADMIN_EMAILS)
+    data["is_admin"] = is_approved_admin(user)
 
     # Get login_role from session
     session_token = request.cookies.get("session_token")
@@ -197,7 +197,8 @@ async def register_email(request: Request, data: dict = Body(...), response: Res
     return {
         "user": {
             "user_id": user_id, "email": email, "name": user_name,
-            "role": user_role, "picture": user_picture
+            "role": user_role, "picture": user_picture,
+            "is_admin": False
         },
         "session_token": session_token
     }
@@ -350,11 +351,16 @@ async def login_email(request: Request, data: dict = Body(...), response: Respon
     # Validate login_role against actual user role
     user_role = user.get("role", "Editor").lower().replace(" ", "_")
     user_type = user.get("user_type", "existing_user")
-    is_admin_user = user_role in ["admin", "super_admin", "master_admin"] or is_master_admin(email)
+
+    # Admin access: only users in Admin tab (user_type=internal, admin roles, or CENTRAL_ADMIN_EMAILS)
+    is_internal = user.get("user_type") == "internal"
+    has_admin_role = user_role in ["admin", "super_admin", "master_admin"]
+    is_central = is_master_admin(email)
+    is_admin_user = is_internal or has_admin_role or is_central
 
     if login_role == "admin":
         if not is_admin_user:
-            raise HTTPException(status_code=403, detail="This account does not have admin access. Please use a different login option.")
+            raise HTTPException(status_code=403, detail="This account does not have admin access. Only approved administrators can sign in here.")
     elif login_role == "employee":
         if user_type != "employee" and not is_admin_user:
             raise HTTPException(status_code=403, detail="This account is not registered as an employee. Please contact your admin.")
@@ -381,7 +387,8 @@ async def login_email(request: Request, data: dict = Body(...), response: Respon
         "user": {
             "user_id": user["user_id"], "email": user["email"], "name": user.get("name", ""),
             "role": user.get("role", "Editor"), "picture": user.get("picture"),
-            "user_type": user_type, "login_role": login_role
+            "user_type": user_type, "login_role": login_role,
+            "is_admin": is_admin_user
         },
         "session_token": session_token
     }

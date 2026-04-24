@@ -433,9 +433,13 @@ async def admin_login(request: Request, data: EmailAuthRequest, response: Respon
     if not admin_user:
         raise HTTPException(status_code=401, detail="Invalid admin credentials")
 
-    admin_roles = ["admin", "super_admin", "master_admin", "Admin", "Super Admin"]
-    if admin_user.get("role") not in admin_roles:
-        raise HTTPException(status_code=403, detail="This account does not have admin privileges")
+    # Hard rule: only users in Admin tab (user_type=internal, admin roles, or CENTRAL_ADMIN_EMAILS)
+    role_lower = (admin_user.get("role") or "").lower().replace(" ", "_")
+    is_internal = admin_user.get("user_type") == "internal"
+    has_admin_role = role_lower in ["admin", "super_admin", "master_admin"]
+    is_central = is_master_admin(email)
+    if not (is_internal or has_admin_role or is_central):
+        raise HTTPException(status_code=403, detail="This account does not have admin privileges. Only approved administrators can sign in here.")
 
     if not admin_user.get("password_hash"):
         raise HTTPException(status_code=401, detail="Admin password not set. Contact support.")

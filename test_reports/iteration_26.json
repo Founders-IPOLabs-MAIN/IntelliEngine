@@ -1,0 +1,63 @@
+{
+  "summary": "Admin access restriction feature validated. Backend tests: 8/8 passed (admin login/non-admin rejection for login_role=admin, is_admin flag on /auth/me, RBAC on /admin/users, /account/profile). Frontend verified: admin user (ronraj2312@gmail.com) sees Admin Center & Account Details in sidebar; non-admin user sidebar hides those links; /account redirects unauthenticated users to /login. One minor UX issue found.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "LoginForm (Internal Access / Admins)", "issue": "When non-admin user attempts admin login, backend returns 403 with detail 'This account does not have admin access. Only approved administrators can sign in here.' but UI only displays a generic 'Connection error' message. The specific error detail should be shown to the user.", "selector": ".text-red, error text under password input", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": {
+    "backend": [
+      "TestAdminLogin::test_admin_login_role_admin_succeeds - POST /api/auth/login login_role=admin for ronraj2312@gmail.com -> 200, is_admin=true",
+      "TestAdminLogin::test_non_admin_login_role_admin_rejected - POST /api/auth/login login_role=admin for random_test_user_999 -> 403",
+      "TestAdminLogin::test_non_admin_login_existing_user_succeeds - POST /api/auth/login login_role=existing_user for regular -> 200, is_admin=false",
+      "TestAuthMe::test_me_admin_is_admin_true - GET /api/auth/me for admin -> is_admin=true",
+      "TestAuthMe::test_me_regular_is_admin_false - GET /api/auth/me for regular -> is_admin=false",
+      "TestAdminUsersEndpoint::test_admin_can_list_users - GET /api/admin/users (admin) -> 200",
+      "TestAdminUsersEndpoint::test_regular_cannot_list_users - GET /api/admin/users (regular) -> 403",
+      "TestAccountProfile::test_admin_can_access_profile - GET /api/account/profile (admin) -> 200"
+    ],
+    "frontend": [
+      "Admin login via Internal Access > Admins panel succeeds, redirects to /dashboard",
+      "Admin sidebar shows data-testid=nav-admin (Admin Center) and data-testid=nav-account (Account Details)",
+      "Clicking Admin Center navigates to /admin and renders Admin Center UI (Operations/Module Access/Admin/Employees tabs visible)",
+      "Clicking Account Details navigates to /account (not blocked for admin)",
+      "Logout via user-menu-trigger + logout-btn works and redirects to /login",
+      "Direct navigation to /account for unauthenticated regular user redirects to /login (ProtectedRoute guard enforced)"
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_admin_access_restriction.py",
+    "/app/test_reports/pytest/admin_access_restriction.xml"
+  ],
+  "action_items": [
+    "[LOW] Improve error message surfacing on Login form (Internal Access > Admins): display backend's 403 detail message ('This account does not have admin access...') instead of generic 'Connection error' when non-admin tries admin login."
+  ],
+  "critical_code_review_comments": [
+    "routes/admin.py redefines require_admin and require_super_admin locally (lines 38-48), shadowing the versions imported from shared.py. The shadowed require_admin in admin.py uses role-only checks and does NOT call is_approved_admin()/check user_type=='internal'. This is currently OK because CENTRAL_ADMIN_EMAILS are auto-promoted to master_admin role, but it is inconsistent with shared.is_approved_admin() which also accepts user_type='internal' without an admin role. A plain 'internal' user without admin role would be rejected by routes/admin.py's local require_admin. Recommend removing the local overrides in routes/admin.py and relying on the shared import.",
+    "routes/admin.py also redefines log_audit_action locally (lines 51-63) - duplicated logic. Remove in favor of shared.log_audit_action import.",
+    "routes/auth.py redefines hash_password/verify_password locally (lines 128-132) even though they are already imported from shared.py. Remove duplicates.",
+    "Frontend login error handling: when API returns 403 with a detail message, the UI collapses all errors into a generic 'Connection error'. Wire the response.data.detail into the form error state."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_admin_access_restriction.py (new pytest suite for admin access restriction feature)"
+  ],
+  "success_rate": {
+    "backend": "100% (8/8)",
+    "frontend": "~90% (admin flow fully verified; non-admin sidebar hiding verified by count=0 assertion in automated run; non-admin login form UX uses generic error)"
+  },
+  "test_credentials": {
+    "admin": "ronraj2312@gmail.com / Admin123",
+    "regular_user": "random_test_user_999@example.com / test123456 (auto-created via /auth/register if missing)"
+  },
+  "seed_data_creation": "Created regular user random_test_user_999@example.com via POST /api/auth/register (idempotent in test fixture).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Feature fully working at API level (8/8 pytest). Admin access restriction uses shared.is_approved_admin() which accepts: user_type=='internal' OR role in [admin, super_admin, master_admin] OR email in CENTRAL_ADMIN_EMAILS. login_role='admin' in POST /api/auth/login enforces this. Minor UX gap: frontend login form shows 'Connection error' instead of the backend 403 detail text when non-admin tries admin login. routes/admin.py has duplicate local definitions of require_admin/require_super_admin/log_audit_action that shadow shared.py imports - consider cleanup (non-blocking).",
+  "rca of the issue": "N/A - no blocking issue. The feature is implemented correctly end-to-end. is_approved_admin() in shared.py correctly gates admin access. Frontend Sidebar.jsx correctly conditionally renders Admin Center and Account Details using user.is_admin. ProtectedRoute fetches /auth/me on every render to get fresh is_admin. Only gap is cosmetic error message display on failed admin login from non-admin."
+}

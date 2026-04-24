@@ -131,20 +131,20 @@ const ProtectedRoute = ({ children, showFooter = true }) => {
   const [user, setUser] = useState(location.state?.user || null);
 
   useEffect(() => {
-    if (location.state?.user) {
-      setUser(location.state.user);
-      setIsAuthenticated(true);
-      return;
-    }
-
     const checkAuth = async () => {
       try {
         const response = await apiClient.get("/auth/me");
         setUser(response.data);
         setIsAuthenticated(true);
       } catch (error) {
-        setIsAuthenticated(false);
-        navigate("/login");
+        // If auth/me fails but we have location state, try using that
+        if (location.state?.user) {
+          setUser(location.state.user);
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          navigate("/login");
+        }
       }
     };
 
@@ -556,7 +556,19 @@ const AppRouter = () => {
         path="/account"
         element={
           <ProtectedRoute>
-            {({ user, apiClient }) => <AccountDetails user={user} apiClient={apiClient} />}
+            {({ user, apiClient }) => {
+              if (!user?.is_admin) {
+                return (
+                  <div className="min-h-screen flex items-center justify-center bg-white">
+                    <div className="text-center">
+                      <h2 className="text-xl font-semibold text-gray-800 mb-2">Access Restricted</h2>
+                      <p className="text-gray-500">Only approved administrators can access Account Details.</p>
+                    </div>
+                  </div>
+                );
+              }
+              return <AccountDetails user={user} apiClient={apiClient} />;
+            }}
           </ProtectedRoute>
         }
       />

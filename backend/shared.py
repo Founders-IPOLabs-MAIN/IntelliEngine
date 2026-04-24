@@ -225,6 +225,7 @@ class User(BaseModel):
     role: str = "Editor"
     company_id: Optional[str] = None
     module_permissions: Optional[dict] = None
+    user_type: Optional[str] = None
     created_at: datetime
 
 
@@ -377,8 +378,18 @@ async def ensure_master_admin_exists():
                 )
 
 
+def is_approved_admin(user: User) -> bool:
+    """Check if user is an approved admin (appears in Admin tab of Admin Center).
+    Only users with user_type='internal' or in CENTRAL_ADMIN_EMAILS can access admin features."""
+    role_lower = (user.role or "").lower().replace(" ", "_")
+    has_admin_role = role_lower in ["admin", "super_admin", "master_admin"]
+    is_internal = user.user_type == "internal"
+    is_central = is_master_admin(user.email)
+    return is_internal or has_admin_role or is_central
+
+
 async def require_admin(user: User = Depends(get_current_user)):
-    if user.role not in ["admin", "super_admin", "Admin", "Super Admin", "master_admin"]:
+    if not is_approved_admin(user):
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
