@@ -6,171 +6,118 @@
 **Platform Type:** Cloud-hosted & secure IPO-readiness platform  
 **Target Market:** Indian market  
 **Date Started:** Feb 17, 2026
-**Last Updated:** Apr 21, 2026
+**Last Updated:** Apr 24, 2026
+
+### Changelog — Apr 24, 2026
+- **Major Backend Refactoring Complete**: Monolithic `server.py` (8,328 lines) split into 16 modular route files under `/app/backend/routes/`. Zero behavior changes — all endpoints identical.
+- New `shared.py` (586 lines) containing all shared DB connections, models, auth helpers, config constants
+- New slim `server.py` (153 lines) as thin orchestrator using `include_router()`
+- Regression test suite created: `/app/backend/tests/test_refactor_endpoints.py` (34 tests, 100% pass)
+- Eliminates function-name-shadowing bugs permanently (root cause of previous 500 error in assessment module)
 
 ### Changelog — Apr 21, 2026
-- AboutPage.jsx: swapped section order — **Meet the Founders now sits above Origin Story**
-- Rewrote Origin Story narrative ("A Tech Founder and a financial whiz…")
-- Global font scale bumped +2 across About page; Founders section scaled +4 total (names `text-2xl`, bios `text-base`)
-- Tightened vertical whitespace (section `py-10/12` → `py-8`)
-- **Contact Sales & Contact Support buttons** on LandingPage now open a unified lead-gen dialog
-- New component `ContactLeadDialog.jsx` — Full Name / Mobile / Email (required) + 5-module dropdown (optional: Free IPO Assessment, DRHP Builder, IPO Funding, Match-Making Platform, Business Valuation) + query textarea
-- New backend endpoint `POST /api/contact/lead` — stores to `contact_leads` collection with `recipient: founders@ipo-labs.com`; ready to dispatch via Resend once API key is set (currently MOCKED, leads still captured)
-- New admin endpoint `GET /api/contact/leads` for listing submissions
-- **New "Contact Leads" tab in AdminCenter** — filters by type (sales/support) and status (new/contacted/closed), search by name/email/mobile, per-row status dropdown, view dialog, delete, stats strip
-- New admin endpoints: `PATCH /api/contact/leads/{lead_id}` (status update) and `DELETE /api/contact/leads/{lead_id}`
-- **DRHP Builder access for admins**: Sidebar & Dashboard now route admins directly to `/drhp` (real builder) instead of `/drhp1` (Coming Soon). Non-admin users still see Coming Soon. Verified with ronraj2312@gmail.com — 3 existing projects load successfully.
-- **IPO Funding access for admins**: Same admin-bypass treatment — Sidebar & Dashboard route admins to `/funding` (real IPO Funding Engine with Pre-IPO / Post-IPO / Partners / Eligibility Quiz) instead of `/funding1` Coming Soon. Verified live.
-- **Document Repository + Project Audit Log** in Command Center:
-  - 2 new buttons in every project's Command Center (Document Repository + Project Audit Log)
-  - Document Repository seeded from SEBI Detailed DRHP Checklist (14 categories, ~94 items)
-  - Per-line Upload / Re-Upload / Delete + inline Add line / Remove line controls
-  - File validation: PDF, Word (.doc/.docx), Images only; max 5MB — returns 413/415 with actionable messages
-  - AlertDialog "Are you sure?" Yes/No confirmation for Re-Upload and Delete
-  - `project_audit_logs` collection records user email, user_id, name, IP, user agent, action, module, details, timestamp
-  - New backend endpoints: `GET/POST/DELETE /api/projects/{id}/document-repository[/items[/{id}[/upload|/file|/download]]]`, `GET /api/projects/{id}/audit-log`
-  - `drhp_checklist_seed.py` — static SEBI checklist with all 14 categories & item metadata
-- **Document Repository v2 (nested sub-items)**:
-  - "Add line" now creates **nested sub-items** under each parent (e.g., 2.4.1, 2.4.2, 2.4.3 ...) via `parent_item_id` + auto-incrementing `sub_line_order`
-  - Each sub-item has its own editable **description textbox** (auto-saves via new `PATCH /items/{id}` endpoint)
-  - Each uploaded row now shows **"Last upload: {timestamp}"** sourced from `file.uploaded_at`
-  - Header tracker: **Total / Uploaded / Pending + Progress bar** (from backend `summary` payload)
-  - Nesting depth capped at 1 level (sub-items can't have further sub-items)
-- **DRHP Builder user profile selector**: New `/drhp` landing shows 3 profile cards — **Merchant Banker**, **Company**, **CA Firm** (light-color rectangular cards with distinct icons/accents). Clicking any routes to `/drhp/:userLoginType` which renders the identical DRHP Builder workflow scoped to that profile.
-- **New DRHP Project dialog** now captures 3 additional classification fields:
-  - **Board Type**: SME · Main Board
-  - **Exchange**: NSE · BSE
-  - **Issue Type**: Book Building · Fixed Price · OFS · Fresh Issue
-- These values show as **color-coded badges directly under the Project Name** on every project card.
-- Backend: `Project` & `ProjectCreate` models extended with optional `user_login_type`, `board_type`, `exchange`, `issue_type`. `GET /api/projects` now supports `?user_login_type=` filter; `POST /api/projects` persists all four fields.
+- AboutPage.jsx: swapped section order — Meet the Founders now sits above Origin Story
+- Rewrote Origin Story narrative
+- Contact Sales & Contact Support buttons on LandingPage now open a unified lead-gen dialog
+- New component `ContactLeadDialog.jsx`
+- New backend endpoint `POST /api/contact/lead`
+- New admin endpoint `GET /api/contact/leads`, `PATCH`, `DELETE`
+- New "Contact Leads" tab in AdminCenter
+- DRHP Builder access for admins (bypassing Coming Soon)
+- IPO Funding access for admins (bypassing Coming Soon)
+- Document Repository + Project Audit Log in Command Center
+- DRHP Profile Selector (Merchant Banker, Company, CA Firm) + board_type schemas
+- Restored legacy DRHP projects by backfilling user_login_type
+- Updated DRHP Command Center to filter buttons by board_type
+- Built SEBI Document Repository with nested sub-items
+- Built Project Audit Logs
+- Added WaveDotsBackground.jsx to Landing Page
+- Landing Page right-column redesign
+- Added empty AdvisorsPage.jsx + Nav link
+- Fiverr-style redesign of Match-Making Landing Page
+- Fixed backend 500 error in `/api/assessment/calculate`
 
-## Original Problem Statement
-Build a complete IPO-readiness platform with:
-- Google OAuth authentication (Emergent-managed)
-- Dashboard with sidebar navigation
-- DRHP Builder module with 13 sub-modules
-- Document upload/download with OCR scanning
-- Version controlled, collaborative platform
-- Match Maker module for connecting with IPO professionals
-- Legal and Disclaimer module for compliance
-- Business Valuation module with AI-powered analysis
-- Role-Based Access Control (RBAC) with Admin Panel
-
-## Tech Stack
-- **Frontend:** React 19, Tailwind CSS, ShadCN UI, Lucide Icons
-- **Backend:** FastAPI, Python 3.11
-- **Database:** MongoDB with GridFS
-- **Authentication:** Emergent-managed Google OAuth + Email/Password (bcrypt)
-- **OCR:** Gemini 2.5 Flash via Emergent LLM Key
-- **AI:** GPT-5.2 via Emergent LLM Key
-
-## Core Architecture
+## Code Architecture (Post-Refactor Apr 24, 2026)
 ```
 /app
 ├── backend/
-│   ├── server.py              # Monolith (>7000 lines) - Auth, API, Admin, Routing
-│   ├── valuation_engine.py    # DCF, DDM, NAV calculation engines
-│   ├── drhp_import.py         # SEBI DRHP document parser
-│   └── drhp_export.py         # Word/PDF export with SEBI formatting
+│   ├── server.py              # Thin orchestrator (153 lines) - App, CORS, startup/shutdown
+│   ├── shared.py              # Shared dependencies (586 lines) - DB, models, auth, config
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── auth.py            # Auth endpoints (login, register, OAuth, password reset)
+│   │   ├── projects.py        # Project CRUD + DRHP sections
+│   │   ├── documents.py       # Document upload/download/OCR + corporate repository
+│   │   ├── drhp.py            # DRHP content, progress, export, output, images
+│   │   ├── matchmaker.py      # All matchmaker endpoints (professionals, wallet, connections)
+│   │   ├── funding.py         # IPO Funding (pre/post-IPO, quiz, consultation)
+│   │   ├── assessment.py      # IPO Assessment (SEBI eligibility, valuation, governance)
+│   │   ├── admin.py           # Admin RBAC (roles, users, permissions, registrations)
+│   │   ├── account.py         # Account profile, subscription, billing
+│   │   ├── command_center.py  # Command center, meetings, company data, checklists
+│   │   ├── trackers.py        # Pre-IPO tracker, Non-DRHP tracker
+│   │   ├── market.py          # Market indices
+│   │   ├── valuation.py       # Business valuation module
+│   │   ├── careers.py         # Career positions, applications
+│   │   ├── contact.py         # Contact leads (sales/support)
+│   │   └── document_repository.py  # SEBI document repository + audit logs
+│   ├── valuation_engine.py    
+│   ├── drhp_checklist_seed.py
+│   ├── drhp_import.py
+│   ├── drhp_export.py
+│   └── tests/
+│       ├── test_refactor_endpoints.py  # 34 regression tests for refactored routes
+│       └── ... (other test files)
 ├── frontend/
 │   └── src/
-│       ├── pages/
-│       │   ├── AdminCenter.jsx      # RBAC Module Access + Operations + Roles + Users + Audit
-│       │   ├── AdminLogin.jsx       # Dedicated admin login gate
-│       │   ├── AccessDenied.jsx     # Permission denied page
-│       │   ├── Dashboard.jsx        # Main dashboard with module cards
-│       │   ├── ValuationModule.jsx  # Business valuation
-│       │   └── Login.jsx            # Manual + Google Auth
 │       ├── components/
-│       │   └── Sidebar.jsx          # Navigation with RBAC visibility
-│       └── App.js                   # Routing with ModuleRoute enforcement
-├── memory/
-│   ├── PRD.md
-│   └── test_credentials.md
+│       │   ├── ContactLeadDialog.jsx
+│       │   └── WaveDotsBackground.jsx
+│       ├── pages/
+│       │   ├── AdminCenter.jsx
+│       │   ├── LandingPage.jsx
+│       │   ├── MatchMakingLanding.jsx
+│       │   ├── DRHPUserTypeSelector.jsx
+│       │   ├── DRHPLandingPage.jsx
+│       │   ├── CommandCenter.jsx
+│       │   ├── DocumentRepository.jsx
+│       │   ├── ProjectAuditLog.jsx
+│       │   └── AdvisorsPage.jsx
+│       └── App.js
 ```
 
-## Key DB Schema
-- `users`: user_id, email, name, role, module_permissions, password_hash, auth_type
-- `user_sessions`: session_id, user_id, session_token, expires_at
-- `module_permissions`: {assessment: bool, matchmaker: bool, drhp: bool, funding: bool, valuation: bool}
-- Default permissions: assessment=true, matchmaker=true, drhp=false, funding=false, valuation=false
-
 ## Completed Features
+- IPO Assessment Module (SEBI eligibility, PE/DCF valuation, governance scoring)
+- DRHP Builder (profile selector, command center, document repository, sections, content editor)
+- Match-Making Platform (professional registration, search, connections, wallet, AI matching)
+- IPO Funding Module (pre/post-IPO options, eligibility quiz, AI fitment, consultation booking)
+- Business Valuation Module (multi-method: DCF, NAV, comparable, DDM)
+- Admin Center (RBAC, user management, audit logs, registration approval, contact leads)
+- Account Management (profile, subscription plans - billing mocked via Razorpay)
+- Landing Page (animated background, corporate video placeholder, contact dialogs)
 
-### Role-Based Access Control (RBAC) - Apr 16, 2026 ✅
-- [x] Admin Login gate at /admin with dedicated admin credentials
-- [x] AdminCenter "Module Access" tab with per-user toggle switches for 5 modules
-- [x] ModuleRoute component enforces permissions at route level
-- [x] Users without module access see "Access Denied" page
-- [x] Admin Center hidden from non-admin users in sidebar and dropdown
-- [x] Dashboard module cards use real paths (/drhp, /funding, etc.)
-- [x] Backend: PUT /api/admin/users/{user_id}/permissions updates RBAC rules
-- [x] Backend: GET /api/auth/me returns is_admin and module_permissions
-- [x] Admin seed: admin@ipolabs.com with all permissions
-- [x] 16/16 backend tests + 14/14 frontend tests passed (iteration_23.json)
+## Pending Issues
+1. **P2**: RTA Professional Registration "Next" button bug (recurring x4, not started)
 
-### Email/Password Authentication - Apr 16, 2026 ✅
-- [x] POST /api/auth/register (bcrypt, unique email, 6+ char password)
-- [x] POST /api/auth/login (bcrypt, brute force protection)
-- [x] Session tokens in user_sessions collection
+## Upcoming Tasks
+- **P0**: DRHP Data Synchronization (backend sync Corporate Repository → DRHP Chapters)
+- **P1**: Map Imported Word Document to Structured Chapter Modules
+- **P1**: Enforce 100% MS Word UI/UX in TipTap Editor
+- **P1**: Populate remaining ~30 DRHP sub-modules with editable SEBI standard content
 
-### Business Valuation Module - Apr 15, 2026 ✅
-- [x] 4-step wizard: Company Profile → Financial Data → Valuation Config → Run
-- [x] DCF, NAV, Comparable, DDM calculation engines
-- [x] GPT-5.2 AI analysis + risk assessment
-- [x] Excel/CSV upload with AI financial data extraction
-- [x] On-screen results dashboard
+## Future/Backlog
+- Implement Professional Verification API (Protean MCA21/GSTN)
+- Implement full billing integration with Razorpay
+- Populate Pricing Page (needs user data)
+- Populate Advisors Page (needs user content direction)
 
-### Governance Assessment - Apr 6, 2026 ✅
-- [x] 55 SEBI governance questions in Step 5 of Assessment Wizard
-- [x] Governance score blended into IPO Readiness Score
+## Key Technical Notes
+- **Frontend:** React, Tailwind CSS, Shadcn/UI
+- **Backend:** Python, FastAPI (modular routes), Motor (Async MongoDB), GridFS
+- **Authentication:** Emergent-managed Google Auth + local bcrypt email/password
+- **3rd Party:** Emergent LLM Key, Resend (mocked), Razorpay (mocked)
 
-### DRHP Output Module - Mar 21, 2026 ✅
-- [x] TipTap rich-text editor with Word-like toolbar
-- [x] SEBI-specific DRHP import/export pipeline
-- [x] Word and PDF export with SEBI formatting
-- [x] Document import with formatting preservation
-
-### Previous Phases (Feb-Mar 2026) ✅
-- Google OAuth + manual auth
-- Dashboard, DRHP Builder, Command Center
-- Match Maker with AI recommendations
-- IPO Assessment with 4 calculators
-- IPO Funding module (Pre-IPO, Post-IPO, Partners, Quiz)
-- Admin Center (Operations, Roles, Permissions, Users, Audit)
-- Account Details with profile management
-- Legal Disclaimer and Terms of Use
-- Security hardening, file upload validation, rate limiting
-- Email notifications via Resend API
-
-## Prioritized Backlog
-
-### P0 - Critical
-- [ ] Map imported Word Document to structured chapter modules
-- [ ] Enforce 100% MS Word UI/UX in TipTap Editor
-- [ ] DRHP Data Synchronization (Corporate Repository → DRHP Chapters)
-
-### P1 - High Priority
-- [ ] Refactor server.py monolith (7000+ lines → APIRouter modules)
-- [ ] Populate remaining ~30 DRHP sub-modules with SEBI content
-- [ ] Remove internal Board toggles inside DRHP modules
-
-### P2 - Medium Priority
-- [ ] Professional Registration "Next" button bug (RTA category) - recurring 4x
-- [ ] Version history for sections
-- [ ] Document preview in-app
-- [ ] Collaborative editing
-
-### P3 - Future
-- [ ] Professional Verification API (Protean) - MOCKED
-- [ ] Razorpay billing integration - MOCKED
-- [ ] Real calendar API for consultation scheduling - MOCKED
-- [ ] Market Analytics module
-- [ ] AI-powered content suggestions
-
-## Testing Status
-- ✅ RBAC Admin Module: 16/16 backend + 14/14 frontend (iteration_23.json)
-- ✅ Governance Assessment: 13/13 (iteration_20.json)
-- ✅ Valuation Module: 18/18 (iteration_21.json)
-- ✅ Document Upload + AI Extraction: 16/16 (iteration_22.json)
-- ✅ All previous modules tested and passing
+## Test Credentials
+- Admin: admin@ipolabs.com / admin@123
+- Master Admin: ronraj2312@gmail.com / Admin123
+- Default Admin: founders.ipolabs@gmail.com / Admin1234
