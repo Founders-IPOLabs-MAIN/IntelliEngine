@@ -123,14 +123,6 @@ async def logout(request: Request, response: Response):
 
 # ============ EMAIL/PASSWORD AUTH ============
 
-import bcrypt
-
-def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-
-def verify_password(plain: str, hashed: str) -> bool:
-    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
-
 @router.post("/auth/register")
 @limiter.limit("5/minute")
 async def register_email(request: Request, data: dict = Body(...), response: Response = None):

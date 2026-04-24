@@ -13,7 +13,12 @@
 - New `shared.py` (586 lines) containing all shared DB connections, models, auth helpers, config constants
 - New slim `server.py` (153 lines) as thin orchestrator using `include_router()`
 - Regression test suite created: `/app/backend/tests/test_refactor_endpoints.py` (34 tests, 100% pass)
-- Eliminates function-name-shadowing bugs permanently (root cause of previous 500 error in assessment module)
+- **Admin Access Restriction**: Hard rule enforced — only 4 approved emails (founders.ipolabs@gmail.com, ronraj2312@gmail.com, neeraj@emergent.sh, cajagrutisahu@gmail.com) can login as Admin, access Admin Center, and Account Details
+  - Backend: `is_approved_admin()` function checks user_type=internal OR admin role OR CENTRAL_ADMIN_EMAILS
+  - Login response now includes `is_admin` flag
+  - Frontend `/account` route restricted to admin users
+  - Sidebar hides Admin Center / Account Details for non-admins
+  - Test suite: `/app/backend/tests/test_admin_access_restriction.py` (8 tests, 100% pass)
 
 ### Changelog — Apr 21, 2026
 - AboutPage.jsx: swapped section order — Meet the Founders now sits above Origin Story

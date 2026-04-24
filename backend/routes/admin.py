@@ -34,34 +34,6 @@ class AuditLogEntry(BaseModel):
     details: Optional[str] = None
     resource_id: Optional[str] = None
 
-# Helper to check admin access
-async def require_admin(user: User = Depends(get_current_user)):
-    """Require admin or super_admin role"""
-    if user.role not in ["admin", "super_admin", "Admin", "Super Admin", "master_admin"]:
-        raise HTTPException(status_code=403, detail="Admin access required")
-    return user
-
-async def require_super_admin(user: User = Depends(get_current_user)):
-    """Require super_admin role"""
-    if user.role not in ["super_admin", "Super Admin"]:
-        raise HTTPException(status_code=403, detail="Super Admin access required")
-    return user
-
-# Log audit action helper
-async def log_audit_action(user_id: str, action_type: str, module: str, details: str = None, resource_id: str = None):
-    """Log an audit action"""
-    audit_entry = {
-        "log_id": f"audit_{uuid.uuid4().hex[:12]}",
-        "user_id": user_id,
-        "action_type": action_type,
-        "module": module,
-        "details": details,
-        "resource_id": resource_id,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "ip_address": None  # Would capture in production
-    }
-    await db.audit_logs.insert_one(audit_entry)
-
 @router.get("/admin/roles")
 async def get_all_roles(user: User = Depends(require_admin)):
     """Get all available roles with their permissions"""
