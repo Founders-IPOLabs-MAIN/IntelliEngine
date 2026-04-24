@@ -144,14 +144,13 @@ const Dashboard = ({ user, apiClient }) => {
           {/* Hero Section — black text, left-aligned */}
           <section className="px-8 pt-10 pb-6" data-testid="dashboard-hero">
             <h2
-              className="text-4xl sm:text-5xl font-bold tracking-tight text-black leading-[1.1]"
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-black leading-[1.08]"
               data-testid="dashboard-hero-h1"
             >
-              Build your IPO<br /> Journey with us
+              Build your IPO Journey<br /> with <span className="text-[#1DA1F2]">SETU</span>, by IPO Labs.
             </h2>
-            <p className="mt-3 text-gray-500 text-sm leading-relaxed max-w-lg">
-              Everything you need to go public &mdash; from readiness assessment to DRHP drafting,
-              expert matching, funding orchestration, and business valuation.
+            <p className="mt-4 text-gray-500 text-lg lg:text-xl leading-relaxed max-w-2xl">
+              SETU has everything you need to go public.
             </p>
           </section>
 
