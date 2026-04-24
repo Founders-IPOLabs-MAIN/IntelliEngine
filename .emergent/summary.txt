@@ -1,0 +1,181 @@
+<analysis>**original_problem_statement:**
+The user is building SETU, an IPO-readiness platform. The platform features strict Role-Based Access Control (RBAC), a Governance Assessment, Automated Business Valuation, DRHP Builder, and a Match-Making platform. The current requirements involve extensive UI/UX overhauls for public pages, Landing Page module restructuring, DRHP Builder role-specific workflows (Company, Merchant Banker, CA Firm), building a robust Document Repository with audit logs, Fiverr-style redesigns for the Match-Making module, and resolving backend 500 errors.
+
+**User's preferred language**: English (INSTRUCT next agent: Please respond in English only)
+
+**what currently exists?** 
+A full-stack React/FastAPI/MongoDB app (SETU). 
+- **Frontend**: Contains a robust Admin Center, DRHP Profile selector, DRHP Command Center (board-aware), Document Repository (nested checklist with file upload tracking), Project Audit Logs, and heavily stylized public pages (WaveDot backgrounds, cycling borders, video placeholders).
+- **Backend**: Monolithic  (>8,300 lines) handling auth, AI extraction, Match-Making V2, DRHP projects, and Assessment modules. Contains file-upload logic via GridFS.
+
+**Last working item**:
+    - Last item agent was working: Refactoring the monolithic . The user approved splitting the massive file into modular route files (e.g., , , , , ). The agent mapped line ranges for Careers, Contact Leads, and Document Repository but the execution was interrupted before extracting the code.
+    - Status: IN PROGRESS
+    - Agent Testing Done: N
+    - Which testing method agent to use? backend testing agent / manual curl (To verify endpoints are functional post-refactor).
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**:
+  Issue 1: Refactor  into modular FastAPI Routers (Priority: P0)
+  Issue 2: Professional Registration Next button bug for RTA category (Priority: P2)
+
+  Issues Detail:
+  - Issue 1: 
+     - Attempted fixes: The agent analyzed line ranges in  (Careers: 7640–7735, Contact Leads: 7737–7840, Doc Repo/Audit Log: 7842–8243) to prepare for extraction.
+     - Next debug checklist: Create a  folder inside . Extract the mapped route groups into separate router files using a dependency-injection  pattern to avoid circular imports. Include these routers in the main . Ensure zero behavior changes.
+     - Why fix this issue and what will be achieved with the fix?  has grown beyond 8,300 lines, causing function shadowing bugs (like the recent 500 error in valuation) and making maintenance difficult.
+     - Status: IN PROGRESS
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Both (Use backend testing agent and frontend smoke tests to ensure no routes were broken).
+     - Blocked on other issue: None
+
+  - Issue 2: 
+     - Attempted fixes: None recently (carried over from previous handoff).
+     - Next debug checklist: Investigate the Match-Making Professional Registration flow for the RTA category where the Next button becomes unresponsive.
+     - Why fix this issue and what will be achieved with the fix? Unblocks user registration for RTA experts.
+     - Status: NOT STARTED
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? Frontend
+
+**In progress Task List**:
+  - Task 1: Populate Pricing Page
+     - Where to resume: 
+     - What will be achieved with this? Provides visibility into platform costs.
+     - Status: BLOCKED
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on something: Needs pricing data/content from the user.
+
+  - Task 2: Populate Advisors Page
+     - Where to resume: 
+     - What will be achieved with this? Fills in the newly added Advisors tab placeholder with actual content/expert networking.
+     - Status: NOT STARTED
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on something: Waiting on user instructions for page content.
+
+**Upcoming and Future Tasks**
+    Upcoming Tasks:
+    - P0: DRHP Data Synchronization: Backend logic to automatically sync data from Centralised Corporate Repository to Main DRHP Chapters.
+    - P1: Map Imported Word Document to Structured Chapter Modules (in ).
+    - P1: Enforce 100% MS Word UI/UX in TipTap Editor.
+    - P1: Populate remaining ~30 DRHP sub-modules with editable SEBI standard content.
+    Future Tasks:
+    - Implement Professional Verification API (Protean MCA21/GSTN).
+    - Implement full billing integration with Razorpay.
+
+**Completed work in this session**
+-  restructure and typography scale up (DONE)
+- Added Contact Sales button +  UI and  API (DONE)
+- Built Contact Leads triage tab inside  (DONE)
+- Unblocked  and  module access for Admins (bypassing Coming Soon hardcodes) (DONE)
+- Added DRHP Profile Selector (Merchant Banker, Company, CA Firm) +  schemas (DONE)
+- Restored legacy DRHP projects by backfilling  (DONE)
+- Updated DRHP Command Center to filter buttons by  (SME vs Main Board) (DONE)
+- Built SEBI Document Repository with nested sub-items, descriptions, max 5MB validations, and Progress Tracker (DONE)
+- Built Project Audit Logs capturing user email, time, and actions for document uploads/deletions (DONE)
+- Removed SETU Platform subtitle from Dashboard (DONE)
+- Added  (animated violet wave pattern) to Landing Page (DONE)
+- Landing Page right-column redesign: Corporate Video Placeholder, enlarged module cards, flex-col-reverse swap, cycling navy border animation (DONE)
+- Added empty  + Nav link (DONE)
+- Fiverr-style redesign of Match-Making Landing Page with full viewport looping video, 5 expert category cards, and sticky header (DONE)
+- Fixed backend 500 error in  caused by function shadowing  (DONE)
+
+**Earlier issues found/mentioned but not fixed**
+   - None
+
+**Known issue recurrence from previous fork**
+  - Issue recurrence in previous fork: Professional Registration Next button bug (RTA category).
+  - Recurrence count: 4
+  - Status: NOT STARTED
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Frontend:** React, Tailwind CSS, Canvas Animations (), GridFS for File display.
+- **Backend:** Python, FastAPI, Motor (Async MongoDB), GridFS for file uploads (max 5MB limit).
+- **Authentication:** Emergent-managed Google Auth + local Bcrypt email/password.
+
+**key DB schema**
+  - : Added , , , .
+  - : Stores sales/support queries from Landing Page.
+  - : Tracks SEBI DRHP uploads (, , , , ).
+  - : Tracks , , ,  per DRHP project.
+
+**changes in tech stack**
+  - GridFS heavily utilized for Document Repository uploads.
+
+**All files of reference** 
+  -  (Current focus for refactoring routes).
+  -  (New data seed script).
+  -  (New).
+  -  (New).
+  -  (Heavily modified visually).
+
+**Areas that need refactoring**: 
+  -  - This is the exact task the agent was in the middle of executing. Extract into a  structure.
+
+**key api endpoints**
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+
+**Critical Info for New Agent** 
+- The user authorized breaking apart the massive  file into modular route files. The agent mapped line ranges for Careers, Contact Leads, and Document Repository but the context cut off before writing the files. Start here using  to build the new routers and update  using . Ensure absolutely no behavior is changed.
+- File uploads for the Document Repository reject anything over 5MB and only accept PDF/Word/Image. 
+- Playwright screenshot testing occasionally fails to auto-play MP4s due to codec stripping in headless Chromium; however, it plays perfectly in a real browser.
+
+**documents and test reports created in this job**
+  - 
+  -  (Updated with Doc repo, Match-making, Landing page changes).
+
+**Last 10 User Messages and any pending HUMAN messages** 
+ - 10. **Request**: Add Advisors tab next to Resources. (Completed)
+ - 9. **Request**: Upload background video to Matchmaker page and superimpose cards. (Completed)
+ - 8. **Request**: Fiverr-style redesign for Match-Making Landing Page (Left aligned hero, 5 buttons). (Completed)
+ - 7. **Request**: Move The Match-Making Platform back to the header, make font big/sharp, add Register as an Expert CTA. (Completed)
+ - 6. **Request**: Investigate 500 error in IPO Assessment Module on Get Results. 
+ - 5. **Agent Action**: Investigated backend and discovered .
+ - 4. **Agent Action**: Discovered local function shadowing bug due to imports in . Aliased the import and fixed the 500 error.
+ - 3. **Agent Action**: Finished the assessment fix and proposed refactoring  into separate routes to permanently prevent shadowing bugs.
+ - 2. **Request**: yes - run the enhancement and splitting server.py. Make sure, none of these changes affects the current application.
+ - 1. **PENDING**: Agent mapped line ranges but failed to execute the code extraction. Needs to be completed.
+
+**Project Health Check:**
+- Broken: RTA Professional Registration Next bug.
+- Mocked: Razorpay billing, Protean MCA21/GSTN verification, Resend Email dispatch.
+
+**3rd Party Integrations**
+	 •	Emergent LLM Key (AI Document Extraction, Assessment SGI)
+	 •	Emergent-managed Google Auth
+	 •	Resend (Emails) — Currently MOCKED via placeholder key
+
+**Testing status**
+  - Testing agent used after significant changes: NO (Agent self-tested via extensive Bash curl operations and Screenshots).
+  - Troubleshoot agent used after agent stuck in loop: NO.
+  - Test files created: None.
+  - Known regressions: None introduced in this fork.
+
+**Credentials to test flow:**
+- Admin:  / 
+- Master Admin:  / 
+- Default Admin:  / 
+
+**What agent forgot to execute**
+- The agent was interrupted during the physical file extraction to break down .
+
+**Debugging checklist for current issue**
+    Issue: Refactor  into  modules.
+
+    Backend files to check: 
+    - 
+    -  (Needs to be created)
+    
+    Steps:
+    1. Create  and modular files (e.g., , , ).
+    2. Extract the respective FastAPI  endpoints and their dependencies (like DB collections, Pydantic models).
+    3. Import the required shared dependencies (like , , ) into the new files without causing circular imports.
+    4. Update  to  from the newly created files. 
+    5. Start the server and run  checks on the extracted endpoints to ensure 200 responses.</analysis>

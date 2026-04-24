@@ -1,0 +1,83 @@
+{
+  "summary": "Backend refactor regression testing complete. server.py was split into 16 route modules + shared.py. All 28 endpoints from the review request return correct responses with expected data shapes, and RBAC / auth guards are preserved post-refactor. 34/34 pytest tests passed (100%).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": {
+    "backend": [
+      "TestHealth::test_health - GET /api/health -> 200 {status:healthy}",
+      "TestAuth::test_login_returns_session_token - POST /api/auth/login returns session_token + user (sets httpOnly cookie)",
+      "TestAuth::test_me_returns_user - GET /api/auth/me returns authenticated user",
+      "TestAuth::test_me_unauthenticated - GET /api/auth/me without auth -> 401",
+      "TestProjects::test_list_projects - GET /api/projects returns list (auth)",
+      "TestProjects::test_projects_requires_auth - GET /api/projects -> 401 without auth",
+      "TestMatchmaker::test_categories_returns_15 - GET /api/matchmaker/categories returns exactly 15",
+      "TestMatchmaker::test_cities - GET /api/matchmaker/cities returns list",
+      "TestMatchmaker::test_professionals_public_search - GET /api/matchmaker/professionals public returns results",
+      "TestMatchmaker::test_statistics_authenticated - GET /api/matchmaker/statistics -> 200 with auth",
+      "TestFunding::test_pre_ipo_options_returns_6 - GET /api/funding/pre-ipo-options returns exactly 6",
+      "TestFunding::test_post_ipo_options - GET /api/funding/post-ipo-options returns options",
+      "TestFunding::test_partners - GET /api/funding/partners -> 200",
+      "TestFunding::test_quiz_questions - GET /api/funding/quiz-questions returns questions",
+      "TestAssessment::test_history_authenticated - GET /api/assessment/history -> 200",
+      "TestAdmin::test_roles - GET /api/admin/roles -> 200 (admin)",
+      "TestAdmin::test_users - GET /api/admin/users -> 200 (admin)",
+      "TestAdmin::test_pending_registrations - GET /api/admin/pending-registrations -> 200 (admin)",
+      "TestAdmin::test_registration_stats - GET /api/admin/registration-stats -> 200 (admin)",
+      "TestAdmin::test_audit_logs - GET /api/admin/audit-logs -> 200 (admin)",
+      "TestAdmin::test_admin_rejects_regular_user - regular user hitting /api/admin/users -> 401/403",
+      "TestAdmin::test_admin_rejects_unauthenticated - unauthenticated hitting /api/admin/users -> 401",
+      "TestAccount::test_profile - GET /api/account/profile -> 200 (auth)",
+      "TestAccount::test_subscription - GET /api/account/subscription -> 200 (auth)",
+      "TestAccount::test_subscription_plans_returns_4 - GET /api/account/subscription/plans returns exactly 4",
+      "TestMarket::test_indices_returns_18 - GET /api/market/indices returns exactly 18",
+      "TestMarket::test_industries - GET /api/market/industries returns list",
+      "TestValuation::test_projects_authenticated - GET /api/valuation/projects -> 200 (auth)",
+      "TestValuation::test_projects_requires_auth - GET /api/valuation/projects -> 401 without auth",
+      "TestCareers::test_positions - GET /api/careers/positions -> 200",
+      "TestContact::test_leads_admin_only - GET /api/contact/leads -> 200 (admin)",
+      "TestContact::test_leads_regular_user_rejected - regular user hitting /api/contact/leads -> 401/403",
+      "TestContact::test_create_lead_no_auth - POST /api/contact/lead creates lead without auth -> 200/201",
+      "TestMisc::test_upload_requirements - GET /api/upload-requirements -> 200"
+    ],
+    "frontend": []
+  },
+  "endpoint_counts_verified": {
+    "matchmaker_categories": 15,
+    "funding_pre_ipo_options": 6,
+    "account_subscription_plans": 4,
+    "market_indices": 18
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_refactor_endpoints.py",
+    "/app/test_reports/pytest/refactor_endpoints_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Auth uses httpOnly cookie `session_token` in addition to Bearer header - this is fine but test harnesses must use fresh sessions when asserting 401 behaviour (documented in test file via _fresh() helper).",
+    "shared.py (586 lines) is large but still under the 700-line soft threshold; consider further splitting into shared/db.py, shared/auth.py, shared/constants.py for maintainability.",
+    "server.py @app.on_event('startup'/'shutdown') uses deprecated FastAPI event handlers; migrate to lifespan context manager on a future pass (non-blocking).",
+    "CORS fallback sets allow_origins=['*'] while allow_credentials=True - browsers reject this combination. Production CORS_ORIGINS is set, but the fallback branch is unsafe; log warning already present."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_refactor_endpoints.py (new pytest regression suite for refactored endpoints)"
+  ],
+  "success_rate": {
+    "backend": "100% (34/34)",
+    "frontend": "N/A (backend-only request)"
+  },
+  "test_credentials": {
+    "regular_user": "test@example.com / test123",
+    "admin": "admin@ipolabs.com / admin@123"
+  },
+  "seed_data_creation": "POST /api/contact/lead created a TEST_ prefixed lead (TEST_refactor_lead@example.com).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Refactor of monolithic server.py into 16 route modules + shared.py is verified. All 28 endpoints from the review request + 6 auth/RBAC guards = 34 tests pass. Regression file is /app/backend/tests/test_refactor_endpoints.py. Note: /api/auth/login sets a session_token httpOnly cookie, so if you reuse a requests.Session you remain authenticated even without Authorization header - use _fresh() helper for unauthenticated assertions."
+}

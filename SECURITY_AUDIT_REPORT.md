@@ -77,7 +77,7 @@ All responses now include:
 ### 5. CORS Locked Down
 
 ```python
-CORS_ORIGINS="https://setu-compliance-pro.preview.emergentagent.com"
+CORS_ORIGINS="https://valuation-match-lab.preview.emergentagent.com"
 ```
 
 ### 6. Dependencies Updated
