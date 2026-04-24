@@ -156,7 +156,7 @@ const Dashboard = ({ user, apiClient }) => {
           </section>
 
           {/* Module Cards — compact, left-aligned with sidebar */}
-          <section className="px-8 pb-8 flex-1" data-testid="dashboard-modules">
+          <section className="px-8 pb-6" data-testid="dashboard-modules">
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl">
               {MODULES.map((mod) => {
                 const Icon = mod.icon;
@@ -200,8 +200,8 @@ const Dashboard = ({ user, apiClient }) => {
             </div>
           </section>
 
-          {/* Copyright — right-aligned */}
-          <footer className="px-8 pb-4 flex justify-end">
+          {/* Copyright — right-aligned, pinned to bottom */}
+          <footer className="mt-auto px-8 pb-4 flex justify-end">
             <span className="text-[11px] text-gray-400">
               &copy; 2026 IPO Labs Private Limited
             </span>
