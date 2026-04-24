@@ -7186,7 +7186,8 @@ async def get_industries():
 # ============ AUTOMATED BUSINESS VALUATION MODULE ============
 
 from valuation_engine import (
-    calculate_dcf_valuation, calculate_nav_valuation,
+    calculate_dcf_valuation as vengine_dcf,
+    calculate_nav_valuation,
     calculate_comparable_valuation, calculate_ddm_valuation,
     calculate_financial_ratios, compute_weighted_valuation
 )
@@ -7454,7 +7455,7 @@ async def run_valuation_calculation(valuation_id: str, user: User = Depends(get_
     # Run valuation methods
     results = {}
     if "dcf" in methods:
-        results["dcf"] = calculate_dcf_valuation(financial_data, config.get("dcf_config", {}))
+        results["dcf"] = vengine_dcf(financial_data, config.get("dcf_config", {}))
     if "nav" in methods:
         results["nav"] = calculate_nav_valuation(financial_data, config.get("nav_config", {}))
     if "comparable" in methods:
