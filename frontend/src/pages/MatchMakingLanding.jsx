@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import Sidebar from "@/components/Sidebar";
 import {
-  Building2, ArrowRight, Briefcase, Award, FileText, Scale,
+  Building2, ArrowRight, Briefcase,
 } from "lucide-react";
 
 const VIDEO_URL =
@@ -12,7 +12,7 @@ const VIDEO_URL =
 const CARDS = [
   {
     id: "ipo-company",
-    title: "IPO Bound Company",
+    title: "I am a Corporate",
     desc: "Register your company and get matched with verified experts for your IPO journey.",
     icon: Building2,
     accent: "#00D1FF",
@@ -31,39 +31,6 @@ const CARDS = [
     path: "/matchmaker/experts",
     cta: "Explore Experts",
     testid: "btn-subject-matter-experts",
-  },
-  {
-    id: "top-ipo",
-    title: "Consult with Top IPO Experts",
-    desc: "Book sessions with veteran IPO advisors — Merchant Bankers, ex-SEBI counsel, listing strategists.",
-    icon: Award,
-    accent: "#A78BFA",
-    iconGrad: "from-violet-500 to-purple-600",
-    path: "/matchmaker/experts?category=top-ipo",
-    cta: "Consult Now",
-    testid: "btn-top-ipo-experts",
-  },
-  {
-    id: "ca-cs-director",
-    title: "Hire CA, CS, Independent Directors, CFOs",
-    desc: "Consult or hire Chartered Accountants, Company Secretaries, Independent Directors & CFOs across India.",
-    icon: FileText,
-    accent: "#34D399",
-    iconGrad: "from-emerald-500 to-teal-600",
-    path: "/matchmaker/experts?category=ca-cs",
-    cta: "Find Talent",
-    testid: "btn-ca-cs-experts",
-  },
-  {
-    id: "legal",
-    title: "Consult or Hire Legal Experts",
-    desc: "Corporate lawyers, SEBI specialists, IP counsel & litigation experts for every stage of your listing.",
-    icon: Scale,
-    accent: "#F472B6",
-    iconGrad: "from-pink-500 to-rose-600",
-    path: "/matchmaker/experts?category=legal",
-    cta: "Get Legal Help",
-    testid: "btn-legal-experts",
   },
 ];
 
@@ -140,36 +107,36 @@ const MatchMakingLanding = ({ user, apiClient }) => {
             </p>
           </section>
 
-          {/* ── 5 ACTION CARDS — below the hero ── */}
+          {/* ── 2 ACTION CARDS — centered, wider ── */}
           <section className="px-8 lg:px-16 pb-12" data-testid="matchmaker-cards">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="flex justify-center gap-6">
               {CARDS.map((c) => {
                 const Icon = c.icon;
                 return (
                   <Card
                     key={c.id}
                     onClick={() => navigate(c.path)}
-                    className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                    className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1 w-full max-w-md"
                     style={{ borderColor: undefined }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = c.accent; e.currentTarget.style.boxShadow = `0 20px 40px -10px ${c.accent}40`; }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.boxShadow = ""; }}
                     data-testid={c.testid}
                   >
-                    <CardContent className="p-5 flex flex-col h-full">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-6 h-6 text-white" />
+                    <CardContent className="p-6 flex flex-col h-full">
+                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${c.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                        <Icon className="w-7 h-7 text-white" />
                       </div>
-                      <h3 className="text-base font-bold text-white leading-snug mb-2 drop-shadow">
+                      <h3 className="text-lg font-bold text-white leading-snug mb-2 drop-shadow">
                         {c.title}
                       </h3>
-                      <p className="text-xs text-white/75 leading-relaxed mb-4 flex-1 drop-shadow">
+                      <p className="text-sm text-white/75 leading-relaxed mb-5 flex-1 drop-shadow">
                         {c.desc}
                       </p>
                       <div
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all"
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all"
                         style={{ color: c.accent }}
                       >
-                        {c.cta} <ArrowRight className="w-3.5 h-3.5" />
+                        {c.cta} <ArrowRight className="w-4 h-4" />
                       </div>
                     </CardContent>
                   </Card>
