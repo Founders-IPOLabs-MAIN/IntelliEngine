@@ -28,7 +28,7 @@ const CARDS = [
     icon: Briefcase,
     accent: "#FB923C",
     iconGrad: "from-orange-500 to-amber-600",
-    path: "/matchmaker/experts",
+    path: "/matchmaker/experts/register",
     cta: "Explore Experts",
     testid: "btn-subject-matter-experts",
   },
