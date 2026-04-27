@@ -13,8 +13,26 @@ import Sidebar from "@/components/Sidebar";
 import {
   Building2, ArrowLeft, Loader2, CheckCircle2, CreditCard, Users,
   TrendingUp, Phone, Mail, Briefcase, Wallet, ShieldCheck, Clock,
-  ArrowRight, Plus, Coins
+  ArrowRight, Plus, Coins, X
 } from "lucide-react";
+
+const EXPERTISE_OPTIONS = [
+  {id: "ca_auditor", label: "Chartered Accountant (CA) / Statutory Auditor"},
+  {id: "peer_review_auditor", label: "Peer Review Auditor"},
+  {id: "tax_advisor", label: "Tax Advisors"},
+  {id: "cfo", label: "CFO (Chief Financial Officer)"},
+  {id: "company_secretary", label: "Company Secretary (CS)"},
+  {id: "legal_advisor", label: "Legal Advisors (Indian Counsel)"},
+  {id: "independent_director", label: "Independent Directors"},
+  {id: "valuation_expert", label: "Registered Valuation Expert (RV)"},
+  {id: "merchant_banker", label: "Merchant Banker / BRLM"},
+  {id: "underwriter", label: "Underwriters"},
+  {id: "rta", label: "Registrar & Transfer Agent (RTA)"},
+  {id: "credit_rating", label: "Credit Rating Agency (CRA)"},
+  {id: "banker_to_issue", label: "Bankers to the Issue"},
+  {id: "advertising_agency", label: "Advertising Agency"},
+  {id: "market_maker", label: "Market Maker (SME IPOs only)"},
+];
 
 const IssuerPage = ({ user, apiClient }) => {
   const navigate = useNavigate();
@@ -25,11 +43,12 @@ const IssuerPage = ({ user, apiClient }) => {
   const [showTopUp, setShowTopUp] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState(5);
   const [topUpLoading, setTopUpLoading] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
 
   // Registration form
   const [form, setForm] = useState({
     company_name: "", cin: "", gstin: "", mobile: "", email: user?.email || "",
-    listing_intent: "", contact_persona: "", allow_expert_contact: true, hiring: false, hiring_experts: []
+    listing_intent: "", contact_persona: "", allow_expert_contact: true, hiring: false, hiring_expertise: "", hiring_experts: []
   });
   const [regLoading, setRegLoading] = useState(false);
 
@@ -60,8 +79,8 @@ const IssuerPage = ({ user, apiClient }) => {
     setRegLoading(true);
     try {
       const res = await apiClient.post("/matchmaker/issuer/register", form);
-      toast.success("Issuer registered successfully!");
       setProfile(res.data.profile);
+      setShowThankYou(true);
       fetchData();
     } catch (e) {
       toast.error(e.response?.data?.detail || "Registration failed");
@@ -329,12 +348,22 @@ const IssuerPage = ({ user, apiClient }) => {
                   <p className="font-medium text-sm text-black">Are you Hiring?</p>
                   <p className="text-xs text-muted-foreground">Looking to hire Subject Matter Experts?</p>
                 </div>
-                <Switch checked={form.hiring} onCheckedChange={v => setForm({...form, hiring: v})} data-testid="issuer-hiring" />
+                <Switch checked={form.hiring} onCheckedChange={v => setForm({...form, hiring: v, hiring_expertise: v ? form.hiring_expertise : ""})} data-testid="issuer-hiring" />
               </div>
 
               {form.hiring && (
-                <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-                  <p className="text-sm font-medium text-orange-700 mb-2">Browse experts after registration to find the right professionals.</p>
+                <div>
+                  <Label className="text-sm font-medium">What expertise are you looking for?</Label>
+                  <Select value={form.hiring_expertise} onValueChange={v => setForm({...form, hiring_expertise: v})}>
+                    <SelectTrigger className="mt-1" data-testid="issuer-hiring-expertise">
+                      <SelectValue placeholder="Select area of expertise" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EXPERTISE_OPTIONS.map(opt => (
+                        <SelectItem key={opt.id} value={opt.id}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 
@@ -344,6 +373,24 @@ const IssuerPage = ({ user, apiClient }) => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Thank You Popup */}
+        <Dialog open={showThankYou} onOpenChange={setShowThankYou}>
+          <DialogContent className="max-w-sm text-center">
+            <button onClick={() => setShowThankYou(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600" data-testid="close-thankyou">
+              <X className="w-5 h-5" />
+            </button>
+            <div className="py-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <DialogTitle className="text-xl font-bold text-black mb-2">Thank you for your submission!</DialogTitle>
+              <DialogDescription className="text-sm text-gray-500">
+                Someone from the IPO Labs team will be in touch with you shortly.
+              </DialogDescription>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

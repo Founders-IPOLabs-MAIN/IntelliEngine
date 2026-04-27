@@ -34,6 +34,7 @@ import ExpertRegister from "@/pages/ExpertRegister";
 import ExpertVerification from "@/pages/ExpertVerification";
 import ExpertsBrowse from "@/pages/ExpertsBrowse";
 import ExpertDashboard from "@/pages/ExpertDashboard";
+import IPOLeads from "@/pages/IPOLeads";
 import LegalDisclaimer from "@/pages/LegalDisclaimer";
 import TermsOfUse from "@/pages/TermsOfUse";
 import Funding from "@/pages/Funding";
@@ -445,6 +446,14 @@ const AppRouter = () => {
         element={
           <ModuleRoute requiredModule="matchmaker">
             {({ user, apiClient }) => <ExpertDashboard user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/matchmaker/ipo-leads"
+        element={
+          <ModuleRoute requiredModule="matchmaker">
+            {({ user, apiClient }) => <IPOLeads user={user} apiClient={apiClient} />}
           </ModuleRoute>
         }
       />

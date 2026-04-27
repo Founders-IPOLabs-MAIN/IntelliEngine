@@ -451,6 +451,67 @@ async def browse_experts(
     return {"experts": experts, "total": len(experts)}
 
 
+# ============ IPO LEADS BROWSE (Restricted) ============
+
+@router.get("/matchmaker/ipo-leads")
+async def browse_ipo_leads(user: User = Depends(get_current_user)):
+    """Browse registered issuers/corporates. Access restricted to admins and premium experts."""
+    from shared import is_approved_admin
+
+    # Check access: must be admin OR premium expert
+    is_admin = is_approved_admin(user)
+    expert_profile = await db.expert_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
+    is_premium_expert = expert_profile and expert_profile.get("is_premium", False)
+
+    if not is_admin and not is_premium_expert:
+        raise HTTPException(status_code=403, detail="Access restricted to IPO Labs Admins and Premium Experts")
+
+    issuers = await db.issuer_profiles.find({"status": {"$ne": "deleted"}}, {"_id": 0}).sort("created_at", -1).to_list(500)
+
+    area_lookup = {a["id"]: a["label"] for a in EXPERTISE_AREAS}
+
+    leads = []
+    for iss in issuers:
+        hiring_label = area_lookup.get(iss.get("hiring_expertise", ""), iss.get("hiring_expertise", ""))
+        intent = iss.get("listing_intent", "")
+        if intent == "immediate":
+            time_to_ipo = "6-12 Months"
+        elif intent == "midterm":
+            time_to_ipo = "12-24 Months"
+        else:
+            time_to_ipo = "Discovery Phase"
+
+        lead = {
+            "issuer_id": iss.get("issuer_id", ""),
+            "company_name": iss.get("company_name", ""),
+            "contact_persona": iss.get("contact_persona", ""),
+            "time_to_ipo": time_to_ipo,
+            "hiring": iss.get("hiring", False),
+            "hiring_expertise": hiring_label,
+            "allow_expert_contact": iss.get("allow_expert_contact", True),
+            "created_at": iss.get("created_at", ""),
+        }
+
+        # Admins see full data; experts see limited data
+        if is_admin:
+            lead["cin"] = iss.get("cin", "")
+            lead["gstin"] = iss.get("gstin", "")
+            lead["mobile"] = iss.get("mobile", "")
+            lead["email"] = iss.get("email", "")
+            lead["full_access"] = True
+        else:
+            lead["cin"] = "****"
+            lead["gstin"] = "****"
+            lead["mobile"] = "****"
+            lead["email"] = "****"
+            lead["full_access"] = False
+
+        leads.append(lead)
+
+    return {"leads": leads, "total": len(leads), "full_access": is_admin}
+
+
+
 # ============ EXPERT PROFILE EDIT ============
 
 class ExpertProfileUpdate(BaseModel):

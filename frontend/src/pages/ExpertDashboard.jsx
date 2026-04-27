@@ -14,7 +14,7 @@ import Sidebar from "@/components/Sidebar";
 import {
   Loader2, Edit3, Save, Mail, MailOpen, Send, Star, ShieldCheck,
   CreditCard, LifeBuoy, ArrowLeft, MapPin, Briefcase, Clock, ChevronRight,
-  CheckCircle2, X, User as UserIcon, MessageSquare
+  CheckCircle2, X, User as UserIcon, MessageSquare, Building2
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -177,9 +177,14 @@ const ExpertDashboard = ({ user, apiClient }) => {
                 <p className="text-xs text-gray-500">{profile?.city} &middot; {profile?.email}</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => navigate("/matchmaker/experts")} data-testid="browse-experts-btn">
-              Browse Experts <ChevronRight className="w-3.5 h-3.5 ml-1" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate("/matchmaker/ipo-leads")} data-testid="browse-leads-btn">
+                <Building2 className="w-3.5 h-3.5 mr-1" /> Browse IPO Leads
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/matchmaker/experts")} data-testid="browse-experts-btn">
+                Browse Experts <ChevronRight className="w-3.5 h-3.5 ml-1" />
+              </Button>
+            </div>
           </div>
         </header>
 
