@@ -81,21 +81,20 @@ const ExpertsBrowse = ({ user, apiClient }) => {
         {/* Search & Filters */}
         <div className="px-8 py-4 bg-gray-50 border-b">
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2 min-w-[180px]">
-              <Search className="w-4 h-4 text-gray-400" />
-              <Select value={filterCity || "all"} onValueChange={v => setFilterCity(v === "all" ? "" : v)}>
-                <SelectTrigger className="h-9 text-sm bg-white" data-testid="filter-city">
-                  <SelectValue placeholder="City" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
-                  {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+
+            <Select value={filterCity || "all"} onValueChange={v => setFilterCity(v === "all" ? "" : v)}>
+              <SelectTrigger className="h-9 text-sm bg-white w-[180px]" data-testid="filter-city">
+                <SelectValue placeholder="City" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Cities</SelectItem>
+                {cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
 
             <Select value={filterExpertise || "all"} onValueChange={v => setFilterExpertise(v === "all" ? "" : v)}>
-              <SelectTrigger className="h-9 text-sm bg-white min-w-[200px]" data-testid="filter-expertise">
+              <SelectTrigger className="h-9 text-sm bg-white w-[260px]" data-testid="filter-expertise">
                 <SelectValue placeholder="Area of Expertise" />
               </SelectTrigger>
               <SelectContent>
