@@ -1,113 +1,141 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import Sidebar from "@/components/Sidebar";
-import { ArrowLeft, ArrowRight, Briefcase, Building2, Calculator, FileText } from "lucide-react";
+import { ArrowRight, Briefcase, Building2, Calculator } from "lucide-react";
 
-const USER_LOGIN_TYPES = [
+const VIDEO_URL =
+  "https://customer-assets.emergentagent.com/job_d9168386-61cf-418c-af5b-b3de2eb2d725/artifacts/w65ukkrn_Lady_entering_boardroom_202604272213.mp4";
+
+const CARDS = [
   {
     id: "merchant_banker",
     title: "Merchant Banker",
-    description: "Add multiple projects under your firm",
+    desc: "Add multiple projects under your firm. Manage DRHP filings across your portfolio of IPO mandates.",
     icon: Briefcase,
-    accent: "#1DA1F2",
-    tintBg: "bg-blue-50",
-    tintBorder: "hover:border-blue-300",
-    iconColor: "text-[#1DA1F2]",
-    iconBg: "bg-blue-100",
+    accent: "#00D1FF",
+    iconGrad: "from-[#003366] to-[#0052A3]",
+    cta: "Continue",
+    testid: "drhp-user-type-merchant_banker",
   },
   {
     id: "company",
     title: "Company",
-    description: "Add and manage your own corporate DRHP",
+    desc: "Add and manage your own corporate DRHP. Build your prospectus with SEBI-compliant templates.",
     icon: Building2,
-    accent: "#059669",
-    tintBg: "bg-emerald-50",
-    tintBorder: "hover:border-emerald-300",
-    iconColor: "text-emerald-600",
-    iconBg: "bg-emerald-100",
+    accent: "#34D399",
+    iconGrad: "from-emerald-500 to-teal-600",
+    cta: "Continue",
+    testid: "drhp-user-type-company",
   },
   {
     id: "ca_firm",
     title: "CA Firm",
-    description: "Add multiple projects under your firm",
+    desc: "Add multiple projects under your firm. Review and certify financial statements for DRHP filings.",
     icon: Calculator,
-    accent: "#D97706",
-    tintBg: "bg-amber-50",
-    tintBorder: "hover:border-amber-300",
-    iconColor: "text-amber-600",
-    iconBg: "bg-amber-100",
+    accent: "#FB923C",
+    iconGrad: "from-amber-500 to-orange-600",
+    cta: "Continue",
+    testid: "drhp-user-type-ca_firm",
   },
 ];
 
 const DRHPUserTypeSelector = ({ user, apiClient }) => {
   const navigate = useNavigate();
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const tryPlay = () => { v.play().catch(() => {}); };
+    v.addEventListener("loadedmetadata", tryPlay);
+    v.addEventListener("canplay", tryPlay);
+    tryPlay();
+    return () => {
+      v.removeEventListener("loadedmetadata", tryPlay);
+      v.removeEventListener("canplay", tryPlay);
+    };
+  }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-50" data-testid="drhp-user-type-selector">
+    <div className="flex min-h-screen bg-black" data-testid="drhp-user-type-selector">
       <Sidebar user={user} apiClient={apiClient} />
 
-      <main className="flex-1 ml-64">
-        {/* Header */}
-        <header className="sticky top-0 z-10 bg-white border-b border-border px-8 py-4">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="text-gray-500 hover:text-gray-700 flex items-center gap-1 text-sm"
-              data-testid="drhp-selector-back-btn"
+      <main className="flex-1 ml-64 relative overflow-hidden">
+        {/* Full-page background video */}
+        <video
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover"
+          src={VIDEO_URL}
+          autoPlay loop muted playsInline preload="auto"
+          aria-hidden="true"
+          data-testid="drhp-bg-video"
+        />
+        {/* Dark overlay — slightly dimmed */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/45 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 pointer-events-none" />
+
+        <div className="relative z-10 min-h-screen flex flex-col">
+          {/* Sticky Header */}
+          <header
+            className="sticky top-0 z-20 backdrop-blur-md bg-black/35 border-b border-white/10 px-8 lg:px-16 py-4 flex items-center justify-between"
+            data-testid="drhp-header"
+          >
+            <h1
+              className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white"
+              style={{ letterSpacing: "-0.02em" }}
             >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Dashboard
-            </button>
-            <div className="w-px h-6 bg-gray-200" />
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#1DA1F2] rounded-xl flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold tracking-tight text-black">DRHP Builder</h1>
-                <p className="text-xs text-muted-foreground">Select your user profile to continue</p>
-              </div>
-            </div>
-          </div>
-        </header>
+              DRHP Builder
+            </h1>
+          </header>
 
-        <div className="p-8">
-          <div className="max-w-5xl mx-auto">
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">How are you using SETU today?</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Choose your profile — your DRHP workspace will be scoped to projects you create under it.
-              </p>
-            </div>
+          {/* Hero */}
+          <section className="px-8 lg:px-16 pt-12 lg:pt-16 pb-8 max-w-5xl" data-testid="drhp-hero">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08]">
+              Build Audit-Ready DRHPs with{" "}
+              <span className="text-[#00D1FF]">SEBI-Grade Precision.</span>
+            </h2>
+            <p className="mt-5 text-white/75 text-base lg:text-lg leading-relaxed max-w-2xl">
+              Choose your profile and create a safe & secured workspace.
+            </p>
+          </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {USER_LOGIN_TYPES.map((t) => {
-                const Icon = t.icon;
+          {/* 3 Profile Cards — matchmaker style */}
+          <section className="px-8 lg:px-16 pb-12 flex-1 flex items-start" data-testid="drhp-cards">
+            <div className="flex justify-center gap-6 w-full">
+              {CARDS.map((c) => {
+                const Icon = c.icon;
                 return (
                   <Card
-                    key={t.id}
-                    onClick={() => navigate(`/drhp/${t.id}`)}
-                    className={`border border-gray-200 bg-white ${t.tintBorder} hover:shadow-md transition-all duration-200 cursor-pointer group`}
-                    data-testid={`drhp-user-type-${t.id}`}
+                    key={c.id}
+                    onClick={() => navigate(`/drhp/${c.id}`)}
+                    className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1 w-full max-w-sm"
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = c.accent; e.currentTarget.style.boxShadow = `0 20px 40px -10px ${c.accent}40`; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.boxShadow = ""; }}
+                    data-testid={c.testid}
                   >
-                    <CardContent className="p-6">
-                      <div className={`w-12 h-12 ${t.iconBg} rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform`}>
-                        <Icon className={`w-6 h-6 ${t.iconColor}`} />
+                    <CardContent className="p-6 flex flex-col h-full">
+                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${c.iconGrad} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 transition-transform`}>
+                        <Icon className="w-7 h-7 text-white" />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1.5">{t.title}</h3>
-                      <p className="text-sm text-gray-600 leading-relaxed mb-5">{t.description}</p>
+                      <h3 className="text-lg font-bold text-white leading-snug mb-2 drop-shadow">
+                        {c.title}
+                      </h3>
+                      <p className="text-sm text-white/70 leading-relaxed mb-6 flex-1 drop-shadow">
+                        {c.desc}
+                      </p>
                       <div
-                        className="inline-flex items-center gap-1.5 text-sm font-medium group-hover:gap-2.5 transition-all"
-                        style={{ color: t.accent }}
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all"
+                        style={{ color: c.accent }}
                       >
-                        Continue <ArrowRight className="w-3.5 h-3.5" />
+                        {c.cta} <ArrowRight className="w-4 h-4" />
                       </div>
                     </CardContent>
                   </Card>
                 );
               })}
             </div>
-          </div>
+          </section>
         </div>
       </main>
     </div>
