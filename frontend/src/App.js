@@ -33,6 +33,7 @@ import BrowseAllProfessionals from "@/pages/BrowseAllProfessionals";
 import ExpertRegister from "@/pages/ExpertRegister";
 import ExpertVerification from "@/pages/ExpertVerification";
 import ExpertsBrowse from "@/pages/ExpertsBrowse";
+import ExpertDashboard from "@/pages/ExpertDashboard";
 import LegalDisclaimer from "@/pages/LegalDisclaimer";
 import TermsOfUse from "@/pages/TermsOfUse";
 import Funding from "@/pages/Funding";
@@ -436,6 +437,14 @@ const AppRouter = () => {
         element={
           <ModuleRoute requiredModule="matchmaker">
             {({ user, apiClient }) => <ExpertVerification user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/matchmaker/experts/dashboard"
+        element={
+          <ModuleRoute requiredModule="matchmaker">
+            {({ user, apiClient }) => <ExpertDashboard user={user} apiClient={apiClient} />}
           </ModuleRoute>
         }
       />

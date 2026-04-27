@@ -38,6 +38,10 @@ const ExpertRegister = ({ user, apiClient }) => {
   useEffect(() => {
     apiClient.get("/matchmaker/expert/expertise-areas").then(r => setAreas(r.data.areas)).catch(() => {});
     apiClient.get("/matchmaker/expert/major-cities").then(r => setCities(r.data.cities)).catch(() => {});
+    // Redirect to dashboard if already registered
+    apiClient.get("/matchmaker/expert/my-profile").then(r => {
+      if (r.data.profile) navigate("/matchmaker/experts/dashboard");
+    }).catch(() => {});
   }, []);
 
   const handlePicChange = (e) => {
@@ -84,7 +88,7 @@ const ExpertRegister = ({ user, apiClient }) => {
         setShowPayment(true);
       } else {
         toast.success("Registration successful!");
-        navigate("/matchmaker/experts");
+        navigate("/matchmaker/experts/dashboard");
       }
     } catch (e) {
       toast.error(e.response?.data?.detail || "Registration failed");

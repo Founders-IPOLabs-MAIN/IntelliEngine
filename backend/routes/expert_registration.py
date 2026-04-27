@@ -449,3 +449,176 @@ async def browse_experts(
         e["expertise_labels"] = [area_lookup.get(a, a) for a in e.get("expertise_areas", [])]
 
     return {"experts": experts, "total": len(experts)}
+
+
+# ============ EXPERT PROFILE EDIT ============
+
+class ExpertProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    mobile: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    address: Optional[str] = None
+    pincode: Optional[str] = None
+    ipo_experience: Optional[bool] = None
+    years_of_experience: Optional[int] = None
+    expertise_areas: Optional[List[str]] = None
+
+
+@router.put("/matchmaker/expert/my-profile")
+async def update_expert_profile(data: ExpertProfileUpdate, user: User = Depends(get_current_user)):
+    profile = await db.expert_profiles.find_one({"user_id": user.user_id})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Expert profile not found")
+
+    update = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    for field, val in data.model_dump(exclude_none=True).items():
+        if field == "expertise_areas" and val is not None:
+            if len(val) > 3:
+                raise HTTPException(status_code=400, detail="Maximum 3 areas of expertise")
+        update[field] = val
+
+    await db.expert_profiles.update_one({"user_id": user.user_id}, {"$set": update})
+    updated = await db.expert_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
+    return {"message": "Profile updated", "profile": updated}
+
+
+# ============ INTERNAL MESSAGING ============
+
+class MessageSend(BaseModel):
+    to_expert_id: str
+    subject: str
+    body: str
+
+
+@router.post("/matchmaker/expert/messages/send")
+async def send_message(data: MessageSend, user: User = Depends(get_current_user)):
+    sender_profile = await db.expert_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
+    sender_name = sender_profile["full_name"] if sender_profile else user.name
+    sender_expert_id = sender_profile["expert_id"] if sender_profile else None
+
+    recipient = await db.expert_profiles.find_one({"expert_id": data.to_expert_id}, {"_id": 0})
+    if not recipient:
+        raise HTTPException(status_code=404, detail="Recipient not found")
+
+    msg = {
+        "message_id": f"msg_{uuid.uuid4().hex[:12]}",
+        "from_user_id": user.user_id,
+        "from_expert_id": sender_expert_id,
+        "from_name": sender_name,
+        "from_email": user.email,
+        "to_user_id": recipient.get("user_id"),
+        "to_expert_id": data.to_expert_id,
+        "to_name": recipient["full_name"],
+        "subject": data.subject.strip(),
+        "body": data.body.strip(),
+        "is_read": False,
+        "is_archived": False,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.expert_messages.insert_one(msg)
+    msg.pop("_id", None)
+    return {"message": "Message sent", "data": msg}
+
+
+@router.get("/matchmaker/expert/messages/inbox")
+async def get_inbox(user: User = Depends(get_current_user)):
+    profile = await db.expert_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
+    if not profile:
+        return {"messages": [], "unread_count": 0}
+
+    messages = await db.expert_messages.find(
+        {"to_expert_id": profile["expert_id"], "is_archived": {"$ne": True}},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(200)
+
+    unread = sum(1 for m in messages if not m.get("is_read"))
+    return {"messages": messages, "unread_count": unread}
+
+
+@router.get("/matchmaker/expert/messages/sent")
+async def get_sent(user: User = Depends(get_current_user)):
+    messages = await db.expert_messages.find(
+        {"from_user_id": user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(200)
+    return {"messages": messages}
+
+
+@router.patch("/matchmaker/expert/messages/{message_id}/read")
+async def mark_read(message_id: str, user: User = Depends(get_current_user)):
+    result = await db.expert_messages.update_one(
+        {"message_id": message_id},
+        {"$set": {"is_read": True, "read_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    return {"message": "Marked as read"}
+
+
+@router.delete("/matchmaker/expert/messages/{message_id}")
+async def archive_message(message_id: str, user: User = Depends(get_current_user)):
+    await db.expert_messages.update_one(
+        {"message_id": message_id},
+        {"$set": {"is_archived": True}}
+    )
+    return {"message": "Message archived"}
+
+
+# ============ PAYMENT HISTORY ============
+
+@router.get("/matchmaker/expert/payments")
+async def get_payment_history(user: User = Depends(get_current_user)):
+    profile = await db.expert_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
+    if not profile:
+        return {"payments": [], "is_premium": False}
+
+    payments = []
+    if profile.get("is_premium"):
+        payments.append({
+            "payment_id": f"pay_{uuid.uuid4().hex[:8]}",
+            "type": "Premium Membership",
+            "amount": 4999,
+            "currency": "INR",
+            "status": "completed",
+            "provider": "Razorpay (MOCKED)",
+            "date": profile.get("premium_activated_at", profile.get("created_at")),
+        })
+
+    return {"payments": payments, "is_premium": profile.get("is_premium", False)}
+
+
+# ============ SUPPORT ============
+
+class SupportRequest(BaseModel):
+    subject: str
+    message: str
+
+
+@router.post("/matchmaker/expert/support")
+async def submit_support(data: SupportRequest, user: User = Depends(get_current_user)):
+    profile = await db.expert_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
+
+    ticket = {
+        "ticket_id": f"tkt_{uuid.uuid4().hex[:12]}",
+        "user_id": user.user_id,
+        "expert_id": profile["expert_id"] if profile else None,
+        "name": profile["full_name"] if profile else user.name,
+        "email": user.email,
+        "subject": data.subject.strip(),
+        "message": data.message.strip(),
+        "status": "open",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.support_tickets.insert_one(ticket)
+    ticket.pop("_id", None)
+    return {"message": "Support ticket submitted. Our team will respond shortly.", "ticket": ticket}
+
+
+@router.get("/matchmaker/expert/support/tickets")
+async def get_support_tickets(user: User = Depends(get_current_user)):
+    tickets = await db.support_tickets.find(
+        {"user_id": user.user_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    return {"tickets": tickets}
+
