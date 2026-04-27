@@ -44,6 +44,7 @@ from routes.valuation import router as valuation_router
 from routes.careers import router as careers_router
 from routes.contact import router as contact_router
 from routes.document_repository import router as document_repository_router
+from routes.expert_registration import router as expert_registration_router
 
 # ============ INCLUDE ALL ROUTERS ============
 
@@ -63,6 +64,7 @@ api_router.include_router(valuation_router)
 api_router.include_router(careers_router)
 api_router.include_router(contact_router)
 api_router.include_router(document_repository_router)
+api_router.include_router(expert_registration_router)
 
 # ============ ROOT & HEALTH ENDPOINTS ============
 

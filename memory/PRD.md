@@ -20,6 +20,13 @@
   - Sidebar hides Admin Center / Account Details for non-admins
   - Test suite: `/app/backend/tests/test_admin_access_restriction.py` (8 tests, 100% pass)
 - **Dashboard Redesign**: Full-page video background (user-provided flowing animation), "Build your IPO Journey with us" hero header, compact glass-morphism module cards (Fiverr/matchmaker-style), dark navy gradient overlay
+- **Expert Registration System (Full Feature)**:
+  - Expert Registration form: Full Name, Profile Pic (JPG/PNG, 2MB), Mobile, Email, City, State, Address, Pincode, IPO Experience (Yes/No with years dropdown), Area of Expertise (15 SEBI-aligned roles, max 3 selections)
+  - Free Submit → auto-populates Experts browse page
+  - Premium Option → Mocked Razorpay payment popup → Advanced Verification page
+  - Advanced Verification: Per-expertise primary/secondary identifiers from SEBI regulatory framework. At least 1 fully verified profile = Verified badge
+  - Premium badge for paid users, both Premium + Verified for verified users
+  - Experts Browse Page redesigned: Rectangular scrollable cards, search filters (City, Expertise, Premium, Verified), "Contact Me" per expert, no AI matchmaking references
 
 ### Changelog — Apr 21, 2026
 - AboutPage.jsx: swapped section order — Meet the Founders now sits above Origin Story

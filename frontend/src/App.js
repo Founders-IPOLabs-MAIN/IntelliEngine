@@ -30,6 +30,9 @@ import ProfessionalProfile from "@/pages/ProfessionalProfile";
 import ProfessionalRegister from "@/pages/ProfessionalRegister";
 import EditProfile from "@/pages/EditProfile";
 import BrowseAllProfessionals from "@/pages/BrowseAllProfessionals";
+import ExpertRegister from "@/pages/ExpertRegister";
+import ExpertVerification from "@/pages/ExpertVerification";
+import ExpertsBrowse from "@/pages/ExpertsBrowse";
 import LegalDisclaimer from "@/pages/LegalDisclaimer";
 import TermsOfUse from "@/pages/TermsOfUse";
 import Funding from "@/pages/Funding";
@@ -416,7 +419,23 @@ const AppRouter = () => {
         path="/matchmaker/experts"
         element={
           <ModuleRoute requiredModule="matchmaker">
-            {({ user, apiClient }) => <MatchMaker user={user} apiClient={apiClient} />}
+            {({ user, apiClient }) => <ExpertsBrowse user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/matchmaker/experts/register"
+        element={
+          <ModuleRoute requiredModule="matchmaker">
+            {({ user, apiClient }) => <ExpertRegister user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/matchmaker/experts/verify"
+        element={
+          <ModuleRoute requiredModule="matchmaker">
+            {({ user, apiClient }) => <ExpertVerification user={user} apiClient={apiClient} />}
           </ModuleRoute>
         }
       />
