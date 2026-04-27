@@ -29,7 +29,7 @@ const IssuerPage = ({ user, apiClient }) => {
   // Registration form
   const [form, setForm] = useState({
     company_name: "", cin: "", gstin: "", mobile: "", email: user?.email || "",
-    listing_intent: "", contact_persona: "", hiring: false, hiring_experts: []
+    listing_intent: "", contact_persona: "", allow_expert_contact: true, hiring: false, hiring_experts: []
   });
   const [regLoading, setRegLoading] = useState(false);
 
@@ -165,6 +165,7 @@ const IssuerPage = ({ user, apiClient }) => {
                   <div><span className="text-muted-foreground">GSTIN:</span> <span className="font-medium ml-2">{profile.gstin}</span></div>
                   <div><span className="text-muted-foreground">Contact:</span> <span className="font-medium ml-2">{profile.contact_persona}</span></div>
                   <div><span className="text-muted-foreground">Timeline:</span> <Badge variant="outline" className="ml-2">{profile.listing_intent === "immediate" ? "Next 6-12 Months" : profile.listing_intent === "midterm" ? "12-24 Months" : "Discovery"}</Badge></div>
+                  <div><span className="text-muted-foreground">Expert Contact:</span> <Badge className={`ml-2 ${profile.allow_expert_contact !== false ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}>{profile.allow_expert_contact !== false ? "Yes" : "No"}</Badge></div>
                   <div><span className="text-muted-foreground">Hiring:</span> <Badge className={`ml-2 ${profile.hiring ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>{profile.hiring ? "Yes" : "No"}</Badge></div>
                   <div><span className="text-muted-foreground">Pending Requests:</span> <span className="font-medium ml-2">{stats.pending_requests ?? 0}</span></div>
                 </div>
@@ -313,6 +314,14 @@ const IssuerPage = ({ user, apiClient }) => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div>
+                  <p className="font-medium text-sm text-black">Let IPO Experts Contact Me</p>
+                  <p className="text-xs text-muted-foreground">Allow verified IPO experts to reach out to you directly</p>
+                </div>
+                <Switch checked={form.allow_expert_contact} onCheckedChange={v => setForm({...form, allow_expert_contact: v})} data-testid="issuer-allow-expert-contact" />
               </div>
 
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
