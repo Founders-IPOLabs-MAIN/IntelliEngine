@@ -238,16 +238,6 @@ const Funding = ({ user, apiClient }) => {
             </div>
           </section>
 
-          {/* Footer */}
-          <footer className="bg-white border-t border-gray-200 px-8 lg:px-12 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6 text-xs text-gray-500">
-                <span className="font-semibold text-black">SETU</span>
-                <span>by IPO Labs</span>
-              </div>
-              <p className="text-xs text-gray-400">&copy; 2026 IPO Labs Private Limited. All rights reserved.</p>
-            </div>
-          </footer>
         </div>
       </main>
 
