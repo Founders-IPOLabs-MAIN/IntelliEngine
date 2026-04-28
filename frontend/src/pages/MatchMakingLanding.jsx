@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Sidebar from "@/components/Sidebar";
 import {
-  Building2, ArrowRight, Briefcase,
+  Building2, ArrowRight, Briefcase, Users, Shield, Brain,
+  Sparkles, CheckCircle2, Search
 } from "lucide-react";
 
 const CARDS = [
@@ -43,91 +45,150 @@ const MatchMakingLanding = ({ user, apiClient }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 pointer-events-none" />
 
         <div className="relative z-10 min-h-screen flex flex-col">
-          {/* ── STICKY PAGE HEADER ── */}
+          {/* Sticky Header */}
           <header
-            className="sticky top-0 z-20 backdrop-blur-md bg-black/35 border-b border-white/10 px-8 lg:px-16 py-4 flex items-center justify-between"
+            className="sticky top-0 z-20 backdrop-blur-md bg-black/35 border-b border-white/10 px-8 lg:px-12 py-4 flex items-center justify-between"
             data-testid="matchmaker-top-header"
           >
-            <h1
-              className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white"
-              style={{ letterSpacing: "-0.02em" }}
-              data-testid="matchmaker-header-title"
-            >
-              The Match-Making Platform
-            </h1>
-            <button
-              onClick={() => navigate("/matchmaker/experts/register")}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold text-sm lg:text-base px-5 lg:px-7 py-2.5 lg:py-3 rounded-full shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all"
-              data-testid="btn-register-as-expert"
-            >
-              <Briefcase className="w-4 h-4 lg:w-5 lg:h-5" />
-              Register as an Expert
-              <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5" />
-            </button>
+            <div className="flex items-center gap-3">
+              <h1
+                className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white"
+                style={{ letterSpacing: "-0.02em" }}
+                data-testid="matchmaker-header-title"
+              >
+                The Match-Making Platform
+              </h1>
+              <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs text-white/80">
+                <Brain className="w-3 h-3 text-yellow-300" />
+                <span className="font-medium">Human + AI Powered</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-5 text-xs text-white/70">
+              <div className="text-center"><p className="text-lg font-bold text-white">50+</p><p>Experts</p></div>
+              <div className="w-px h-8 bg-white/20" />
+              <div className="text-center"><p className="text-lg font-bold text-white">15</p><p>Categories</p></div>
+            </div>
           </header>
 
-          {/* ── FIVERR-STYLE HERO ── */}
-          <section className="px-8 lg:px-16 pt-12 lg:pt-16 pb-8 max-w-5xl" data-testid="matchmaker-hero">
+          {/* Features Bar */}
+          <div className="backdrop-blur-sm bg-white/5 border-b border-white/10">
+            <div className="px-8 lg:px-12 py-2.5 flex items-center justify-center gap-6 text-xs text-white/60">
+              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-emerald-400" /> Verified Experts</span>
+              <span className="w-px h-3 bg-white/20" />
+              <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-emerald-400" /> SEBI-Aligned Roles</span>
+              <span className="w-px h-3 bg-white/20" />
+              <span className="flex items-center gap-1.5"><Search className="w-3.5 h-3.5 text-emerald-400" /> Smart Matching</span>
+              <span className="w-px h-3 bg-white/20" />
+              <span className="flex items-center gap-1.5"><Briefcase className="w-3.5 h-3.5 text-emerald-400" /> End-to-End Advisory</span>
+            </div>
+          </div>
+
+          {/* Hero */}
+          <section className="px-8 lg:px-12 pt-10 pb-6 max-w-5xl" data-testid="matchmaker-hero">
             <h2
               className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08]"
               data-testid="matchmaker-hero-h1"
             >
-              Looking for Experts or<br className="hidden sm:block" /> Planning your IPO journey?{" "}
+              Looking for Experts or Planning your IPO journey?{" "}
               <span className="text-[#00D1FF]">Look no further.</span>
             </h2>
-            <p className="mt-5 text-white/75 text-base lg:text-lg leading-relaxed max-w-2xl">
+            <p className="mt-4 text-white/70 text-base lg:text-lg leading-relaxed max-w-2xl">
               Connect with India's most trusted IPO advisors, compliance experts and legal counsel &mdash; all under one roof.
             </p>
           </section>
 
-          {/* ── 2 ACTION CARDS — centered, wider ── */}
-          <section className="px-8 lg:px-16 pb-12" data-testid="matchmaker-cards">
-            <div className="flex justify-center gap-6">
-              {CARDS.map((c) => {
-                const Icon = c.icon;
-                return (
-                  <Card
-                    key={c.id}
-                    onClick={() => navigate(c.path)}
-                    className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1 w-full max-w-md"
-                    style={{ borderColor: undefined }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = c.accent; e.currentTarget.style.boxShadow = `0 20px 40px -10px ${c.accent}40`; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.boxShadow = ""; }}
-                    data-testid={c.testid}
-                  >
-                    <CardContent className="p-6 flex flex-col h-full">
-                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${c.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-7 h-7 text-white" />
-                      </div>
-                      <h3 className="text-lg font-bold text-white leading-snug mb-2 drop-shadow">
-                        {c.title}
-                      </h3>
-                      <p className="text-sm text-white/75 leading-relaxed mb-5 flex-1 drop-shadow">
-                        {c.desc}
-                      </p>
-                      <div
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold group-hover:gap-2.5 transition-all"
-                        style={{ color: c.accent }}
-                      >
-                        {c.cta} <ArrowRight className="w-4 h-4" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+          {/* Content Grid: Cards + Sidebar */}
+          <section className="px-8 lg:px-12 pb-8 flex-1">
+            <div className="grid grid-cols-3 gap-5">
+              {/* Left — Action Cards */}
+              <div className="col-span-2 grid grid-cols-2 gap-4">
+                {CARDS.map((c) => {
+                  const Icon = c.icon;
+                  return (
+                    <Card
+                      key={c.id}
+                      onClick={() => navigate(c.path)}
+                      className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = c.accent; e.currentTarget.style.boxShadow = `0 20px 40px -10px ${c.accent}40`; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.boxShadow = ""; }}
+                      data-testid={c.testid}
+                    >
+                      <CardContent className="p-5 flex flex-col h-full">
+                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
+                        <h3 className="text-base font-bold text-white mb-1.5 drop-shadow">{c.title}</h3>
+                        <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1 drop-shadow">{c.desc}</p>
+                        <div className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all" style={{ color: c.accent }}>
+                          {c.cta} <ArrowRight className="w-3.5 h-3.5" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* Right — How It Works + Quick Start + Disclaimer */}
+              <div className="space-y-4">
+                <Card className="bg-white/10 backdrop-blur-xl border border-white/20">
+                  <CardContent className="p-5">
+                    <h3 className="text-sm font-bold text-white mb-4">How It Works</h3>
+                    <div className="space-y-3">
+                      {["Choose Your Role", "Create Profile", "Get Matched", "Start Working"].map((step, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="w-7 h-7 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-emerald-400">{i + 1}</span>
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-white text-xs">{step}</h4>
+                            <p className="text-[10px] text-white/50">
+                              {i === 0 && "Corporate seeking experts or Expert offering services"}
+                              {i === 1 && "Share your requirements or expertise details"}
+                              {i === 2 && "AI + human-curated matching with verified professionals"}
+                              {i === 3 && "Connect directly and begin your IPO engagement"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Quick Start */}
+                <Card className="bg-gradient-to-br from-emerald-600/80 to-teal-700/80 backdrop-blur-xl border border-emerald-400/30">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="w-4 h-4 text-yellow-300" />
+                      <span className="text-xs font-medium text-white">Quick Start</span>
+                    </div>
+                    <h3 className="font-semibold text-sm text-white mb-2">Want to register as an Expert?</h3>
+                    <p className="text-[10px] text-emerald-100 mb-3">
+                      Join our network of verified IPO professionals. Free registration with optional premium verification.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => navigate("/matchmaker/experts/register")}
+                      className="w-full bg-white text-emerald-700 hover:bg-emerald-50 gap-1.5 h-8 text-xs"
+                      data-testid="quick-start-register"
+                    >
+                      <Briefcase className="w-3.5 h-3.5" />
+                      Register as Expert
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Disclaimer Note */}
+                <div className="bg-amber-500/10 backdrop-blur-sm rounded-lg p-3 border border-amber-400/20">
+                  <div className="flex items-start gap-2">
+                    <Shield className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-amber-200/80">
+                      IPO Labs facilitates connections between corporates and experts. We are not a SEBI registered intermediary. All engagements are directly between parties.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
-
-          {/* Footer */}
-          <footer className="bg-black border-t border-white/10 px-8 lg:px-16 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6 text-xs text-white/70">
-                <span className="font-semibold text-white">SETU</span>
-                <span>by IPO Labs</span>
-              </div>
-              <p className="text-xs text-white/50">&copy; 2026 IPO Labs Private Limited. All rights reserved.</p>
-            </div>
-          </footer>
         </div>
       </main>
     </div>
