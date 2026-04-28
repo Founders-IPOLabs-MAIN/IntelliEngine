@@ -383,13 +383,35 @@ async def import_drhp_word(
         now = datetime.now(timezone.utc)
         content_field = "sme_content" if board_type == "sme" else "mainboard_content"
         images_field = f"{board_type}_images"
-        
+        docx_field = f"{board_type}_docx_gridfs_id"
+
+        # Also store the raw .docx in GridFS for Syncfusion editor
+        old_doc = await db.drhp_output.find_one({"project_id": project_id}, {"_id": 0})
+        if old_doc and old_doc.get(docx_field):
+            try:
+                await fs_bucket.delete(ObjectId(old_doc[docx_field]))
+            except Exception:
+                pass
+
+        docx_grid_id = await fs_bucket.upload_from_stream(
+            f"drhp_{project_id}_{board_type}.docx",
+            io.BytesIO(file_content),
+            metadata={
+                "project_id": project_id,
+                "board_type": board_type,
+                "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "uploaded_by": user.user_id,
+            }
+        )
+
         await db.drhp_output.update_one(
             {"project_id": project_id},
             {
                 "$set": {
                     content_field: html_content,
                     images_field: stored_images,
+                    docx_field: str(docx_grid_id),
+                    f"{board_type}_docx_filename": file.filename,
                     "updated_by": user.user_id,
                     "updated_at": now.isoformat(),
                     f"{board_type}_import_info": {
@@ -464,4 +486,92 @@ async def get_drhp_image(
     except Exception as e:
         logger.error(f"Error retrieving DRHP image: {str(e)}")
         raise HTTPException(status_code=404, detail="Image not found")
+
+
+# ============ SYNCFUSION DOCX ENDPOINTS ============
+
+@router.get("/projects/{project_id}/drhp-docx")
+async def get_drhp_docx(
+    project_id: str,
+    board_type: str = "sme",
+    user: User = Depends(get_current_user)
+):
+    """Serve the raw .docx file from GridFS for the Syncfusion Document Editor."""
+    doc = await db.drhp_output.find_one({"project_id": project_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="No DRHP output found for this project")
+
+    docx_field = f"{board_type}_docx_gridfs_id"
+    gridfs_id = doc.get(docx_field)
+    if not gridfs_id:
+        raise HTTPException(status_code=404, detail="No .docx file stored for this board type. Import a Word document first.")
+
+    try:
+        grid_out = await fs_bucket.open_download_stream(ObjectId(gridfs_id))
+        data = await grid_out.read()
+        filename = doc.get(f"{board_type}_docx_filename", "drhp_output.docx")
+        return Response(
+            content=data,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+    except Exception as e:
+        logger.error(f"Error fetching DRHP docx: {e}")
+        raise HTTPException(status_code=404, detail="Failed to retrieve .docx file")
+
+
+@router.post("/projects/{project_id}/drhp-docx")
+async def save_drhp_docx(
+    project_id: str,
+    board_type: str = "sme",
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user)
+):
+    """Save an edited .docx file back to GridFS from the Syncfusion Document Editor."""
+    if not file.filename.lower().endswith('.docx'):
+        raise HTTPException(status_code=400, detail="Only .docx files accepted")
+
+    file_content = await file.read()
+    if len(file_content) > 50 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 50MB)")
+
+    docx_field = f"{board_type}_docx_gridfs_id"
+    now = datetime.now(timezone.utc)
+
+    # Delete old GridFS file if exists
+    doc = await db.drhp_output.find_one({"project_id": project_id}, {"_id": 0})
+    if doc and doc.get(docx_field):
+        try:
+            await fs_bucket.delete(ObjectId(doc[docx_field]))
+        except Exception:
+            pass
+
+    # Upload new file to GridFS
+    grid_id = await fs_bucket.upload_from_stream(
+        f"drhp_{project_id}_{board_type}.docx",
+        io.BytesIO(file_content),
+        metadata={
+            "project_id": project_id,
+            "board_type": board_type,
+            "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "uploaded_by": user.user_id,
+        }
+    )
+
+    await db.drhp_output.update_one(
+        {"project_id": project_id},
+        {
+            "$set": {
+                docx_field: str(grid_id),
+                f"{board_type}_docx_filename": file.filename,
+                f"{board_type}_docx_updated_at": now.isoformat(),
+                "updated_by": user.user_id,
+                "updated_at": now.isoformat(),
+            },
+            "$setOnInsert": {"created_at": now.isoformat()}
+        },
+        upsert=True
+    )
+
+    return {"success": True, "message": "Document saved", "gridfs_id": str(grid_id)}
 

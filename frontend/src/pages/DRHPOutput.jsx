@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useEditor, EditorContent } from '@tiptap/react';
+import SyncfusionDocEditor from "@/components/SyncfusionDocEditor";
 import StarterKit from '@tiptap/starter-kit';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -95,6 +96,7 @@ import {
   FileUp,
   AlertCircle,
   CheckCircle,
+  ToggleLeft,
 } from "lucide-react";
 
 // Editor Toolbar Component
@@ -812,6 +814,10 @@ const DRHPOutput = ({ user, apiClient }) => {
   const [importResult, setImportResult] = useState(null);
   const fileInputRef = useState(null);
 
+  // Editor mode: "syncfusion" or "tiptap"
+  const [editorMode, setEditorMode] = useState("syncfusion");
+  const syncEditorRef = useRef(null);
+
   // Initialize TipTap Editor
   const smeEditor = useEditor({
     extensions: [
@@ -977,6 +983,22 @@ const DRHPOutput = ({ user, apiClient }) => {
   }, [smeEditor, mainboardEditor, apiClient, projectId, content]);
 
   const handleSave = async () => {
+    if (editorMode === "syncfusion" && syncEditorRef.current) {
+      setSaving(true);
+      try {
+        const result = await syncEditorRef.current.save();
+        if (result.success) {
+          setLastSaved(new Date().toISOString());
+          toast.success("Document saved successfully!");
+        } else {
+          toast.error(result.error || "Save failed");
+        }
+      } catch (e) {
+        toast.error("Save failed");
+      }
+      setSaving(false);
+      return;
+    }
     setSaving(true);
     try {
       await apiClient.post(`/projects/${projectId}/drhp-output`, {
@@ -994,6 +1016,11 @@ const DRHPOutput = ({ user, apiClient }) => {
   };
 
   const handleExportWord = async () => {
+    if (editorMode === "syncfusion" && syncEditorRef.current) {
+      syncEditorRef.current.exportDocx();
+      toast.success("Document exported!");
+      return;
+    }
     const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
     if (!currentEditor) return;
 
@@ -1317,6 +1344,24 @@ const DRHPOutput = ({ user, apiClient }) => {
                 </>
               )}
             </Button>
+
+            {/* Editor Mode Toggle */}
+            <div className="flex items-center bg-gray-100 rounded-md p-0.5 h-8">
+              <button
+                className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${editorMode === "syncfusion" ? "bg-white shadow-sm text-[#1DA1F2]" : "text-gray-500 hover:text-gray-700"}`}
+                onClick={() => setEditorMode("syncfusion")}
+                data-testid="mode-syncfusion"
+              >
+                Document Editor
+              </button>
+              <button
+                className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${editorMode === "tiptap" ? "bg-white shadow-sm text-[#1DA1F2]" : "text-gray-500 hover:text-gray-700"}`}
+                onClick={() => setEditorMode("tiptap")}
+                data-testid="mode-tiptap"
+              >
+                Basic Editor
+              </button>
+            </div>
             
             <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
@@ -1368,7 +1413,18 @@ const DRHPOutput = ({ user, apiClient }) => {
 
         {/* Editor Area */}
         <div className="flex-1 flex flex-col">
-          {/* Toolbar */}
+          {editorMode === "syncfusion" ? (
+            /* Syncfusion Document Editor */
+            <SyncfusionDocEditor
+              ref={syncEditorRef}
+              projectId={projectId}
+              boardType={activeTab}
+              apiClient={apiClient}
+              onSaveComplete={() => setLastSaved(new Date().toISOString())}
+            />
+          ) : (
+          <>
+          {/* TipTap Toolbar */}
           <EditorToolbar editor={currentEditor} />
           
           {/* Editor Content */}
@@ -1572,6 +1628,8 @@ const DRHPOutput = ({ user, apiClient }) => {
               </Button>
             </div>
           </div>
+          </>
+          )}
         </div>
       </main>
 
