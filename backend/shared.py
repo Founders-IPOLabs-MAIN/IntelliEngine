@@ -79,7 +79,7 @@ DEFAULT_MODULE_PERMISSIONS = {
 
 # ============ FILE UPLOAD SECURITY ============
 
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 ALLOWED_FILE_TYPES = {
     "document": {

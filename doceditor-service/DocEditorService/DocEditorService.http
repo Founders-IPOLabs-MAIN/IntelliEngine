@@ -1,0 +1,6 @@
+@DocEditorService_HostAddress = http://localhost:5008
+
+GET {{DocEditorService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

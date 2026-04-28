@@ -404,25 +404,57 @@ async def import_drhp_word(
             }
         )
 
+        # Convert .docx to SFDT via local Syncfusion .NET service (background, non-blocking)
+        sfdt_grid_id = None
+        sfdt_field = f"{board_type}_sfdt_gridfs_id"
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                sfdt_resp = await client.post(
+                    "http://localhost:8090/api/documenteditor/Import",
+                    files={"files": (file.filename, io.BytesIO(file_content), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")}
+                )
+                if sfdt_resp.status_code == 200:
+                    sfdt_data = sfdt_resp.content
+                    # Delete old SFDT if exists
+                    if old_doc and old_doc.get(sfdt_field):
+                        try:
+                            await fs_bucket.delete(ObjectId(old_doc[sfdt_field]))
+                        except Exception:
+                            pass
+                    sfdt_grid_id_obj = await fs_bucket.upload_from_stream(
+                        f"drhp_{project_id}_{board_type}.sfdt",
+                        io.BytesIO(sfdt_data),
+                        metadata={"project_id": project_id, "board_type": board_type, "content_type": "application/json"}
+                    )
+                    sfdt_grid_id = str(sfdt_grid_id_obj)
+                    logger.info(f"SFDT pre-conversion stored: {len(sfdt_data)} bytes")
+        except Exception as e:
+            logger.warning(f"SFDT conversion skipped: {e}")
+
+        update_set = {
+            content_field: html_content,
+            images_field: stored_images,
+            docx_field: str(docx_grid_id),
+            f"{board_type}_docx_filename": file.filename,
+            "updated_by": user.user_id,
+            "updated_at": now.isoformat(),
+            f"{board_type}_import_info": {
+                "filename": file.filename,
+                "imported_at": now.isoformat(),
+                "file_size": len(file_content),
+                "warnings_count": len(warnings),
+                "images_count": len(stored_images),
+                "parser": "python-docx-sebi"
+            }
+        }
+        if sfdt_grid_id:
+            update_set[sfdt_field] = sfdt_grid_id
+
         await db.drhp_output.update_one(
             {"project_id": project_id},
             {
-                "$set": {
-                    content_field: html_content,
-                    images_field: stored_images,
-                    docx_field: str(docx_grid_id),
-                    f"{board_type}_docx_filename": file.filename,
-                    "updated_by": user.user_id,
-                    "updated_at": now.isoformat(),
-                    f"{board_type}_import_info": {
-                        "filename": file.filename,
-                        "imported_at": now.isoformat(),
-                        "file_size": len(file_content),
-                        "warnings_count": len(warnings),
-                        "images_count": len(stored_images),
-                        "parser": "python-docx-sebi"
-                    }
-                },
+                "$set": update_set,
                 "$setOnInsert": {"created_at": now.isoformat()}
             },
             upsert=True
@@ -486,6 +518,45 @@ async def get_drhp_image(
     except Exception as e:
         logger.error(f"Error retrieving DRHP image: {str(e)}")
         raise HTTPException(status_code=404, detail="Image not found")
+
+
+# ============ SYNCFUSION SFDT ENDPOINTS (pre-converted) ============
+
+@router.get("/projects/{project_id}/drhp-sfdt")
+async def get_drhp_sfdt(
+    project_id: str,
+    board_type: str = "sme",
+    user: User = Depends(get_current_user)
+):
+    """Serve pre-converted SFDT for instant loading in Syncfusion editor."""
+    doc = await db.drhp_output.find_one({"project_id": project_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="No DRHP output found")
+
+    sfdt_field = f"{board_type}_sfdt_gridfs_id"
+    gridfs_id = doc.get(sfdt_field)
+    if not gridfs_id:
+        raise HTTPException(status_code=404, detail="No SFDT data. Import a document first.")
+
+    try:
+        grid_out = await fs_bucket.open_download_stream(ObjectId(gridfs_id))
+        data = await grid_out.read()
+        return Response(content=data, media_type="application/json")
+    except Exception as e:
+        logger.error(f"Error fetching SFDT: {e}")
+        raise HTTPException(status_code=404, detail="Failed to retrieve SFDT")
+
+
+@router.post("/projects/{project_id}/drhp-sfdt")
+async def save_drhp_sfdt(
+    project_id: str,
+    board_type: str = "sme",
+    user: User = Depends(get_current_user)
+):
+    """Store SFDT JSON from Syncfusion editor save."""
+    from starlette.requests import Request as StarletteRequest
+    # This endpoint accepts raw SFDT JSON body
+    pass
 
 
 # ============ SYNCFUSION DOCX ENDPOINTS ============

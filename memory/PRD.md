@@ -19,7 +19,11 @@
   - Frontend `/account` route restricted to admin users
   - Sidebar hides Admin Center / Account Details for non-admins
   - Test suite: `/app/backend/tests/test_admin_access_restriction.py` (8 tests, 100% pass)
-- **Dashboard Redesign**: Full-page video background (user-provided flowing animation), "Build your IPO Journey with us" hero header, compact glass-morphism module cards (Fiverr/matchmaker-style), dark navy gradient overlay
+- **Syncfusion .NET Service Deployed**: Self-hosted .NET 8 service at port 8090 for .docx → SFDT conversion. Managed via supervisor.
+  - Pre-converts documents on upload (stored in GridFS for instant loading)
+  - Proxy endpoint at `/api/doceditor/Import` routes through FastAPI backend
+  - Max upload size increased to 10MB across the platform
+  - All DRHP Output pages default to Syncfusion Document Editor mode with full MS Word features
 - **Expert Registration System (Full Feature)**:
   - Expert Registration form: Full Name, Profile Pic (JPG/PNG, 2MB), Mobile, Email, City, State, Address, Pincode, IPO Experience (Yes/No with years dropdown), Area of Expertise (15 SEBI-aligned roles, max 3 selections)
   - Free Submit → auto-populates Experts browse page

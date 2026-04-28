@@ -7,7 +7,6 @@ import { Loader2 } from "lucide-react";
 
 DocumentEditorContainerComponent.Inject(Toolbar);
 
-const SERVICE_URL = "https://ej2services.syncfusion.com/production/web-services/api/documenteditor/";
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClient, onSaveComplete }, ref) => {
@@ -21,23 +20,67 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
   }));
 
   useEffect(() => {
-    initEditor();
+    loadDocument();
   }, [projectId, boardType]);
 
-  const initEditor = () => {
+  const loadDocument = async () => {
     setLoading(true);
     setError(null);
-    // Wait for the editor component to be ready, then open a blank document
-    const waitForEditor = () => {
-      const editor = containerRef.current;
-      if (editor?.documentEditor) {
-        editor.documentEditor.openBlank();
-        setLoading(false);
-      } else {
-        setTimeout(waitForEditor, 300);
+    try {
+      // First try to load pre-converted SFDT (instant)
+      const sfdtRes = await fetch(
+        `${API_URL}/api/projects/${projectId}/drhp-sfdt?board_type=${boardType}`,
+        { credentials: "include", headers: getAuthHeaders() }
+      );
+
+      const waitForEditor = (openFn) => {
+        const editor = containerRef.current;
+        if (editor?.documentEditor) {
+          openFn(editor.documentEditor);
+          setLoading(false);
+        } else {
+          setTimeout(() => waitForEditor(openFn), 300);
+        }
+      };
+
+      if (sfdtRes.ok) {
+        const sfdt = await sfdtRes.text();
+        setTimeout(() => waitForEditor((de) => de.open(sfdt)), 500);
+        return;
       }
-    };
-    setTimeout(waitForEditor, 500);
+
+      // Fallback: fetch raw .docx and convert on-the-fly
+      const docxRes = await fetch(
+        `${API_URL}/api/projects/${projectId}/drhp-docx?board_type=${boardType}`,
+        { credentials: "include", headers: getAuthHeaders() }
+      );
+
+      if (docxRes.status === 404) {
+        setTimeout(() => waitForEditor((de) => de.openBlank()), 500);
+        return;
+      }
+
+      const blob = await docxRes.blob();
+      const formData = new FormData();
+      formData.append("files", blob, "document.docx");
+      const importRes = await fetch(`${API_URL}/api/doceditor/Import`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+        headers: getAuthHeaders(),
+      });
+
+      if (importRes.ok) {
+        const sfdt = await importRes.text();
+        setTimeout(() => waitForEditor((de) => de.open(sfdt)), 500);
+      } else {
+        setTimeout(() => waitForEditor((de) => de.openBlank()), 500);
+      }
+    } catch (e) {
+      console.error("Load error:", e);
+      setError(e.message);
+      setLoading(false);
+    }
   };
 
   const getAuthHeaders = () => {
@@ -102,7 +145,7 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
         <DocumentEditorContainerComponent
           ref={containerRef}
           height="100%"
-          serviceUrl={SERVICE_URL}
+          serviceUrl={`${API_URL}/api/doceditor/`}
           enableToolbar={true}
           enableSpellCheck={false}
           enableTableOfContentsDialog={true}
