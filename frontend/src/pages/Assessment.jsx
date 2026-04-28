@@ -1,287 +1,217 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import Sidebar from "@/components/Sidebar";
 import {
-  CheckCircle2,
   ArrowRight,
   Calculator,
   Target,
-  FileText,
   TrendingUp,
-  Building2,
-  Landmark,
   Brain,
   Shield,
   BarChart3,
-  Sparkles
+  Sparkles,
+  CheckCircle2,
+  Landmark,
+  Building2,
+  FileText
 } from "lucide-react";
 
-const ASSESSMENT_FEATURES = [
+const MODULES = [
   {
+    id: "pre_ipo",
+    title: "Pre-IPO Assessment",
+    desc: "Evaluate your company's readiness for IPO. SEBI eligibility, governance, and financial health checks.",
+    icon: TrendingUp,
+    accent: "#00D1FF",
+    iconGrad: "from-[#003366] to-[#0052A3]",
+    path: "/assessment/start?type=pre_ipo",
+    cta: "Start Assessment",
+    testid: "assessment-card-pre_ipo",
+  },
+  {
+    id: "ipo",
+    title: "IPO Valuation",
+    desc: "AI-powered business valuation using P/E, DCF, Issue Size & FCFE calculators for accurate market cap.",
     icon: Calculator,
-    title: "4 Financial Calculators",
-    description: "P/E, DCF, Issue Size & FCFE"
+    accent: "#34D399",
+    iconGrad: "from-emerald-500 to-teal-600",
+    path: "/assessment/start?type=ipo",
+    cta: "Start Valuation",
+    testid: "assessment-card-ipo",
   },
   {
-    icon: Shield,
-    title: "SEBI Eligibility",
-    description: "Mainboard & SME validation"
+    id: "post_ipo",
+    title: "Post-IPO Review",
+    desc: "Post-listing compliance tracking, performance benchmarking, and growth opportunity analysis.",
+    icon: Building2,
+    accent: "#A78BFA",
+    iconGrad: "from-violet-500 to-purple-600",
+    path: "/assessment/start?type=post_ipo",
+    cta: "Start Review",
+    testid: "assessment-card-post_ipo",
   },
   {
+    id: "custom",
+    title: "Custom Assessment",
+    desc: "Tailored analysis combining governance, financial, and market readiness for your specific needs.",
     icon: Brain,
-    title: "AI Gap Analysis",
-    description: "Personalized recommendations"
+    accent: "#FB923C",
+    iconGrad: "from-orange-500 to-amber-600",
+    path: "/assessment/start?type=custom",
+    cta: "Customize",
+    testid: "assessment-card-custom",
   },
-  {
-    icon: Target,
-    title: "Readiness Score",
-    description: "IPO readiness assessment"
-  }
 ];
 
 const Assessment = ({ user, apiClient }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen bg-gray-50" data-testid="assessment-page">
+    <div className="flex min-h-screen bg-black" data-testid="assessment-page">
       <Sidebar user={user} apiClient={apiClient} />
-      
-      <main className="flex-1 ml-64">
-        {/* Hero Section - Compact */}
-        <div className="bg-gradient-to-br from-green-600 to-emerald-700 text-white">
-          <div className="max-w-6xl mx-auto px-6 py-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs">
-                      <CheckCircle2 className="w-3 h-3 text-yellow-300" />
-                      <span className="font-medium">Free Assessment</span>
-                    </div>
-                  </div>
-                  <h1 className="text-xl font-bold tracking-tight">
-                    IPO Readiness Assessment
-                  </h1>
-                  <p className="text-sm text-green-100 mt-1">
-                    AI-powered analysis to determine IPO readiness for NSE/BSE
-                  </p>
-                </div>
+
+      <main className="flex-1 ml-64 relative overflow-hidden">
+        {/* Black background with subtle gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a0a0a] to-[#111] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 pointer-events-none" />
+
+        <div className="relative z-10 min-h-screen flex flex-col">
+          {/* Sticky Header */}
+          <header className="sticky top-0 z-20 backdrop-blur-md bg-black/35 border-b border-white/10 px-8 lg:px-12 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white" style={{ letterSpacing: "-0.02em" }}>
+                IPO Readiness Assessment
+              </h1>
+              <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs text-white/80">
+                <Brain className="w-3 h-3 text-yellow-300" />
+                <span className="font-medium">AI Powered</span>
               </div>
-              <Button
-                size="sm"
-                onClick={() => navigate("/assessment/start")}
-                className="bg-white text-green-700 hover:bg-green-50 gap-1.5 h-9 px-4"
-                data-testid="start-assessment-btn"
-              >
-                Start Assessment
-                <ArrowRight className="w-4 h-4" />
-              </Button>
+            </div>
+            <div className="flex items-center gap-5 text-xs text-white/70">
+              <div className="text-center"><p className="text-lg font-bold text-white">4</p><p>Calculators</p></div>
+              <div className="w-px h-8 bg-white/20" />
+              <div className="text-center"><p className="text-lg font-bold text-white">~10</p><p>Minutes</p></div>
+            </div>
+          </header>
+
+          {/* Features Bar */}
+          <div className="backdrop-blur-sm bg-white/5 border-b border-white/10">
+            <div className="px-8 lg:px-12 py-2.5 flex items-center justify-center gap-6 text-xs text-white/60">
+              <span className="flex items-center gap-1.5"><Calculator className="w-3.5 h-3.5 text-emerald-400" /> 4 Financial Calculators</span>
+              <span className="w-px h-3 bg-white/20" />
+              <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-emerald-400" /> SEBI Compliance</span>
+              <span className="w-px h-3 bg-white/20" />
+              <span className="flex items-center gap-1.5"><Brain className="w-3.5 h-3.5 text-emerald-400" /> AI Gap Analysis</span>
+              <span className="w-px h-3 bg-white/20" />
+              <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5 text-emerald-400" /> Readiness Score</span>
             </div>
           </div>
-        </div>
 
-        {/* Compact Features Bar */}
-        <div className="bg-white border-b border-border">
-          <div className="max-w-6xl mx-auto px-6 py-3">
-            <div className="flex items-center justify-center gap-6 text-xs">
-              <div className="flex items-center gap-1.5">
-                <Calculator className="w-3.5 h-3.5 text-green-600" />
-                <span className="text-muted-foreground">4 Calculators</span>
-              </div>
-              <div className="w-px h-3 bg-border" />
-              <div className="flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-green-600" />
-                <span className="text-muted-foreground">SEBI Compliance</span>
-              </div>
-              <div className="w-px h-3 bg-border" />
-              <div className="flex items-center gap-1.5">
-                <Brain className="w-3.5 h-3.5 text-green-600" />
-                <span className="text-muted-foreground">AI Analysis</span>
-              </div>
-              <div className="w-px h-3 bg-border" />
-              <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-green-600" />
-                <span className="text-muted-foreground">Valuation Insights</span>
-              </div>
-              <div className="w-px h-3 bg-border" />
-              <div className="flex items-center gap-1.5">
-                <Target className="w-3.5 h-3.5 text-green-600" />
-                <span className="text-muted-foreground">~10 min</span>
-              </div>
-            </div>
-          </div>
-        </div>
+          {/* Hero */}
+          <section className="px-8 lg:px-12 pt-10 pb-6 max-w-5xl">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08]">
+              Know Your IPO Readiness Before{" "}
+              <span className="text-[#34D399]">You File.</span>
+            </h2>
+            <p className="mt-4 text-white/70 text-base lg:text-lg leading-relaxed max-w-2xl">
+              AI-powered analysis to determine IPO readiness for NSE/BSE. SEBI eligibility, governance scoring, and valuation — all in one place.
+            </p>
+          </section>
 
-        {/* Main Content - Compact Layout */}
-        <div className="max-w-6xl mx-auto px-6 py-5">
-          {/* Two Column Layout */}
-          <div className="grid grid-cols-3 gap-5">
-            {/* Left Column - What You Get + How It Works */}
-            <div className="col-span-2 space-y-5">
-              {/* What You'll Get - Horizontal Cards */}
-              <div>
-                <h2 className="text-sm font-semibold text-black mb-3">What You'll Get</h2>
-                <div className="grid grid-cols-4 gap-3">
-                  {ASSESSMENT_FEATURES.map((feature, index) => (
-                    <div key={index} className="p-3 bg-white rounded-lg border border-border hover:border-green-300 transition-colors">
-                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mb-2">
-                        <feature.icon className="w-4 h-4 text-green-600" />
-                      </div>
-                      <h3 className="font-medium text-black text-xs mb-0.5">{feature.title}</h3>
-                      <p className="text-[10px] text-muted-foreground">{feature.description}</p>
-                    </div>
-                  ))}
-                </div>
+          {/* Content Grid: Modules + Sidebar */}
+          <section className="px-8 lg:px-12 pb-8 flex-1">
+            <div className="grid grid-cols-3 gap-5">
+              {/* Left — 4 Module Cards */}
+              <div className="col-span-2 grid grid-cols-2 gap-4">
+                {MODULES.map((mod) => {
+                  const Icon = mod.icon;
+                  return (
+                    <Card
+                      key={mod.id}
+                      onClick={() => navigate(mod.path)}
+                      className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = mod.accent; e.currentTarget.style.boxShadow = `0 20px 40px -10px ${mod.accent}40`; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.boxShadow = ""; }}
+                      data-testid={mod.testid}
+                    >
+                      <CardContent className="p-5 flex flex-col h-full">
+                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${mod.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
+                        <h3 className="text-base font-bold text-white mb-1.5 drop-shadow">{mod.title}</h3>
+                        <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1 drop-shadow">{mod.desc}</p>
+                        <div className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all" style={{ color: mod.accent }}>
+                          {mod.cta} <ArrowRight className="w-3.5 h-3.5" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
 
-              {/* How It Works - Compact Horizontal */}
-              <div className="bg-white rounded-lg border border-border p-4">
-                <h3 className="text-sm font-semibold text-black mb-3">How It Works</h3>
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-2 text-sm font-bold">1</div>
-                    <h4 className="font-medium text-black text-xs mb-0.5">Company Details</h4>
-                    <p className="text-[10px] text-muted-foreground">Type & target board</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-2 text-sm font-bold">2</div>
-                    <h4 className="font-medium text-black text-xs mb-0.5">Financial Data</h4>
-                    <p className="text-[10px] text-muted-foreground">P&L, Balance Sheet</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-2 text-sm font-bold">3</div>
-                    <h4 className="font-medium text-black text-xs mb-0.5">Market Data</h4>
-                    <p className="text-[10px] text-muted-foreground">Industry P/E & growth</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-2 text-sm font-bold">4</div>
-                    <h4 className="font-medium text-black text-xs mb-0.5">Get Results</h4>
-                    <p className="text-[10px] text-muted-foreground">AI recommendations</p>
-                  </div>
-                </div>
-              </div>
+              {/* Right — How It Works + Quick Start + Disclaimer */}
+              <div className="space-y-4">
+                <Card className="bg-white/10 backdrop-blur-xl border border-white/20">
+                  <CardContent className="p-5">
+                    <h3 className="text-sm font-bold text-white mb-4">How It Works</h3>
+                    <div className="space-y-3">
+                      {["Company Details", "Financial Data", "Market Analysis", "Get Results"].map((step, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="w-7 h-7 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-emerald-400">{i + 1}</span>
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-white text-xs">{step}</h4>
+                            <p className="text-[10px] text-white/50">
+                              {i === 0 && "Company type & target board selection"}
+                              {i === 1 && "P&L, Balance Sheet & cash flow inputs"}
+                              {i === 2 && "Industry P/E ratios & growth metrics"}
+                              {i === 3 && "AI-powered recommendations & score"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Calculators - Compact 2x2 Grid */}
-              <div>
-                <h3 className="text-sm font-semibold text-black mb-3">4 Financial Calculators</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="flex items-center gap-2 mb-1">
-                      <BarChart3 className="w-4 h-4 text-blue-600" />
-                      <h4 className="font-medium text-blue-700 text-xs">P/E Valuation</h4>
+                {/* Quick Start */}
+                <Card className="bg-gradient-to-br from-emerald-600/80 to-teal-700/80 backdrop-blur-xl border border-emerald-400/30">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="w-4 h-4 text-yellow-300" />
+                      <span className="text-xs font-medium text-white">Quick Start</span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">TTM profit × Industry P/E for market cap</p>
-                  </div>
-                  <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                    <div className="flex items-center gap-2 mb-1">
-                      <TrendingUp className="w-4 h-4 text-purple-600" />
-                      <h4 className="font-medium text-purple-700 text-xs">DCF Valuation</h4>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">5-year FCF with terminal value</p>
-                  </div>
-                  <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Landmark className="w-4 h-4 text-orange-600" />
-                      <h4 className="font-medium text-orange-700 text-xs">Issue Size</h4>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">Capital raise with dilution planning</p>
-                  </div>
-                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                    <div className="flex items-center gap-2 mb-1">
-                      <FileText className="w-4 h-4 text-green-600" />
-                      <h4 className="font-medium text-green-700 text-xs">FCFE Calculator</h4>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">Free cash flow to equity analysis</p>
+                    <h3 className="font-semibold text-sm text-white mb-2">Ready to check your eligibility?</h3>
+                    <p className="text-[10px] text-emerald-100 mb-3">
+                      Get comprehensive SEBI eligibility analysis with AI-powered recommendations in ~10 minutes.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => navigate("/assessment/start")}
+                      className="w-full bg-white text-emerald-700 hover:bg-emerald-50 gap-1.5 h-8 text-xs"
+                      data-testid="quick-start-assessment"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Start Free Assessment
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Disclaimer Note */}
+                <div className="bg-amber-500/10 backdrop-blur-sm rounded-lg p-3 border border-amber-400/20">
+                  <div className="flex items-start gap-2">
+                    <Shield className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-amber-200/80">
+                      <strong>Disclaimer:</strong> This is a preliminary analysis based on SEBI guidelines. Not a substitute for professional financial or legal advice.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Right Column - SEBI Criteria + CTA */}
-            <div className="space-y-4">
-              {/* SEBI Criteria - Compact */}
-              <div className="bg-white rounded-lg border border-border p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Shield className="w-4 h-4 text-green-600" />
-                  <h3 className="text-sm font-semibold text-black">SEBI Eligibility</h3>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-black text-xs mb-2 flex items-center gap-1.5">
-                      <Building2 className="w-3.5 h-3.5" />
-                      Mainboard (NSE/BSE)
-                    </h4>
-                    <ul className="space-y-1.5 text-[10px] text-muted-foreground">
-                      <li className="flex items-start gap-1.5">
-                        <CheckCircle2 className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
-                        Net Tangible Assets ≥ ₹3 Cr
-                      </li>
-                      <li className="flex items-start gap-1.5">
-                        <CheckCircle2 className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
-                        Avg Op. Profit ≥ ₹15 Cr
-                      </li>
-                      <li className="flex items-start gap-1.5">
-                        <CheckCircle2 className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
-                        Net Worth ≥ ₹1 Cr
-                      </li>
-                    </ul>
-                  </div>
-                  
-                  <div className="border-t border-border pt-3">
-                    <h4 className="font-medium text-black text-xs mb-2 flex items-center gap-1.5">
-                      <Landmark className="w-3.5 h-3.5" />
-                      SME Board
-                    </h4>
-                    <ul className="space-y-1.5 text-[10px] text-muted-foreground">
-                      <li className="flex items-start gap-1.5">
-                        <CheckCircle2 className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
-                        Post-issue capital ₹1-25 Cr
-                      </li>
-                      <li className="flex items-start gap-1.5">
-                        <CheckCircle2 className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
-                        Positive Net Worth (3 yrs)
-                      </li>
-                      <li className="flex items-start gap-1.5">
-                        <CheckCircle2 className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
-                        Op. profit (2+ years)
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* CTA Card */}
-              <div className="bg-gradient-to-br from-green-600 to-emerald-700 rounded-lg p-4 text-white">
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="w-4 h-4 text-yellow-300" />
-                  <span className="text-xs font-medium">Free Assessment</span>
-                </div>
-                <h3 className="font-semibold text-sm mb-2">Ready to check your IPO eligibility?</h3>
-                <p className="text-[10px] text-green-100 mb-3">
-                  Get comprehensive analysis with AI-powered recommendations in ~10 minutes.
-                </p>
-                <Button
-                  size="sm"
-                  onClick={() => navigate("/assessment/start")}
-                  className="w-full bg-white text-green-700 hover:bg-green-50 gap-1.5 h-8 text-xs"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Start Free Assessment
-                </Button>
-              </div>
-
-              {/* Disclaimer */}
-              <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
-                <p className="text-[10px] text-amber-800">
-                  <strong>Disclaimer:</strong> This is a preliminary analysis based on SEBI guidelines. Not a substitute for professional advice.
-                </p>
-              </div>
-            </div>
-          </div>
+          </section>
         </div>
       </main>
     </div>

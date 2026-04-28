@@ -6,7 +6,10 @@
 **Platform Type:** Cloud-hosted & secure IPO-readiness platform  
 **Target Market:** Indian market  
 **Date Started:** Feb 17, 2026
-**Last Updated:** Apr 24, 2026
+**Last Updated:** Apr 28, 2026
+
+### Changelog — Apr 28, 2026
+- **Assessment Landing Page Redesigned**: Unified to match DRHP Builder & IPO Funding dark theme layout. Black background, sticky header, features bar, hero section, 2/3 module cards grid (Pre-IPO, IPO Valuation, Post-IPO, Custom) + 1/3 right sidebar (How It Works, Quick Start, Disclaimer). All 4 public module landing pages now share the same visual system.
 
 ### Changelog — Apr 24, 2026
 - **Major Backend Refactoring Complete**: Monolithic `server.py` (8,328 lines) split into 16 modular route files under `/app/backend/routes/`. Zero behavior changes — all endpoints identical.
