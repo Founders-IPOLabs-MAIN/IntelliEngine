@@ -89,11 +89,11 @@ const MatchMakingLanding = ({ user, apiClient }) => {
               className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08]"
               data-testid="matchmaker-hero-h1"
             >
-              Looking for Experts or Planning your IPO journey?{" "}
-              <span className="text-[#00D1FF]">Look no further.</span>
+              Connect with IPO Companies &amp;{" "}
+              <span className="text-[#00D1FF]">Subject-Matter Experts.</span>
             </h2>
             <p className="mt-4 text-white/70 text-base lg:text-lg leading-relaxed max-w-2xl">
-              Connect with India's most trusted IPO advisors, compliance experts and legal counsel &mdash; all under one roof.
+              Setu, by IPO Labs, connects Corporates with India's most trusted IPO Advisors, Directors, Compliance Experts and Legal counsel &mdash; all under one roof.
             </p>
           </section>
 
