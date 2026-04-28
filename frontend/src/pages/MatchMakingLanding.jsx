@@ -1,13 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import Sidebar from "@/components/Sidebar";
 import {
   Building2, ArrowRight, Briefcase,
 } from "lucide-react";
-
-const VIDEO_URL =
-  "https://customer-assets.emergentagent.com/job_d2704038-7cb9-4ab6-9a1b-26c0d6c42d22/artifacts/l035ewvz_Men_and_women_202604232309.mp4";
 
 const CARDS = [
   {
@@ -36,38 +32,15 @@ const CARDS = [
 
 const MatchMakingLanding = ({ user, apiClient }) => {
   const navigate = useNavigate();
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    const tryPlay = () => { v.play().catch(() => {}); };
-    v.addEventListener("loadedmetadata", tryPlay);
-    v.addEventListener("canplay", tryPlay);
-    tryPlay();
-    return () => {
-      v.removeEventListener("loadedmetadata", tryPlay);
-      v.removeEventListener("canplay", tryPlay);
-    };
-  }, []);
 
   return (
     <div className="flex min-h-screen bg-black" data-testid="matchmaking-landing">
       <Sidebar user={user} apiClient={apiClient} />
 
       <main className="flex-1 ml-64 relative overflow-hidden">
-        {/* Full-page background video */}
-        <video
-          ref={videoRef}
-          className="absolute inset-0 w-full h-full object-cover"
-          src={VIDEO_URL}
-          autoPlay loop muted playsInline preload="auto"
-          aria-hidden="true"
-          data-testid="matchmaking-bg-video"
-        />
-        {/* Dark overlay for text contrast (heavier on the left for hero readability) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/40 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 pointer-events-none" />
+        {/* Black background with subtle gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a0a0a] to-[#111] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 pointer-events-none" />
 
         <div className="relative z-10 min-h-screen flex flex-col">
           {/* ── STICKY PAGE HEADER ── */}
@@ -144,6 +117,17 @@ const MatchMakingLanding = ({ user, apiClient }) => {
               })}
             </div>
           </section>
+
+          {/* Footer */}
+          <footer className="bg-black border-t border-white/10 px-8 lg:px-16 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6 text-xs text-white/70">
+                <span className="font-semibold text-white">SETU</span>
+                <span>by IPO Labs</span>
+              </div>
+              <p className="text-xs text-white/50">&copy; 2026 IPO Labs Private Limited. All rights reserved.</p>
+            </div>
+          </footer>
         </div>
       </main>
     </div>

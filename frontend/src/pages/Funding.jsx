@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,9 +9,6 @@ import {
   TrendingUp, Building2, Users, HelpCircle, ArrowRight, Loader2,
   Sparkles, Brain, Shield, AlertTriangle, CheckCircle2, Landmark
 } from "lucide-react";
-
-const VIDEO_URL =
-  "https://customer-assets.emergentagent.com/job_d9168386-61cf-418c-af5b-b3de2eb2d725/artifacts/69090hzs_Founders_montage_and_202604272238.mp4";
 
 const MODULES = [
   {
@@ -62,7 +59,6 @@ const MODULES = [
 
 const Funding = ({ user, apiClient }) => {
   const navigate = useNavigate();
-  const videoRef = useRef(null);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -73,19 +69,6 @@ const Funding = ({ user, apiClient }) => {
       setDisclaimerAccepted(true);
       setShowDisclaimer(false);
     }
-  }, []);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    const tryPlay = () => { v.play().catch(() => {}); };
-    v.addEventListener("loadedmetadata", tryPlay);
-    v.addEventListener("canplay", tryPlay);
-    tryPlay();
-    return () => {
-      v.removeEventListener("loadedmetadata", tryPlay);
-      v.removeEventListener("canplay", tryPlay);
-    };
   }, []);
 
   const handleDisclaimerResponse = async (agreed) => {
@@ -115,17 +98,8 @@ const Funding = ({ user, apiClient }) => {
       <Sidebar user={user} apiClient={apiClient} />
 
       <main className="flex-1 ml-64 relative overflow-hidden">
-        {/* Video background — dimmed and blurred */}
-        <video
-          ref={videoRef}
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: "blur(2px)" }}
-          src={VIDEO_URL}
-          autoPlay loop muted playsInline preload="auto"
-          aria-hidden="true"
-          data-testid="funding-bg-video"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/45 pointer-events-none" />
+        {/* Black background with subtle gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a0a0a] to-[#111] pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 pointer-events-none" />
 
         <div className="relative z-10 min-h-screen flex flex-col">
@@ -263,6 +237,17 @@ const Funding = ({ user, apiClient }) => {
               </div>
             </div>
           </section>
+
+          {/* Footer */}
+          <footer className="bg-black border-t border-white/10 px-8 lg:px-12 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6 text-xs text-white/70">
+                <span className="font-semibold text-white">SETU</span>
+                <span>by IPO Labs</span>
+              </div>
+              <p className="text-xs text-white/50">&copy; 2026 IPO Labs Private Limited. All rights reserved.</p>
+            </div>
+          </footer>
         </div>
       </main>
 
