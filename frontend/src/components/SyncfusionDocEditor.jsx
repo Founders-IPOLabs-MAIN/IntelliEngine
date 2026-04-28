@@ -14,7 +14,6 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
   const containerRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [hasDoc, setHasDoc] = useState(false);
 
   useImperativeHandle(ref, () => ({
     save: handleSave,
@@ -22,58 +21,23 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
   }));
 
   useEffect(() => {
-    loadDocument();
+    initEditor();
   }, [projectId, boardType]);
 
-  const loadDocument = async () => {
+  const initEditor = () => {
     setLoading(true);
     setError(null);
-    try {
-      const response = await fetch(
-        `${API_URL}/api/projects/${projectId}/drhp-docx?board_type=${boardType}`,
-        { credentials: "include", headers: getAuthHeaders() }
-      );
-
-      if (response.status === 404) {
-        setHasDoc(false);
+    // Wait for the editor component to be ready, then open a blank document
+    const waitForEditor = () => {
+      const editor = containerRef.current;
+      if (editor?.documentEditor) {
+        editor.documentEditor.openBlank();
         setLoading(false);
-        return;
+      } else {
+        setTimeout(waitForEditor, 300);
       }
-
-      if (!response.ok) throw new Error("Failed to fetch document");
-
-      const blob = await response.blob();
-      setHasDoc(true);
-
-      // Convert blob to base64 and open via Syncfusion service
-      const formData = new FormData();
-      formData.append("files", blob, "document.docx");
-
-      const importRes = await fetch(`${SERVICE_URL}Import`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!importRes.ok) throw new Error("Syncfusion import failed");
-
-      const sfml = await importRes.json();
-
-      // Wait for container to be ready
-      const waitForEditor = () => {
-        const editor = containerRef.current;
-        if (editor?.documentEditor) {
-          editor.documentEditor.open(JSON.stringify(sfml));
-          setLoading(false);
-        } else {
-          setTimeout(waitForEditor, 200);
-        }
-      };
-      waitForEditor();
-    } catch (e) {
-      console.error("Load error:", e);
-      setError(e.message);
-      setLoading(false);
-    }
+    };
+    setTimeout(waitForEditor, 500);
   };
 
   const getAuthHeaders = () => {
@@ -116,7 +80,7 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border border-red-200 p-8">
         <div className="text-center">
-          <p className="text-red-600 font-medium text-sm mb-1">Failed to load document</p>
+          <p className="text-red-600 font-medium text-sm mb-1">Failed to load editor</p>
           <p className="text-xs text-gray-500">{error}</p>
         </div>
       </div>
@@ -129,21 +93,12 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
         <div className="absolute inset-0 z-50 bg-white/80 flex items-center justify-center rounded-lg">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-[#1DA1F2] mx-auto mb-2" />
-            <p className="text-sm text-gray-500">{hasDoc ? "Loading document in editor..." : "Checking for document..."}</p>
+            <p className="text-sm text-gray-500">Initializing Document Editor...</p>
           </div>
         </div>
       )}
 
-      {!hasDoc && !loading && (
-        <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-8">
-          <div className="text-center">
-            <p className="text-gray-600 font-medium text-sm mb-1">No .docx file found</p>
-            <p className="text-xs text-gray-400">Import a Word document first using the Import button above, then switch to Document Editor mode.</p>
-          </div>
-        </div>
-      )}
-
-      <div style={{ display: hasDoc ? "block" : "none", height: "calc(100vh - 160px)" }}>
+      <div style={{ height: "calc(100vh - 160px)" }}>
         <DocumentEditorContainerComponent
           ref={containerRef}
           height="100%"
