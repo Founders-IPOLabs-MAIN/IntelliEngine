@@ -1395,22 +1395,6 @@ const DRHPOutput = ({ user, apiClient }) => {
           </div>
         </header>
 
-        {/* Tabs for SME vs Mainboard */}
-        <div className="bg-white border-b border-gray-200 px-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="h-10">
-              <TabsTrigger value="sme" className="text-xs data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700">
-                <Badge variant="outline" className="mr-1.5 bg-emerald-100 text-emerald-700 border-emerald-200 text-[10px]">SME</Badge>
-                SME Board DRHP
-              </TabsTrigger>
-              <TabsTrigger value="mainboard" className="text-xs data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
-                <Badge variant="outline" className="mr-1.5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Main</Badge>
-                Main Board DRHP
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
         {/* Editor Area - Full width, left-aligned, scrollbars inside */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {editorMode === "syncfusion" ? (
