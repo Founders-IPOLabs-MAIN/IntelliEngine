@@ -1286,12 +1286,12 @@ const DRHPOutput = ({ user, apiClient }) => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100" data-testid="drhp-output-page">
+    <div className="flex min-h-screen bg-white" data-testid="drhp-output-page">
       <Sidebar user={user} apiClient={apiClient} />
       
-      <main className="flex-1 ml-64 flex flex-col">
+      <main className="flex-1 ml-64 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+        <header className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => navigate(`/project/${projectId}/command-center`)} 
@@ -1396,23 +1396,23 @@ const DRHPOutput = ({ user, apiClient }) => {
         </header>
 
         {/* Tabs for SME vs Mainboard */}
-        <div className="bg-white border-b border-gray-200 px-6">
+        <div className="bg-white border-b border-gray-200 px-4">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="h-12">
-              <TabsTrigger value="sme" className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700">
-                <Badge variant="outline" className="mr-2 bg-emerald-100 text-emerald-700 border-emerald-200">SME</Badge>
+            <TabsList className="h-10">
+              <TabsTrigger value="sme" className="text-xs data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700">
+                <Badge variant="outline" className="mr-1.5 bg-emerald-100 text-emerald-700 border-emerald-200 text-[10px]">SME</Badge>
                 SME Board DRHP
               </TabsTrigger>
-              <TabsTrigger value="mainboard" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
-                <Badge variant="outline" className="mr-2 bg-blue-100 text-blue-700 border-blue-200">Main</Badge>
+              <TabsTrigger value="mainboard" className="text-xs data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
+                <Badge variant="outline" className="mr-1.5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Main</Badge>
                 Main Board DRHP
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
-        {/* Editor Area */}
-        <div className="flex-1 flex flex-col">
+        {/* Editor Area - Full width, left-aligned, scrollbars inside */}
+        <div className="flex-1 flex flex-col overflow-hidden">
           {editorMode === "syncfusion" ? (
             /* Syncfusion Document Editor */
             <SyncfusionDocEditor

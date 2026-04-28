@@ -27,7 +27,6 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
     setLoading(true);
     setError(null);
     try {
-      // First try to load pre-converted SFDT (instant)
       const sfdtRes = await fetch(
         `${API_URL}/api/projects/${projectId}/drhp-sfdt?board_type=${boardType}`,
         { credentials: "include", headers: getAuthHeaders() }
@@ -49,7 +48,6 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
         return;
       }
 
-      // Fallback: fetch raw .docx and convert on-the-fly
       const docxRes = await fetch(
         `${API_URL}/api/projects/${projectId}/drhp-docx?board_type=${boardType}`,
         { credentials: "include", headers: getAuthHeaders() }
@@ -131,7 +129,7 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
   }
 
   return (
-    <div className="flex-1 flex flex-col relative" data-testid="syncfusion-doc-editor">
+    <div className="flex-1 flex flex-col relative syncfusion-editor-wrap" data-testid="syncfusion-doc-editor">
       {loading && (
         <div className="absolute inset-0 z-50 bg-white/80 flex items-center justify-center rounded-lg">
           <div className="text-center">
@@ -141,10 +139,70 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
         </div>
       )}
 
-      <div style={{ height: "calc(100vh - 160px)" }}>
+      <style>{`
+        .syncfusion-editor-wrap {
+          width: 100%;
+          overflow: hidden;
+        }
+        /* Compact toolbar - wrap to 2 lines, smaller icons */
+        .syncfusion-editor-wrap .e-de-toolbar {
+          flex-wrap: wrap !important;
+          height: auto !important;
+          min-height: unset !important;
+          padding: 2px 4px !important;
+        }
+        .syncfusion-editor-wrap .e-de-toolbar .e-toolbar-items {
+          flex-wrap: wrap !important;
+          height: auto !important;
+        }
+        .syncfusion-editor-wrap .e-de-toolbar .e-toolbar-item .e-tbar-btn {
+          padding: 3px 6px !important;
+          min-width: unset !important;
+        }
+        .syncfusion-editor-wrap .e-de-toolbar .e-toolbar-item .e-tbar-btn .e-btn-icon {
+          font-size: 14px !important;
+        }
+        .syncfusion-editor-wrap .e-de-toolbar .e-toolbar-item .e-tbar-btn .e-tbar-btn-text {
+          font-size: 10px !important;
+          line-height: 1.2 !important;
+        }
+        .syncfusion-editor-wrap .e-de-toolbar .e-toolbar-item {
+          padding: 1px !important;
+          margin: 1px !important;
+        }
+        /* Left-align the document page (remove center padding) */
+        .syncfusion-editor-wrap .e-de-ctn {
+          padding-left: 0 !important;
+        }
+        .syncfusion-editor-wrap .e-documenteditor {
+          padding-left: 0 !important;
+        }
+        .syncfusion-editor-wrap .e-de-doc-cntr {
+          margin-left: 0 !important;
+          justify-content: flex-start !important;
+        }
+        /* Scrollbars inside the page area */
+        .syncfusion-editor-wrap .e-de-ctn,
+        .syncfusion-editor-wrap .e-documenteditorcontainer {
+          overflow: auto !important;
+        }
+        /* Properties pane hidden by default for more space */
+        .syncfusion-editor-wrap .e-de-property-pane {
+          display: none !important;
+        }
+        /* Status bar compact */
+        .syncfusion-editor-wrap .e-de-status-bar {
+          height: 24px !important;
+          padding: 0 8px !important;
+          font-size: 11px !important;
+        }
+      `}</style>
+
+      <div style={{ height: "calc(100vh - 130px)", width: "100%" }}>
         <DocumentEditorContainerComponent
           ref={containerRef}
           height="100%"
+          width="100%"
           serviceUrl={`${API_URL}/api/doceditor/`}
           enableToolbar={true}
           enableSpellCheck={false}
@@ -154,7 +212,7 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
           enableTableDialog={true}
           enableImageResizer={true}
           enableComment={true}
-          showPropertiesPane={true}
+          showPropertiesPane={false}
           data-testid="syncfusion-editor-container"
         />
       </div>
