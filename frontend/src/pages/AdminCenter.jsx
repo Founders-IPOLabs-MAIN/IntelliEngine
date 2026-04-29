@@ -538,7 +538,7 @@ const AdminCenter = ({ user, apiClient }) => {
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-8 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="flex w-full max-w-4xl mb-6">
+            <TabsList className="flex w-full max-w-4xl mb-6 ml-5">
               <TabsTrigger value="operations" className="gap-1.5 flex-1 text-xs">
                 <Star className="w-3.5 h-3.5" />
                 Operations
