@@ -139,14 +139,14 @@ const Sidebar = ({ user, apiClient }) => {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100 flex flex-col z-20" data-testid="sidebar">
       {/* Logo */}
-      <div className="p-4 border-b border-gray-100">
+      <div className="-mt-3 border-b border-gray-100">
         <div className="flex items-center">
           <img src="/setu-logo.png" alt="SETU Labs" className="h-[150px] w-auto object-contain" data-testid="sidebar-logo" />
         </div>
       </div>
 
       {/* Navigation — SaaS module buttons */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 -mt-4 p-4 space-y-2 overflow-y-auto">
         {navItems.map(renderNavItem)}
       </nav>
 

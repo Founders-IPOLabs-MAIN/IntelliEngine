@@ -235,7 +235,7 @@ const Login = ({ apiClient }) => {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-5">
-          <div className="flex items-center justify-center mb-1">
+          <div className="flex items-center justify-center -mt-3 mb-1">
             <img src="/setu-logo.png" alt="SETU Labs" className="h-[150px] w-auto object-contain" data-testid="login-logo" />
           </div>
           <h1 className="text-base font-bold text-black">Login Page</h1>

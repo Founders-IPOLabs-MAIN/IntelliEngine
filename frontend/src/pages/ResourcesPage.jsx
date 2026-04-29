@@ -229,7 +229,7 @@ const ResourcesPage = () => {
       <div className="min-h-screen bg-white" data-testid="article-page">
         <nav className="sticky top-0 z-20 bg-white border-b px-8 lg:px-16 py-4 flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => setSelectedArticle(null)}><ArrowLeft className="w-5 h-5" /></Button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 -mt-3">
             <img src="/setu-logo.png" alt="SETU Labs" className="h-[150px] w-auto object-contain" />
           </div>
         </nav>
@@ -265,7 +265,7 @@ const ResourcesPage = () => {
       <nav className="sticky top-0 z-20 bg-white border-b px-8 lg:px-16 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}><ArrowLeft className="w-5 h-5" /></Button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 -mt-3">
             <img src="/setu-logo.png" alt="SETU Labs" className="h-[150px] w-auto object-contain" />
           </div>
         </div>
