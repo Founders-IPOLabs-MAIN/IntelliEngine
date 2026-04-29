@@ -230,11 +230,8 @@ const ResourcesPage = () => {
         <nav className="sticky top-0 z-20 bg-white border-b px-8 lg:px-16 py-4 flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => setSelectedArticle(null)}><ArrowLeft className="w-5 h-5" /></Button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-[#003366] rounded-lg flex items-center justify-center"><span className="text-white font-bold text-xs">IP</span></div>
-            <span className="font-bold text-[#003366]">IPO Labs</span>
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-7 w-auto object-contain" />
           </div>
-          <span className="text-muted-foreground mx-2">/</span>
-          <span className="text-sm text-muted-foreground">Resources</span>
         </nav>
         <article className="max-w-3xl mx-auto px-8 py-10">
           <Badge variant="outline" className="mb-4 capitalize">{selectedArticle.category.replace("-", " ")}</Badge>
@@ -269,11 +266,8 @@ const ResourcesPage = () => {
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}><ArrowLeft className="w-5 h-5" /></Button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-[#003366] rounded-lg flex items-center justify-center"><span className="text-white font-bold text-xs">IP</span></div>
-            <span className="font-bold text-[#003366]">IPO Labs</span>
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-7 w-auto object-contain" />
           </div>
-          <span className="text-muted-foreground mx-1">/</span>
-          <span className="font-semibold text-black">Resources & Insights</span>
         </div>
         <Button onClick={() => navigate("/login")} className="bg-[#003366] hover:bg-[#002244] text-white rounded-full px-6 text-sm">Sign In</Button>
       </nav>

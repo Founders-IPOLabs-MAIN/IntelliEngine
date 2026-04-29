@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Building2,
   LayoutDashboard,
   FileText,
   CheckCircle2,
@@ -140,16 +139,10 @@ const Sidebar = ({ user, apiClient }) => {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100 flex flex-col z-20" data-testid="sidebar">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-100">
-        <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <div className="w-10 h-10 bg-[#1DA1F2] rounded-xl flex items-center justify-center shadow-md shadow-[#1DA1F2]/20">
-            <Building2 className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <span className="text-lg font-bold tracking-tighter text-black block">SETU</span>
-            <span className="text-xs text-gray-400">by IPO Labs</span>
-          </div>
-        </Link>
+      <div className="p-4 border-b border-gray-100">
+        <div className="flex items-center">
+          <img src="/setu-logo.png" alt="SETU Labs" className="h-14 w-auto object-contain" data-testid="sidebar-logo" />
+        </div>
       </div>
 
       {/* Navigation — SaaS module buttons */}

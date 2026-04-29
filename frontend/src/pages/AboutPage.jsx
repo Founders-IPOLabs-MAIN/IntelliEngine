@@ -38,8 +38,7 @@ const AboutPage = () => {
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-8 w-8" data-testid="about-back-btn"><ArrowLeft className="w-4 h-4" /></Button>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-[#003366] rounded-md flex items-center justify-center"><span className="text-white font-bold text-[10px]">IP</span></div>
-            <span className="font-bold text-base text-[#003366]">IPO Labs</span>
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-7 w-auto object-contain" />
           </div>
           <span className="text-muted-foreground mx-1 text-sm">/</span>
           <span className="font-semibold text-base text-black">About Us</span>

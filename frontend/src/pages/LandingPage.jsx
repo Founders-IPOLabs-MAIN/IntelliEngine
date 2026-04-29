@@ -99,11 +99,8 @@ const LandingPage = () => {
 
       {/* Top Navigation */}
       <nav className="relative z-10 flex items-center justify-between px-8 lg:px-16 py-5">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#003366] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">IP</span>
-          </div>
-          <span className="text-xl font-bold text-[#003366] tracking-tight">IPO Labs</span>
+        <div className="flex items-center">
+          <img src="/setu-logo.png" alt="SETU Labs" className="h-10 w-auto object-contain" data-testid="landing-logo" />
         </div>
         <div className="flex items-center gap-6">
           <button onClick={() => navigate("/advisors")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-advisors">Advisors</button>

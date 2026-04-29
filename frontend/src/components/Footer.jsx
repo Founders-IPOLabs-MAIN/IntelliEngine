@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Scale, FileText, Building2 } from "lucide-react";
+import { Scale, FileText } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -8,11 +8,8 @@ const Footer = () => {
         <div className="flex items-center justify-between">
           {/* Logo & Copyright */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#1DA1F2] rounded-lg flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-white" />
-            </div>
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-8 w-auto object-contain" data-testid="footer-logo" />
             <div>
-              <p className="text-sm font-medium text-black">SETU by IPO Labs</p>
               <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} IPO Labs Private Limited</p>
             </div>
           </div>

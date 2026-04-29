@@ -147,8 +147,7 @@ const CareersPage = () => {
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}><ArrowLeft className="w-5 h-5" /></Button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-[#003366] rounded-lg flex items-center justify-center"><span className="text-white font-bold text-xs">IP</span></div>
-            <span className="font-bold text-[#003366]">IPO Labs</span>
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-7 w-auto object-contain" />
           </div>
           <span className="text-muted-foreground mx-1">/</span>
           <span className="font-semibold text-black">Careers</span>
