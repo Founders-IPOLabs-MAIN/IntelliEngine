@@ -141,7 +141,7 @@ const Sidebar = ({ user, apiClient }) => {
       {/* Logo */}
       <div className="p-4 border-b border-gray-100">
         <div className="flex items-center">
-          <img src="/setu-logo.png" alt="SETU Labs" className="h-14 w-auto object-contain" data-testid="sidebar-logo" />
+          <img src="/setu-logo.png" alt="SETU Labs" className="h-[71px] w-auto object-contain" data-testid="sidebar-logo" />
         </div>
       </div>
 

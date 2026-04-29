@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="flex items-center justify-between">
           {/* Logo & Copyright */}
           <div className="flex items-center gap-3">
-            <img src="/setu-logo.png" alt="SETU Labs" className="h-8 w-auto object-contain" data-testid="footer-logo" />
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-[43px] w-auto object-contain" data-testid="footer-logo" />
             <div>
               <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} IPO Labs Private Limited</p>
             </div>
