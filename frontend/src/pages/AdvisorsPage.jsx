@@ -35,7 +35,7 @@ const AdvisorsPage = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex items-center">
-            <img src="/setu-logo.png" alt="SETU Labs" className="h-[43px] w-auto object-contain" data-testid="advisors-logo" />
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-[100px] w-auto object-contain" data-testid="advisors-logo" />
           </div>
           <span className="text-muted-foreground mx-1 text-sm">/</span>
           <span className="font-semibold text-base text-black">Advisors</span>
