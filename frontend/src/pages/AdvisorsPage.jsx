@@ -34,8 +34,8 @@ const AdvisorsPage = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-8 w-8" data-testid="advisors-back-btn">
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div className="flex items-center -mt-3">
-            <img src="/setu-logo.png" alt="SETU Labs" className="h-[150px] w-auto object-contain" data-testid="advisors-logo" />
+          <div className="flex items-center justify-center -mt-3">
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-[150px] w-auto object-contain p-3" data-testid="advisors-logo" />
           </div>
           <span className="text-muted-foreground mx-1 text-sm">/</span>
           <span className="font-semibold text-base text-black">Advisors</span>
