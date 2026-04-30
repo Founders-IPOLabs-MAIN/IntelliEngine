@@ -4,6 +4,7 @@ Thin orchestrator that imports modular route files.
 """
 from fastapi import FastAPI, APIRouter, Request
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 import os
@@ -108,6 +109,7 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization", "X-Session-ID"],
 )
 
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 # ============ STARTUP & SHUTDOWN ============
 
 @app.on_event("startup")

@@ -38,13 +38,13 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
           openFn(editor.documentEditor);
           setLoading(false);
         } else {
-          setTimeout(() => waitForEditor(openFn), 300);
+          setTimeout(() => waitForEditor(openFn), 50);
         }
       };
 
       if (sfdtRes.ok) {
         const sfdt = await sfdtRes.text();
-        setTimeout(() => waitForEditor((de) => de.open(sfdt)), 500);
+        waitForEditor((de) => de.open(sfdt));
         return;
       }
 
@@ -54,7 +54,7 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
       );
 
       if (docxRes.status === 404) {
-        setTimeout(() => waitForEditor((de) => de.openBlank()), 500);
+        waitForEditor((de) => de.openBlank());
         return;
       }
 
@@ -70,9 +70,9 @@ const SyncfusionDocEditor = forwardRef(({ projectId, boardType = "sme", apiClien
 
       if (importRes.ok) {
         const sfdt = await importRes.text();
-        setTimeout(() => waitForEditor((de) => de.open(sfdt)), 500);
+        waitForEditor((de) => de.open(sfdt));
       } else {
-        setTimeout(() => waitForEditor((de) => de.openBlank()), 500);
+        waitForEditor((de) => de.openBlank());
       }
     } catch (e) {
       console.error("Load error:", e);

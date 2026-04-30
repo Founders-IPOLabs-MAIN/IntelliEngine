@@ -767,3 +767,83 @@ async def delete_kmp(
     
     await log_audit_action(user.user_id, "delete", "kmp_checklist", f"Deleted KMP {kmp_id}")
     return {"message": "KMP deleted"}
+
+
+
+# ============ PROJECT DASHBOARD DATA ============
+
+class ProjectDashboardContact(BaseModel):
+    name: str = ""
+    email: str = ""
+    mobile: str = ""
+    title: Optional[str] = ""
+
+class ProjectDashboardData(BaseModel):
+    project_head: Optional[ProjectDashboardContact] = None
+    client_pocs: Optional[List[ProjectDashboardContact]] = []
+    client_key_data: Optional[List[dict]] = []
+    drhp_submission_date: Optional[str] = ""
+    drhp_first_draft_date: Optional[str] = ""
+    board_selection: Optional[str] = ""
+    pending_items: Optional[List[dict]] = []
+
+@router.get("/projects/{project_id}/dashboard-data")
+async def get_project_dashboard_data(
+    project_id: str,
+    user: User = Depends(get_current_user)
+):
+    """Get project dashboard data"""
+    project = await db.projects.find_one({"project_id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    dashboard = await db.project_dashboards.find_one(
+        {"project_id": project_id}, {"_id": 0}
+    )
+
+    if not dashboard:
+        return {
+            "project_id": project_id,
+            "project_head": {"name": "", "email": "", "mobile": ""},
+            "client_pocs": [],
+            "client_key_data": [],
+            "drhp_submission_date": "",
+            "drhp_first_draft_date": "",
+            "board_selection": "",
+            "pending_items": []
+        }
+
+    return dashboard
+
+@router.put("/projects/{project_id}/dashboard-data")
+async def update_project_dashboard_data(
+    project_id: str,
+    data: ProjectDashboardData,
+    user: User = Depends(get_current_user)
+):
+    """Update project dashboard data"""
+    project = await db.projects.find_one({"project_id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    update_data = {
+        "project_id": project_id,
+        "project_head": data.project_head.dict() if data.project_head else {"name": "", "email": "", "mobile": ""},
+        "client_pocs": [p.dict() for p in data.client_pocs] if data.client_pocs else [],
+        "client_key_data": data.client_key_data or [],
+        "drhp_submission_date": data.drhp_submission_date or "",
+        "drhp_first_draft_date": data.drhp_first_draft_date or "",
+        "board_selection": data.board_selection or "",
+        "pending_items": data.pending_items or [],
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": user.user_id
+    }
+
+    await db.project_dashboards.update_one(
+        {"project_id": project_id},
+        {"$set": update_data},
+        upsert=True
+    )
+
+    await log_audit_action(user.user_id, "update", "project_dashboard", f"Updated dashboard for {project_id}")
+    return {"message": "Dashboard updated", "data": update_data}

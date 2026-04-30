@@ -361,8 +361,10 @@ async def import_drhp_word(
             )
         
         # Parse the document using our SEBI-specific parser
+        import asyncio, functools
+        loop = asyncio.get_event_loop()
         parser = DRHPDocumentParser(file_content, project_id, board_type)
-        html_content, parsed_images, warnings = parser.parse()
+        html_content, parsed_images, warnings = await loop.run_in_executor(None, parser.parse)
         
         # Extract and store images as separate files
         docx_buffer = io.BytesIO(file_content)
@@ -409,7 +411,8 @@ async def import_drhp_word(
         sfdt_field = f"{board_type}_sfdt_gridfs_id"
         try:
             from routes.docx_to_sfdt import docx_to_sfdt
-            sfdt_data = docx_to_sfdt(file_content).encode("utf-8")
+            sfdt_raw = await loop.run_in_executor(None, functools.partial(docx_to_sfdt, file_content))
+            sfdt_data = sfdt_raw.encode("utf-8")
             # Delete old SFDT if exists
             if old_doc and old_doc.get(sfdt_field):
                 try:

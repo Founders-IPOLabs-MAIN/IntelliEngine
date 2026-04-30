@@ -404,15 +404,7 @@ class DRHPDocumentParser:
     def _process_paragraph(self, p_element) -> str:
         """Process a paragraph element with full formatting preservation."""
         # Find the corresponding Paragraph object
-        para = None
-        for p in self.doc.paragraphs:
-            if p._element is p_element:
-                para = p
-                break
-        
-        if para is None:
-            # Try to create a Paragraph from the element directly
-            para = Paragraph(p_element, self.doc)
+        para = Paragraph(p_element, self.doc)
         
         # Check for page break
         if self._has_page_break(p_element):
