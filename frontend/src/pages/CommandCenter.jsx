@@ -165,36 +165,28 @@ const CommandCenter = ({ user, apiClient }) => {
             ))}
           </div>
 
-          {/* DRHP Output Modules - Show only the selected board (falls back to both when unset) */}
+          {/* DRHP Output + Tools — Single Row Compact */}
           {(() => {
             const boardRaw = (project?.board_type || "").toLowerCase();
             const showMainBoard = !boardRaw || boardRaw === "main board" || boardRaw === "mainboard";
             const showSME = !boardRaw || boardRaw === "sme";
-            const gridCols = showMainBoard && showSME ? "grid-cols-2" : "grid-cols-1";
             return (
-          <div className={`grid ${gridCols} gap-6 mb-6`}>
+          <div className="flex gap-3 mb-6">
             {/* Main Board DRHP Output */}
             {showMainBoard && (
             <button
               onClick={() => navigate(`/project/${projectId}/drhp-output?board=mainboard`)}
-              className="flex items-center justify-between p-5 rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-lg hover:border-blue-300 transition-all group"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-blue-200 bg-blue-50 hover:shadow-md hover:border-blue-300 transition-all group flex-1"
               data-testid="drhp-output-mainboard"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                  <Landmark className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-left">
-                  <h3 className="text-lg font-bold text-gray-900">Main Board DRHP</h3>
-                  <p className="text-sm text-gray-600">Word-like Editor & Export</p>
-                </div>
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Landmark className="w-4 h-4 text-white" />
               </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                  NSE / BSE
-                </Badge>
-                <ChevronRight className="w-5 h-5 text-blue-500" />
+              <div className="text-left">
+                <h3 className="text-sm font-semibold text-gray-900">Main Board DRHP</h3>
+                <p className="text-[10px] text-gray-500">NSE / BSE</p>
               </div>
+              <ChevronRight className="w-4 h-4 text-blue-400 ml-auto" />
             </button>
             )}
 
@@ -202,76 +194,54 @@ const CommandCenter = ({ user, apiClient }) => {
             {showSME && (
             <button
               onClick={() => navigate(`/project/${projectId}/drhp-output?board=sme`)}
-              className="flex items-center justify-between p-5 rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 hover:shadow-lg hover:border-emerald-300 transition-all group"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-emerald-200 bg-emerald-50 hover:shadow-md hover:border-emerald-300 transition-all group flex-1"
               data-testid="drhp-output-sme"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                  <Building2 className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-left">
-                  <h3 className="text-lg font-bold text-gray-900">SME Board DRHP</h3>
-                  <p className="text-sm text-gray-600">Word-like Editor & Export</p>
-                </div>
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Building2 className="w-4 h-4 text-white" />
               </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                  SME Platform
-                </Badge>
-                <ChevronRight className="w-5 h-5 text-emerald-500" />
+              <div className="text-left">
+                <h3 className="text-sm font-semibold text-gray-900">SME Board DRHP</h3>
+                <p className="text-[10px] text-gray-500">SME Platform</p>
               </div>
+              <ChevronRight className="w-4 h-4 text-emerald-400 ml-auto" />
             </button>
             )}
+
+            {/* Document Repository */}
+            <button
+              onClick={() => navigate(`/project/${projectId}/document-repository`)}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-indigo-200 bg-indigo-50 hover:shadow-md hover:border-indigo-300 transition-all group flex-1"
+              data-testid="cc-document-repository-btn"
+            >
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <FolderOpen className="w-4 h-4 text-white" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-sm font-semibold text-gray-900">Document Repository</h3>
+                <p className="text-[10px] text-gray-500">SEBI Checklist</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-indigo-400 ml-auto" />
+            </button>
+
+            {/* Project Audit Log */}
+            <button
+              onClick={() => navigate(`/project/${projectId}/audit-log`)}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-purple-200 bg-purple-50 hover:shadow-md hover:border-purple-300 transition-all group flex-1"
+              data-testid="cc-audit-log-btn"
+            >
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <ScrollText className="w-4 h-4 text-white" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-sm font-semibold text-gray-900">Project Audit Log</h3>
+                <p className="text-[10px] text-gray-500">Activity Tracking</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-purple-400 ml-auto" />
+            </button>
           </div>
             );
           })()}
-
-          {/* Project-scoped Operational Tools */}
-          <div className="grid grid-cols-2 gap-6 mb-6">
-            <button
-              onClick={() => navigate(`/project/${projectId}/document-repository`)}
-              className="flex items-center justify-between p-5 rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50 hover:shadow-lg hover:border-indigo-300 transition-all group"
-              data-testid="cc-document-repository-btn"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                  <FolderOpen className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-left">
-                  <h3 className="text-lg font-bold text-gray-900">Document Repository</h3>
-                  <p className="text-sm text-gray-600">Upload &amp; track SEBI DRHP checklist documents</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200">
-                  PDF · Word · Image
-                </Badge>
-                <ChevronRight className="w-5 h-5 text-indigo-500" />
-              </div>
-            </button>
-
-            <button
-              onClick={() => navigate(`/project/${projectId}/audit-log`)}
-              className="flex items-center justify-between p-5 rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50 hover:shadow-lg hover:border-purple-300 transition-all group"
-              data-testid="cc-audit-log-btn"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                  <ScrollText className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-left">
-                  <h3 className="text-lg font-bold text-gray-900">Project Audit Log</h3>
-                  <p className="text-sm text-gray-600">Track every user action scoped to this project</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-purple-100 text-purple-700 border-purple-200">
-                  Scoped
-                </Badge>
-                <ChevronRight className="w-5 h-5 text-purple-500" />
-              </div>
-            </button>
-          </div>
         </div>
       </main>
     </div>

@@ -404,31 +404,25 @@ async def import_drhp_word(
             }
         )
 
-        # Convert .docx to SFDT via local Syncfusion .NET service (background, non-blocking)
+        # Convert .docx to SFDT using pure Python (no .NET dependency)
         sfdt_grid_id = None
         sfdt_field = f"{board_type}_sfdt_gridfs_id"
         try:
-            import httpx
-            async with httpx.AsyncClient(timeout=120.0) as client:
-                sfdt_resp = await client.post(
-                    "http://localhost:8090/api/documenteditor/Import",
-                    files={"files": (file.filename, io.BytesIO(file_content), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")}
-                )
-                if sfdt_resp.status_code == 200:
-                    sfdt_data = sfdt_resp.content
-                    # Delete old SFDT if exists
-                    if old_doc and old_doc.get(sfdt_field):
-                        try:
-                            await fs_bucket.delete(ObjectId(old_doc[sfdt_field]))
-                        except Exception:
-                            pass
-                    sfdt_grid_id_obj = await fs_bucket.upload_from_stream(
-                        f"drhp_{project_id}_{board_type}.sfdt",
-                        io.BytesIO(sfdt_data),
-                        metadata={"project_id": project_id, "board_type": board_type, "content_type": "application/json"}
-                    )
-                    sfdt_grid_id = str(sfdt_grid_id_obj)
-                    logger.info(f"SFDT pre-conversion stored: {len(sfdt_data)} bytes")
+            from routes.docx_to_sfdt import docx_to_sfdt
+            sfdt_data = docx_to_sfdt(file_content).encode("utf-8")
+            # Delete old SFDT if exists
+            if old_doc and old_doc.get(sfdt_field):
+                try:
+                    await fs_bucket.delete(ObjectId(old_doc[sfdt_field]))
+                except Exception:
+                    pass
+            sfdt_grid_id_obj = await fs_bucket.upload_from_stream(
+                f"drhp_{project_id}_{board_type}.sfdt",
+                io.BytesIO(sfdt_data),
+                metadata={"project_id": project_id, "board_type": board_type, "content_type": "application/json"}
+            )
+            sfdt_grid_id = str(sfdt_grid_id_obj)
+            logger.info(f"SFDT pre-conversion stored: {len(sfdt_data)} bytes")
         except Exception as e:
             logger.warning(f"SFDT conversion skipped: {e}")
 
