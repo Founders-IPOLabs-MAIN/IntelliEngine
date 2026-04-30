@@ -70,7 +70,7 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
               <span className="text-[#00D1FF]">SEBI-Grade Precision.</span>
             </h2>
             <p className="mt-5 text-white/75 text-base lg:text-lg leading-relaxed max-w-2xl">
-              Choose your profile and create a safe & secured workspace.
+              Manage "Multiple" DRHP's through "Multiple" Project Teams remotely.
             </p>
           </section>
 
