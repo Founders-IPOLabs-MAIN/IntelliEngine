@@ -1221,37 +1221,48 @@ const DRHPOutput = ({ user, apiClient }) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await apiClient.post(
-        `/projects/${projectId}/drhp-output/import?board_type=${activeTab}`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      // For Syncfusion mode: upload and convert to SFDT, then open in editor
+      if (editorMode === "syncfusion") {
+        // Upload file to Syncfusion cloud service for conversion
+        const importFormData = new FormData();
+        importFormData.append('files', file);
 
-      const result = response.data;
-      
-      if (result.success) {
-        // Update the editor content with the imported HTML
-        const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
-        if (currentEditor) {
-          currentEditor.commands.setContent(result.html_content);
+        const importRes = await fetch(
+          "https://document.syncfusion.com/web-services/docx-editor/api/documenteditor/Import",
+          { method: "POST", body: importFormData }
+        );
+
+        if (importRes.ok) {
+          const sfdt = await importRes.text();
+          const editor = syncEditorRef.current;
+          // Access the underlying DocumentEditorContainer's documentEditor
+          const containerEl = document.getElementById("container");
+          if (containerEl && containerEl.ej2_instances && containerEl.ej2_instances[0]) {
+            containerEl.ej2_instances[0].documentEditor.open(sfdt);
+          }
+          setLastSaved(new Date().toISOString());
+          toast.success(`Document "${file.name}" imported successfully!`);
+        } else {
+          toast.error("Failed to convert document. Please try again.");
         }
-        
-        // Update state
-        setContent(prev => ({
-          ...prev,
-          [activeTab]: result.html_content
-        }));
-        
-        setLastSaved(new Date().toISOString());
-        
-        // Show success with image and warning count
-        const imageMsg = result.images_count > 0 ? `, ${result.images_count} images` : '';
-        const warningMsg = result.warnings_count > 0 ? ` (${result.warnings_count} minor notes)` : '';
-        toast.success(`DRHP document imported with full SEBI formatting preserved!${imageMsg}${warningMsg}`);
+      } else {
+        // Legacy TipTap mode
+        const response = await apiClient.post(
+          `/projects/${projectId}/drhp-output/import?board_type=${activeTab}`,
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+
+        const result = response.data;
+        if (result.success) {
+          const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
+          if (currentEditor) {
+            currentEditor.commands.setContent(result.html_content);
+          }
+          setContent(prev => ({ ...prev, [activeTab]: result.html_content }));
+          setLastSaved(new Date().toISOString());
+          toast.success(`DRHP document imported successfully!`);
+        }
       }
     } catch (error) {
       console.error("Upload failed:", error);
