@@ -60,6 +60,7 @@ import DisclaimerPage from "@/pages/DisclaimerPage";
 import AboutPage from "@/pages/AboutPage";
 import CareersPage from "@/pages/CareersPage";
 import ComingSoon from "@/pages/ComingSoon";
+import Payments from "@/pages/Payments";
 
 // Components
 import Footer from "@/components/Footer";
@@ -276,6 +277,14 @@ const AppRouter = () => {
       <Route path="/resources" element={<ResourcesPage />} />
       <Route path="/advisors" element={<AdvisorsPage />} />
       <Route path="/pricing" element={<PricingPage />} />
+      <Route
+        path="/payments"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <Payments user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
       <Route path="/disclaimer" element={<DisclaimerPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/careers" element={<CareersPage />} />

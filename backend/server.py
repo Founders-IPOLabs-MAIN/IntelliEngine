@@ -47,6 +47,7 @@ from routes.contact import router as contact_router
 from routes.document_repository import router as document_repository_router
 from routes.expert_registration import router as expert_registration_router
 from routes.doceditor_proxy import router as doceditor_proxy_router
+from routes.payments import router as payments_router
 
 # ============ INCLUDE ALL ROUTERS ============
 
@@ -68,6 +69,7 @@ api_router.include_router(contact_router)
 api_router.include_router(document_repository_router)
 api_router.include_router(expert_registration_router)
 api_router.include_router(doceditor_proxy_router)
+api_router.include_router(payments_router)
 
 # ============ ROOT & HEALTH ENDPOINTS ============
 
