@@ -12,7 +12,8 @@ import {
   Loader2,
   Shield,
   User,
-  Scale
+  Scale,
+  CreditCard
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -60,6 +61,7 @@ const Sidebar = ({ user, apiClient }) => {
       case 'valuation': return path.startsWith('/valuation');
       case 'admin': return path.startsWith('/admin');
       case 'account': return path.startsWith('/account');
+      case 'payments': return path.startsWith('/payments');
       default: return false;
     }
   };
@@ -86,6 +88,9 @@ const Sidebar = ({ user, apiClient }) => {
     navItems.push({ id: "admin", label: "Admin Center", icon: Shield, path: "/admin", disabled: true });
     navItems.push({ id: "account", label: "Account Details", icon: User, path: "/account", disabled: true });
   }
+
+  // Payment Gateway — visible to ALL login types, sits below Account Details
+  navItems.push({ id: "payments", label: "Payment Gateway", icon: CreditCard, path: "/payments" });
 
   const renderNavItem = (item) => {
     const active = isActive(item.id);
