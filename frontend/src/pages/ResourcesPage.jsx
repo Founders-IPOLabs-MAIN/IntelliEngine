@@ -262,27 +262,27 @@ const ResourcesPage = () => {
       </header>
 
       {/* Nav */}
-      <nav className="sticky top-0 z-20 bg-white border-b px-8 lg:px-16 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}><ArrowLeft className="w-5 h-5" /></Button>
-          <div className="flex items-center justify-center gap-2 -mt-3">
-            <img src="/setu-logo.png" alt="SETU Labs" className="h-[150px] w-auto object-contain p-3" />
+      <nav className="sticky top-0 z-20 bg-white border-b px-6 lg:px-12 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-8 w-8"><ArrowLeft className="w-4 h-4" /></Button>
+          <div className="flex items-center">
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-[90px] w-auto object-contain" />
           </div>
         </div>
-        <Button onClick={() => navigate("/login")} className="bg-[#003366] hover:bg-[#002244] text-white rounded-full px-6 text-sm">Sign In</Button>
+        <Button onClick={() => navigate("/login")} className="bg-[#003366] hover:bg-[#002244] text-white rounded-full px-5 text-sm h-9">Sign In</Button>
       </nav>
 
       {/* Hero */}
-      <section className="bg-[#003366] text-white py-14 px-8 lg:px-16">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold mb-3">Resources & Insights</h2>
-          <p className="text-white/70 text-lg max-w-2xl">Expert guidance on India's IPO ecosystem — SEBI compliance, DRHP preparation, NSE & BSE listing strategies, capital market analysis, and best practices for merchant bankers and issuers.</p>
-          <div className="relative mt-6 max-w-md">
+      <section className="bg-[#003366] text-white py-7 px-6 lg:px-12">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl lg:text-3xl font-bold mb-1.5">Resources &amp; Insights</h2>
+          <p className="text-white/70 text-sm max-w-xl">Expert guidance on India's IPO ecosystem — SEBI compliance, DRHP preparation, NSE &amp; BSE listing strategies, capital market analysis, and best practices for merchant bankers and issuers.</p>
+          <div className="relative mt-4 max-w-md">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/50" />
             <Input
               value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search articles on IPO, SEBI, NSE, BSE..."
-              className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:bg-white/20"
+              className="pl-9 h-9 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:bg-white/20"
               data-testid="resources-search"
             />
           </div>
