@@ -6,7 +6,21 @@
 **Platform Type:** Cloud-hosted & secure IPO-readiness platform  
 **Target Market:** Indian market  
 **Date Started:** Feb 17, 2026
-**Last Updated:** Apr 28, 2026
+**Last Updated:** May 1, 2026
+
+### Changelog — May 1, 2026
+- **Razorpay Payments + GST Tax-Invoice Module (Live Test mode)**:
+  - New "Payments" tab in landing-page navigation (next to Pricing) → routes to `/payments` (login-required)
+  - New `/app/backend/routes/payments.py` exposing: `GET /api/payments/plans`, `GET /api/payments/config`, `POST /api/payments/create-order`, `POST /api/payments/verify`, `GET /api/payments/transactions`, `GET /api/payments/invoice/{transaction_id}`
+  - 5 predefined plans (DRHP Starter ₹49 K / Professional ₹99 K, Valuation Pro ₹24 999, Match-Making Premium ₹14 999, Assessment Premium ₹9 999) + custom amount support
+  - Full India GST handling: 18 % auto-applied; CGST 9 % + SGST 9 % for intra-state, IGST 18 % for inter-state (driven by customer state code)
+  - All Razorpay payment methods enabled: UPI, Cards, Net-banking, Wallets, EMI, PayLater
+  - Payment-signature HMAC-SHA256 verification on backend before marking paid
+  - Confirmation dialog with full breakdown shown BEFORE Razorpay opens (Pay button disabled until confirm)
+  - Processing overlay spinner; explicit success state with green checkmark + downloadable PDF invoice
+  - Tax-Invoice PDF generated with WeasyPrint: SETU/IPO Labs logo, "IPO Labs AI Private Limited", GSTIN 27AAICI7059Q1ZO, sequential `INV/<FY>/NNNNN` numbering, customer KYC + GSTIN, full GST split, paid badge
+  - Razorpay test keys configured in `/app/backend/.env`
+  - Test suite: `/app/backend/tests/test_payments_module.py` (16/16 tests pass; 100 % FE checks)
 
 ### Changelog — Apr 28, 2026
 - **Assessment Landing Page Redesigned**: Unified to match DRHP Builder & IPO Funding dark theme layout. Black background, sticky header, features bar, hero section, 2/3 module cards grid (Pre-IPO, IPO Valuation, Post-IPO, Custom) + 1/3 right sidebar (How It Works, Quick Start, Disclaimer). All 4 public module landing pages now share the same visual system.
