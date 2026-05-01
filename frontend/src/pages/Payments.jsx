@@ -13,6 +13,7 @@ import {
 import {
   ArrowLeft, ShieldCheck, Loader2, CheckCircle2,
   Download, Sparkles, AlertCircle, IndianRupee,
+  CreditCard, Smartphone, Building2, QrCode,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -76,6 +77,7 @@ const Payments = ({ user, apiClient }) => {
   const [processing, setProcessing] = useState(false);
   const [successData, setSuccessData] = useState(null);
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+  const [preferredMethod, setPreferredMethod] = useState("card"); // card | upi | netbanking | qr
 
   // Fetch plans on mount
   useEffect(() => {
@@ -202,9 +204,16 @@ const Payments = ({ user, apiClient }) => {
         company: form.company_name || "",
       },
       theme: { color: "#003366" },
-      method: {
-        upi: true, card: true, netbanking: true, wallet: true, emi: true, paylater: true,
-      },
+      method: (() => {
+        // Honour user's preferred method choice; QR is handled via UPI's built-in QR flow
+        switch (preferredMethod) {
+          case "card":       return { card: true };
+          case "upi":        return { upi: true };
+          case "netbanking": return { netbanking: true };
+          case "qr":         return { upi: true }; // Razorpay surfaces QR within UPI block
+          default:           return { upi: true, card: true, netbanking: true, wallet: true, emi: true, paylater: true };
+        }
+      })(),
       handler: async (resp) => {
         try {
           const v = await apiClient.post("/payments/verify", {
@@ -509,11 +518,7 @@ const Payments = ({ user, apiClient }) => {
               Pay via <strong>UPI</strong>, <strong>Cards</strong>, <strong>Netbanking</strong>, <strong>Wallets</strong>, EMI &amp; PayLater.
             </p>
 
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 text-[10px] uppercase tracking-wider text-gray-500">
-              {["UPI", "Visa", "Mastercard", "Rupay", "Net Banking", "Wallets", "EMI"].map((m) => (
-                <span key={m} className="border border-gray-200 rounded px-2 py-1 bg-gray-50">{m}</span>
-              ))}
-            </div>
+            <PaymentMethodPicker selected={preferredMethod} onSelect={setPreferredMethod} />
           </Card>
         </aside>
       </div>
@@ -593,5 +598,164 @@ const Row = ({ label, value, mono, testid }) => (
     <span className={`text-gray-900 ${mono ? "font-mono text-xs" : "font-medium"}`} data-testid={testid}>{value}</span>
   </div>
 );
+
+// ============ PAYMENT METHOD PICKER ============
+// Pre-selection UI inspired by leading Razorpay clients (CRED, BookMyShow, Myntra)
+// User's choice is passed to Razorpay's `method` filter so checkout opens directly on that method.
+
+const METHOD_TABS = [
+  { id: "card",       label: "Cards",      icon: CreditCard },
+  { id: "upi",        label: "UPI",        icon: Smartphone },
+  { id: "netbanking", label: "Net Banking", icon: Building2 },
+  { id: "qr",         label: "QR Code",    icon: QrCode },
+];
+
+const CARD_NETWORKS = [
+  { name: "Visa",       sub: "Credit / Debit", color: "#1A1F71" },
+  { name: "Mastercard", sub: "Credit / Debit", color: "#EB001B" },
+  { name: "RuPay",      sub: "Debit",          color: "#097B3F" },
+  { name: "Amex",       sub: "Credit",         color: "#006FCF" },
+  { name: "Diners",     sub: "Credit",         color: "#0079BE" },
+];
+
+const UPI_APPS = [
+  { name: "Google Pay",  short: "GPay",    bg: "bg-white",         text: "text-[#1a73e8]", border: "border-blue-200" },
+  { name: "PhonePe",     short: "PhonePe", bg: "bg-[#5f259f]",     text: "text-white",     border: "border-[#5f259f]" },
+  { name: "Paytm",       short: "Paytm",   bg: "bg-[#00BAF2]",     text: "text-white",     border: "border-[#00BAF2]" },
+  { name: "BHIM",        short: "BHIM",    bg: "bg-[#ff7300]",     text: "text-white",     border: "border-[#ff7300]" },
+  { name: "Amazon Pay",  short: "AmzPay",  bg: "bg-[#232F3E]",     text: "text-white",     border: "border-[#232F3E]" },
+  { name: "CRED",        short: "CRED",    bg: "bg-black",         text: "text-white",     border: "border-black" },
+  { name: "WhatsApp",    short: "WApay",   bg: "bg-[#25D366]",     text: "text-white",     border: "border-[#25D366]" },
+  { name: "Other UPI",   short: "VPA",     bg: "bg-gray-100",      text: "text-gray-700",  border: "border-gray-300" },
+];
+
+const TOP_BANKS = [
+  "HDFC Bank", "ICICI Bank", "State Bank of India", "Axis Bank",
+  "Kotak Mahindra", "Yes Bank", "IDFC FIRST", "IndusInd Bank",
+  "Punjab National Bank", "Bank of Baroda", "Canara Bank", "Union Bank",
+];
+
+const PaymentMethodPicker = ({ selected, onSelect }) => (
+  <div className="mt-5 border-t pt-5" data-testid="method-picker">
+    <div className="text-xs font-semibold text-gray-700 mb-2 tracking-wide uppercase">Choose payment method</div>
+
+    {/* Tabs */}
+    <div className="grid grid-cols-4 gap-2" role="tablist">
+      {METHOD_TABS.map((t) => {
+        const active = selected === t.id;
+        const Icon = t.icon;
+        return (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => onSelect(t.id)}
+            className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all ${
+              active
+                ? "border-[#003366] bg-[#003366] text-white shadow-md"
+                : "border-gray-200 bg-white text-gray-600 hover:border-[#003366]/40 hover:bg-gray-50"
+            }`}
+            data-testid={`method-tab-${t.id}`}
+          >
+            <Icon className="w-5 h-5" />
+            <span className="text-[10px] font-semibold leading-none">{t.label}</span>
+          </button>
+        );
+      })}
+    </div>
+
+    {/* Panels */}
+    <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50/60 p-4 min-h-[140px]" data-testid={`method-panel-${selected}`}>
+      {selected === "card" && (
+        <div>
+          <div className="text-[11px] font-semibold text-gray-600 mb-2 uppercase tracking-wide">Accepted cards</div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {CARD_NETWORKS.map((c) => (
+              <div
+                key={c.name}
+                className="flex items-center gap-2 bg-white rounded-lg border border-gray-200 px-2.5 py-2"
+                data-testid={`card-network-${c.name.toLowerCase()}`}
+              >
+                <span
+                  className="w-8 h-5 rounded-sm flex items-center justify-center text-[8px] font-bold text-white tracking-wider"
+                  style={{ backgroundColor: c.color }}
+                >
+                  {c.name.slice(0, 4).toUpperCase()}
+                </span>
+                <div className="leading-tight">
+                  <div className="text-[11px] font-semibold text-gray-900">{c.name}</div>
+                  <div className="text-[9px] text-gray-500">{c.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-500 mt-3 flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3 text-green-600" /> All cards processed via PCI-DSS Level-1 Razorpay vault
+          </p>
+        </div>
+      )}
+
+      {selected === "upi" && (
+        <div>
+          <div className="text-[11px] font-semibold text-gray-600 mb-2 uppercase tracking-wide">Pay with any UPI app</div>
+          <div className="grid grid-cols-4 gap-2">
+            {UPI_APPS.map((u) => (
+              <div
+                key={u.name}
+                className={`flex flex-col items-center justify-center rounded-lg border ${u.border} ${u.bg} ${u.text} px-1 py-2`}
+                data-testid={`upi-app-${u.short.toLowerCase()}`}
+                title={u.name}
+              >
+                <span className="text-[10px] font-bold leading-none">{u.short}</span>
+                <span className="text-[8px] mt-1 opacity-80 leading-none">UPI</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-500 mt-3">
+            Enter your UPI ID or scan via app on Razorpay's checkout — works with 200+ banks.
+          </p>
+        </div>
+      )}
+
+      {selected === "netbanking" && (
+        <div>
+          <div className="text-[11px] font-semibold text-gray-600 mb-2 uppercase tracking-wide">Top banks</div>
+          <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto pr-1">
+            {TOP_BANKS.map((b) => (
+              <div
+                key={b}
+                className="flex items-center gap-2 bg-white rounded-md border border-gray-200 px-2.5 py-1.5"
+                data-testid={`bank-${b.replace(/\s+/g, "-").toLowerCase()}`}
+              >
+                <Building2 className="w-3.5 h-3.5 text-[#003366] flex-shrink-0" />
+                <span className="text-[10.5px] font-medium text-gray-800 truncate">{b}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-500 mt-3">
+            55+ banks available on Razorpay's secure checkout.
+          </p>
+        </div>
+      )}
+
+      {selected === "qr" && (
+        <div className="text-center py-2">
+          <div className="mx-auto w-24 h-24 rounded-xl border-2 border-dashed border-[#003366]/40 bg-white flex items-center justify-center mb-2 relative">
+            <QrCode className="w-14 h-14 text-[#003366]" strokeWidth={1.4} />
+            <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#003366] text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">
+              UPI
+            </span>
+          </div>
+          <div className="text-[12px] font-semibold text-[#003366]">Scan & Pay with any UPI app</div>
+          <p className="text-[10px] text-gray-500 mt-1.5 max-w-[220px] mx-auto leading-relaxed">
+            A live, signed QR code will be generated on Razorpay's secure screen after you confirm.
+          </p>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 
 export default Payments;
