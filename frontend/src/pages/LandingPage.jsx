@@ -18,57 +18,50 @@ const NAV_LINKS = [
   { label: "Careers",    path: "/careers" },
 ];
 
-const CORE_MODULES = [
+const ALL_MODULES = [
   {
     id: "drhp",
     title: "DRHP Builder",
-    tagline: "SEBI-compliant. Collaborative. On-cloud.",
-    description: "Build a complete Draft Red Herring Prospectus with real-time team collaboration, version control, and an AI assistant that knows the latest ICDR regulations.",
+    tagline: "SEBI-compliant. Collaborative.",
     icon: FileText,
     path: "/login?module=drhp",
     accent: "from-indigo-500/30 to-purple-500/10",
     iconBg: "from-indigo-500 to-purple-500",
-    badge: "Flagship",
   },
   {
     id: "readiness",
     title: "IPO Readiness Test",
-    tagline: "Free, AI-powered diagnostic.",
-    description: "A 75-question gap analysis across governance, financials, compliance and market readiness — with an expert-reviewed remediation plan.",
+    tagline: "Free AI-powered diagnostic.",
     icon: CheckCircle2,
     path: "/login?module=assessment",
     accent: "from-cyan-500/30 to-blue-500/10",
     iconBg: "from-cyan-500 to-blue-500",
-    badge: "Free",
   },
   {
     id: "matchmaker",
     title: "Expert Match-Making",
-    tagline: "Verified CAs, CS, CFOs, Merchant Bankers.",
-    description: "Find pre-vetted IPO subject-matter experts across India by industry, expertise and city — with verified SEBI/regulatory credentials.",
+    tagline: "CAs, CS, CFOs, Bankers.",
     icon: Users,
     path: "/login?module=matchmaker",
     accent: "from-fuchsia-500/30 to-pink-500/10",
     iconBg: "from-fuchsia-500 to-pink-500",
-    badge: "Network",
   },
-];
-
-const SECONDARY_MODULES = [
   {
     id: "valuation",
     title: "Business Valuation",
-    description: "AI-powered DCF, NAV & Comparable Company analysis with boardroom-ready reports.",
+    tagline: "DCF, NAV & Comparables.",
     icon: Scale,
     path: "/login?module=valuation",
+    accent: "from-amber-500/30 to-orange-500/10",
     iconBg: "from-amber-500 to-orange-500",
   },
   {
     id: "funding",
     title: "IPO Funding",
-    description: "Raise Pre-IPO, Post-IPO or Bridge funding with our personalised expert team.",
+    tagline: "Pre-IPO, Post-IPO & Bridge.",
     icon: TrendingUp,
-    path: "/login?module=funding1",
+    path: "/login?module=funding",
+    accent: "from-emerald-500/30 to-teal-500/10",
     iconBg: "from-emerald-500 to-teal-500",
   },
 ];
@@ -215,75 +208,46 @@ const LandingPage = () => {
       {/* ════════════════════════════════════════════════════════════ */}
       <section className="relative z-10 bg-[#0c0c0d] border-y border-white/5 px-6" data-testid="landing-modules">
         <div className="max-w-7xl mx-auto py-20 lg:py-24">
-          <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="text-center max-w-3xl mx-auto mb-10">
             <p className="text-[11px] tracking-[0.22em] uppercase text-indigo-400 font-semibold mb-3">Core platform</p>
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight">
-              Three modules.{" "}
+              Five Core Modules.{" "}
               <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-                One IPO journey.
+                One IPO Journey.
               </span>
             </h2>
             <p className="text-white/55 mt-4 text-base leading-relaxed">
-              Purpose-built for India. Trained on SEBI ICDR. Designed for collaboration across promoters, advisors and merchant bankers.
+              Built for India, Trained on SEBI ICDR and Designed for Collaboration across Promoters, Advisors and Merchant bankers.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {CORE_MODULES.map((m) => {
+          {/* 5-column uniform grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {ALL_MODULES.map((m) => {
               const Icon = m.icon;
               return (
                 <button
                   key={m.id}
                   onClick={() => navigate(m.path)}
-                  className="group relative text-left rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500 overflow-hidden p-7 hover:-translate-y-1"
+                  className="group relative text-left rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500 overflow-hidden p-5 hover:-translate-y-1 flex flex-col h-full min-h-[220px]"
                   data-testid={`landing-module-${m.id}`}
                 >
                   {/* Glow on hover */}
-                  <div className={`absolute -top-32 -right-32 w-72 h-72 rounded-full bg-gradient-to-br ${m.accent} blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                  <div className={`absolute -top-24 -right-24 w-56 h-56 rounded-full bg-gradient-to-br ${m.accent} blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
-                  <div className="relative">
-                    <div className="flex items-start justify-between mb-7">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${m.iconBg} flex items-center justify-center shadow-lg`}>
-                        <Icon className="w-6 h-6 text-white" strokeWidth={1.8} />
-                      </div>
-                      <span className="text-[10px] tracking-[0.18em] uppercase text-white/40 border border-white/10 rounded-full px-2.5 py-1 bg-white/[0.02]">
-                        {m.badge}
-                      </span>
+                  <div className="relative flex flex-col h-full">
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${m.iconBg} flex items-center justify-center shadow-lg mb-4`}>
+                      <Icon className="w-5 h-5 text-white" strokeWidth={1.8} />
                     </div>
 
-                    <h3 className="text-2xl font-semibold mb-1.5 text-white">{m.title}</h3>
-                    <p className="text-[13px] text-indigo-300/80 mb-3">{m.tagline}</p>
-                    <p className="text-sm text-white/55 leading-relaxed mb-6">{m.description}</p>
+                    <h3 className="text-base font-semibold text-white leading-snug mb-1.5">{m.title}</h3>
+                    <p className="text-[12px] text-indigo-300/80 leading-snug mb-4">{m.tagline}</p>
 
-                    <div className="flex items-center gap-1.5 text-sm font-medium text-white group-hover:text-indigo-300 transition-colors">
-                      Explore module
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    <div className="mt-auto flex items-center gap-1 text-[12px] font-medium text-white/80 group-hover:text-indigo-300 transition-colors">
+                      Explore
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                     </div>
                   </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Secondary 2-up row */}
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-5">
-            {SECONDARY_MODULES.map((m) => {
-              const Icon = m.icon;
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => navigate(m.path)}
-                  className="group flex items-start gap-5 text-left rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-all p-6"
-                  data-testid={`landing-module-${m.id}`}
-                >
-                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${m.iconBg} flex items-center justify-center flex-shrink-0`}>
-                    <Icon className="w-5 h-5 text-white" strokeWidth={1.8} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-1">{m.title}</h3>
-                    <p className="text-sm text-white/55 leading-relaxed">{m.description}</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all mt-3 flex-shrink-0" />
                 </button>
               );
             })}
