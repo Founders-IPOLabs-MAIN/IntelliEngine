@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import ContactLeadDialog from "@/components/ContactLeadDialog";
 import WaveDotsBackground from "@/components/WaveDotsBackground";
+import CookieConsent from "@/components/CookieConsent";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -438,6 +439,8 @@ const LandingPage = () => {
         onOpenChange={setContactOpen}
         leadType={contactType}
       />
+
+      <CookieConsent />
     </div>
   );
 };
