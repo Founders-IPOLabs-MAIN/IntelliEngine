@@ -156,8 +156,8 @@ const LandingPage = () => {
       {/* HERO                                                        */}
       {/* ════════════════════════════════════════════════════════════ */}
       <section className="relative z-10 px-6" data-testid="landing-hero">
-        <div className="max-w-5xl mx-auto py-28 lg:py-36 flex flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md text-[11px] tracking-[0.2em] uppercase text-white/60 mb-7">
+        <div className="max-w-5xl mx-auto py-20 lg:py-28 flex flex-col items-center text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md text-[11px] tracking-[0.2em] uppercase text-white/60 mb-5">
             <Sparkles className="w-3 h-3 text-indigo-400" />
             India's first AI-powered IPO Operating System
           </div>
@@ -175,12 +175,12 @@ const LandingPage = () => {
             </span>
           </h1>
 
-          <p className="mt-7 text-lg lg:text-xl text-white/60 max-w-2xl leading-relaxed">
+          <p className="mt-5 text-lg lg:text-xl text-white/60 max-w-2xl leading-relaxed">
             Empowering ambitious companies across Tier 2, 3 &amp; 4 cities in India to draft complex DRHPs,
             access top subject-matter experts, raise growth or IPO capital, and win projects across the country.
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center gap-3">
+          <div className="mt-7 flex flex-col sm:flex-row items-center gap-3">
             <Button
               onClick={() => navigate("/login")}
               className="bg-white text-black hover:bg-white/90 rounded-full px-7 h-12 text-sm font-semibold shadow-[0_0_40px_rgba(255,255,255,0.25)]"
@@ -199,7 +199,7 @@ const LandingPage = () => {
           </div>
 
           {/* Trust strip */}
-          <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-6 w-full max-w-3xl">
+          <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-6 w-full max-w-3xl">
             {TRUST_STATS.map((s) => (
               <div key={s.label} className="text-center">
                 <div className="text-3xl lg:text-4xl font-bold bg-gradient-to-br from-white to-white/50 bg-clip-text text-transparent">{s.value}</div>
@@ -214,8 +214,8 @@ const LandingPage = () => {
       {/* CORE MODULES — 3-column grid                                 */}
       {/* ════════════════════════════════════════════════════════════ */}
       <section className="relative z-10 bg-[#0c0c0d] border-y border-white/5 px-6" data-testid="landing-modules">
-        <div className="max-w-7xl mx-auto py-28 lg:py-32">
-          <div className="text-center max-w-2xl mx-auto mb-16">
+        <div className="max-w-7xl mx-auto py-20 lg:py-24">
+          <div className="text-center max-w-2xl mx-auto mb-10">
             <p className="text-[11px] tracking-[0.22em] uppercase text-indigo-400 font-semibold mb-3">Core platform</p>
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight">
               Three modules.{" "}
@@ -223,7 +223,7 @@ const LandingPage = () => {
                 One IPO journey.
               </span>
             </h2>
-            <p className="text-white/55 mt-5 text-base leading-relaxed">
+            <p className="text-white/55 mt-4 text-base leading-relaxed">
               Purpose-built for India. Trained on SEBI ICDR. Designed for collaboration across promoters, advisors and merchant bankers.
             </p>
           </div>
@@ -295,7 +295,7 @@ const LandingPage = () => {
       {/* VIDEO INTRODUCTION                                           */}
       {/* ════════════════════════════════════════════════════════════ */}
       <section className="relative z-10 bg-[#0a0a0a] px-6" data-testid="landing-video">
-        <div className="max-w-6xl mx-auto py-28 lg:py-32 flex flex-col items-center text-center">
+        <div className="max-w-6xl mx-auto py-20 lg:py-24 flex flex-col items-center text-center">
           <p className="text-[11px] tracking-[0.22em] uppercase text-indigo-400 font-semibold mb-3">Watch the story</p>
           <h2 className="text-4xl lg:text-5xl font-bold tracking-tight max-w-3xl">
             See how SETU{" "}
@@ -303,11 +303,11 @@ const LandingPage = () => {
               democratises India's IPO journey
             </span>
           </h2>
-          <p className="text-white/55 mt-5 text-base leading-relaxed max-w-xl">
+          <p className="text-white/55 mt-4 text-base leading-relaxed max-w-xl">
             A 90-second corporate film on why we built India's first AI-powered IPO Operating System — and what it means for entrepreneurs in Tier 2, 3 &amp; 4 cities.
           </p>
 
-          <div className="mt-12 w-full">
+          <div className="mt-8 w-full">
             <div
               className="relative aspect-video w-full rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#0d0d10] via-[#0e0d18] to-[#0a0a0a] cursor-pointer group shadow-[0_0_80px_rgba(99,102,241,0.15)]"
               data-testid="landing-corporate-video-placeholder"
@@ -358,8 +358,8 @@ const LandingPage = () => {
       {/* WHY SETU — value props row                                   */}
       {/* ════════════════════════════════════════════════════════════ */}
       <section className="relative z-10 bg-[#0c0c0d] border-t border-white/5 px-6" data-testid="landing-why">
-        <div className="max-w-7xl mx-auto py-28 lg:py-32">
-          <div className="text-center max-w-2xl mx-auto mb-14">
+        <div className="max-w-7xl mx-auto py-20 lg:py-24">
+          <div className="text-center max-w-2xl mx-auto mb-8">
             <p className="text-[11px] tracking-[0.22em] uppercase text-indigo-400 font-semibold mb-3">Why teams choose SETU</p>
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight">
               Built for{" "}
@@ -397,15 +397,15 @@ const LandingPage = () => {
       {/* CLOSING CTA                                                  */}
       {/* ════════════════════════════════════════════════════════════ */}
       <section className="relative z-10 bg-[#0a0a0a] px-6" data-testid="landing-cta">
-        <div className="max-w-4xl mx-auto py-28 lg:py-32 flex flex-col items-center text-center">
+        <div className="max-w-4xl mx-auto py-20 lg:py-24 flex flex-col items-center text-center">
           <h2 className="text-4xl lg:text-6xl font-bold tracking-tight max-w-3xl">
             <span className="bg-gradient-to-br from-white to-white/50 bg-clip-text text-transparent">Ready to build your</span>{" "}
             <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">IPO journey?</span>
           </h2>
-          <p className="text-white/55 mt-6 text-lg max-w-xl leading-relaxed">
+          <p className="text-white/55 mt-4 text-lg max-w-xl leading-relaxed">
             Start with a free IPO readiness test. No credit card required.
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-3">
+          <div className="mt-7 flex flex-col sm:flex-row gap-3">
             <Button
               onClick={() => navigate("/login?module=assessment")}
               className="bg-white text-black hover:bg-white/90 rounded-full px-7 h-12 text-sm font-semibold shadow-[0_0_40px_rgba(255,255,255,0.25)]"
@@ -429,7 +429,7 @@ const LandingPage = () => {
       {/* FOOTER                                                       */}
       {/* ════════════════════════════════════════════════════════════ */}
       <footer className="relative z-10 bg-[#070707] border-t border-white/5 text-white/70 px-6">
-        <div className="max-w-7xl mx-auto py-14">
+        <div className="max-w-7xl mx-auto py-10">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -476,7 +476,7 @@ const LandingPage = () => {
             </div>
           </div>
 
-          <div className="border-t border-white/5 mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="border-t border-white/5 mt-8 pt-5 flex flex-col md:flex-row items-center justify-between gap-3">
             <p className="text-[11px] text-white/40">© {new Date().getFullYear()} IPO Labs Private Limited. All rights reserved.</p>
             <div className="flex gap-6 text-[11px] text-white/40">
               <button onClick={() => navigate("/disclaimer")} className="hover:text-white transition-colors">Privacy Policy</button>
