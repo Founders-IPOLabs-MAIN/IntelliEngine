@@ -13,7 +13,8 @@ import {
   Shield,
   User,
   Scale,
-  CreditCard
+  CreditCard,
+  BarChart3
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -62,6 +63,7 @@ const Sidebar = ({ user, apiClient }) => {
       case 'admin': return path.startsWith('/admin');
       case 'account': return path.startsWith('/account');
       case 'payments': return path.startsWith('/payments');
+      case 'market-analytics': return path.startsWith('/market-analytics');
       default: return false;
     }
   };
@@ -91,6 +93,9 @@ const Sidebar = ({ user, apiClient }) => {
 
   // Payment Gateway — visible to ALL login types, sits below Account Details
   navItems.push({ id: "payments", label: "Payment Gateway", icon: CreditCard, path: "/payments" });
+
+  // Market Analytics — visible to ALL login types
+  navItems.push({ id: "market-analytics", label: "Market Analytics", icon: BarChart3, path: "/market-analytics" });
 
   const renderNavItem = (item) => {
     const active = isActive(item.id);

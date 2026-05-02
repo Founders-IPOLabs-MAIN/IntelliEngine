@@ -61,6 +61,7 @@ import AboutPage from "@/pages/AboutPage";
 import CareersPage from "@/pages/CareersPage";
 import ComingSoon from "@/pages/ComingSoon";
 import Payments from "@/pages/Payments";
+import MarketAnalytics from "@/pages/MarketAnalytics";
 
 // Components
 import Footer from "@/components/Footer";
@@ -282,6 +283,14 @@ const AppRouter = () => {
         element={
           <ProtectedRoute>
             {({ user, apiClient }) => <Payments user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/market-analytics"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <MarketAnalytics user={user} apiClient={apiClient} />}
           </ProtectedRoute>
         }
       />
