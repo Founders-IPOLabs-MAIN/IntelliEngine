@@ -209,6 +209,47 @@ const CommandCenter = ({ user, apiClient }) => {
               </Button>
             </div>
           </div>
+
+          {/* Deal-shape pill row — one-glance context */}
+          {(issueType || pricingMethod || salesType || registrar || boardSelection) ? (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5" data-testid="deal-shape-pills">
+              {issueType && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5" data-testid="pill-issue-type">
+                  <span className="text-blue-400">ISSUE</span> {issueType}
+                </span>
+              )}
+              {pricingMethod && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200 rounded-full px-2 py-0.5" data-testid="pill-pricing-method">
+                  <span className="text-purple-400">PRICING</span> {pricingMethod}
+                </span>
+              )}
+              {salesType && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-2 py-0.5" data-testid="pill-sales-type">
+                  <span className="text-emerald-400">SALES</span> {salesType}
+                </span>
+              )}
+              {boardSelection && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full px-2 py-0.5" data-testid="pill-board">
+                  <span className="text-indigo-400">BOARD</span> {boardSelection}
+                </span>
+              )}
+              {registrar && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2 py-0.5" data-testid="pill-registrar" title={registrar}>
+                  <span className="text-amber-400">RTA</span> {registrar.length > 28 ? registrar.slice(0, 28) + "…" : registrar}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="mt-2">
+              <button
+                onClick={() => document.querySelector('[data-testid="issue-trackers"]')?.scrollIntoView({ behavior: "smooth", block: "center" })}
+                className="text-[10px] font-medium text-gray-400 hover:text-[#1DA1F2] flex items-center gap-1"
+                data-testid="setup-deal-shape-btn"
+              >
+                <Plus className="w-3 h-3" /> Set up deal shape (Issue Type, Pricing, Sales, Board, RTA)
+              </button>
+            </div>
+          )}
         </header>
 
         <div className="p-4">
