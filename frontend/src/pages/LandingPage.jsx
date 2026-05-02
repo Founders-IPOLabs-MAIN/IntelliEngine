@@ -132,7 +132,7 @@ const LandingPage = () => {
               <button
                 key={l.path}
                 onClick={() => navigate(l.path)}
-                className="px-5 py-2.5 text-[18px] font-medium text-white/70 hover:text-white rounded-full hover:bg-white/5 transition-all"
+                className="px-4 py-2 text-[15px] font-medium text-white/70 hover:text-white rounded-full hover:bg-white/5 transition-all"
                 data-testid={`nav-${l.label.toLowerCase().replace(/\s/g, "-")}`}
               >
                 {l.label}
