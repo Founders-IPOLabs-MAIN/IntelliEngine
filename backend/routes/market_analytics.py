@@ -33,7 +33,7 @@ COVERAGE_YEARS = 7  # FY19–FY25
 
 class RefreshTriggerRequest(BaseModel):
     coverage_years: int = COVERAGE_YEARS
-    sources: List[str] = ["chittorgarh", "sebi", "amfi"]  # bse optional, slower
+    sources: List[str] = ["chittorgarh", "sebi", "amfi", "ipowatch_sme"]  # bse optional, slower
     run_id: Optional[str] = None
 
 
@@ -76,7 +76,7 @@ async def get_stats(user: User = Depends(get_current_user)):
         "last_completed_run": last_run,
         "current_run": current_run,
         "years_covered": years,
-        "data_sources": ["Chittorgarh", "SEBI Public Issues", "AMFI", "BSE"],
+        "data_sources": ["Chittorgarh", "SEBI Public Issues", "AMFI", "IPOWatch SME Archive"],
         "is_seeded": counts["issuers"] > 0,
     }
 

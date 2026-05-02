@@ -60,7 +60,7 @@ const MarketAnalytics = ({ user, apiClient }) => {
     try {
       await apiClient.post("/market-analytics/admin/refresh", {
         coverage_years: 7,
-        sources: ["chittorgarh", "sebi", "amfi"],
+        sources: ["chittorgarh", "sebi", "amfi", "ipowatch_sme"],
       });
       toast.success("Refresh started — this runs in the background, you can keep using the app.");
       refreshStats();

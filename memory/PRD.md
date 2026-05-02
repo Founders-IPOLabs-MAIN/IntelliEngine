@@ -6,7 +6,16 @@
 **Platform Type:** Cloud-hosted & secure IPO-readiness platform  
 **Target Market:** Indian market  
 **Date Started:** Feb 17, 2026
-**Last Updated:** May 1, 2026
+**Last Updated:** Feb 5, 2026
+
+### Changelog — Feb 5, 2026
+- **Market Analytics: SME IPO Historical Ingestion (7-year coverage)**
+  - New scraper `/app/scripts/market_analytics/sme_ipo_scraper.py` pulls 936 SME IPOs from `ipowatch.in` year archives (2019–2025), fully free/public source
+  - Integrated as new source `ipowatch_sme` into `build_master_dataset.py`; default source list updated in backend + frontend refresh trigger
+  - Rich fields captured: open/close/listing dates, issue price, issue size (Cr), price band, listing price, GMP, listing gain %, exchange (NSE Emerge / BSE SME)
+  - Industry keyword dictionary expanded (21 → 24 categories) to tag SME names; "Other" share reduced from 63 % → 46 %
+  - ma_issuers now holds **1,081 issuers** (145 main + 936 SME), ₹30 K Cr SME size tracked across FY19 → FY26
+  - Verified via curl: `/api/market-analytics/stats`, `/search` (board=sme), `/dashboards/yearly-trends`, `/dashboards/board-mix` all return real data
 
 ### Changelog — May 1, 2026
 - **Razorpay Payments + GST Tax-Invoice Module (Live Test mode)**:

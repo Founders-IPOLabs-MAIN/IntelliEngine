@@ -116,28 +116,30 @@ async def upsert_fund_families():
 
 # ─── Industry tagging (free, deterministic) ──────────────────────────────────
 INDUSTRY_KEYWORDS = {
-    "Pharma": ["pharma", "drug", "biotech", "biological", "vaccine", "API", "formulation"],
-    "Healthcare": ["hospital", "diagnost", "medical", "clinic", "healthcare", "wellness"],
-    "Technology": ["software", "tech", "saas", "platform", "digital", "IT services", "cloud"],
+    "Pharma": ["pharma", "drug", "biotech", "biological", "vaccine", "API", "formulation", "life sciences", "lifesciences"],
+    "Healthcare": ["hospital", "diagnost", "medical", "clinic", "healthcare", "wellness", "life care", "nutrition", "nutraceutical", "ayurvedic", "ayurveda"],
+    "Technology": ["software", "tech", "saas", "platform", "digital", "IT services", " it ", " it-", "cloud", "cyber", "robotic", "automation", "analytic", "solve", "solutions", "collaboration", "systems"],
     "Fintech": ["fintech", "payment", "lending", "loan", "credit", "bnpl", "digital lending"],
-    "Banking": ["bank", "nbfc", "small finance bank", "cooperative bank"],
+    "Banking": ["bank", "nbfc", "small finance bank", "cooperative bank", "leasing", " finance ", "finserv", "capital", "microfinance"],
     "Insurance": ["insurance", "assurance"],
-    "Manufacturing": ["manufactur", "engineering", "machinery", "industrial", "fabricat"],
-    "Auto": ["automobile", "auto component", "ev", "electric vehicle", "two wheeler"],
-    "FMCG": ["fmcg", "consumer goods", "food", "beverage", "personal care", "dairy"],
-    "Retail": ["retail", "fashion", "apparel", "jewell", "footwear"],
-    "Real Estate": ["real estate", "property", "construction", "infrastructure", "realty"],
-    "Energy": ["energy", "power", "solar", "wind", "renewable", "oil", "gas"],
-    "Chemicals": ["chemical", "petrochem", "agrochem", "specialty chem", "fertilizer"],
-    "Logistics": ["logistic", "warehous", "shipping", "transport", "supply chain"],
-    "Media": ["media", "entertainment", "broadcast", "publishing", "ott"],
-    "Hospitality": ["hotel", "restaurant", "hospitality", "tourism", "qsr"],
-    "Education": ["education", "edtech", "school", "learning", "training"],
+    "Manufacturing": ["manufactur", "engineering", "machinery", "industrial", "fabricat", " industries", "industry", "enterprises", "polyplast", "packaging", "packag", "wires", "cables", "valves", "stamping", "fabmat", "gears", "bearings", "robotic"],
+    "Auto": ["automobile", "auto component", "ev", "electric vehicle", "two wheeler", " auto ", "auto-"],
+    "FMCG": ["fmcg", "consumer goods", " food ", "foods", "beverage", "personal care", "dairy", "snacks", "spices", "tea "],
+    "Retail": ["retail", "fashion", "apparel", "jewell", "jewel", "jewels", "footwear", "dress", "garments", "goldorna", "gold ", "mart"],
+    "Real Estate": ["real estate", "property", "construction", "infrastructure", "realty", "infrabuild", "infra "],
+    "Energy": ["energy", "power", "solar", "wind", "renewable", " oil ", " gas ", "petroleum", "electric ", "electricals"],
+    "Chemicals": ["chemical", "petrochem", "agrochem", "specialty chem", "fertilizer", "resin", "paints"],
+    "Logistics": ["logistic", "warehous", "shipping", "transport", "supply chain", "cabs", "exports", "overseas", "trading", "trade"],
+    "Media": ["media", "entertainment", "broadcast", "publishing", "ott", "films", "film ", "studios", "multiplex", "printing", " print ", "movies", "music"],
+    "Hospitality": ["hotel", "restaurant", "hospitality", "tourism", "qsr", "resort", "leisure"],
+    "Education": ["education", "edtech", "school", "learning", "training", "tutorials", "educare", "academy"],
     "Telecom": ["telecom", "telecommunication", "5g", "tower"],
-    "Agriculture": ["agri", "agricultural", "seed", "irrigation", "agro"],
-    "Textile": ["textile", "garment", "yarn", "fabric", "spinning"],
+    "Agriculture": ["agri", "agricultural", "seed", "irrigation", "agro", " organic", "dairy", "plantation", "horticulture"],
+    "Textile": ["textile", "garment", "yarn", "fabric", "spinning", "cotfab", "cotton", "cotspin", "fibromat", "rayons", "denim", "apparel"],
     "Defence": ["defence", "defense", "aerospace"],
-    "Mining": ["mining", "mineral", "metal", "steel", "iron ore"],
+    "Mining": ["mining", "mineral", " metal", "steel", "iron ore", " copper", "zinc", "alumi"],
+    "Consulting": ["consulting", "consultancy", "advisory", "advisors", "research"],
+    "Packaging": ["packaging"],
 }
 
 
@@ -587,6 +589,11 @@ async def main(args):
         await scrape_chittorgarh_issuers(args.coverage_years)
         await scrape_anchor_lists_for_recent_issuers(limit=250)
 
+    if "ipowatch_sme" in sources or "sme" in sources:
+        from sme_ipo_scraper import scrape_sme_ipos
+        sme_stats = await scrape_sme_ipos(db, coverage_years=args.coverage_years + 1)
+        print(f"[sme] upserted {sme_stats['total']} SME issuers across {len(sme_stats['per_year'])} years")
+
     await consolidate_investors()
 
     print("=== Build complete ===")
@@ -596,6 +603,6 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--run-id", default=f"run_{int(time.time())}")
     p.add_argument("--coverage-years", type=int, default=7)
-    p.add_argument("--sources", default="chittorgarh,sebi,amfi")
+    p.add_argument("--sources", default="chittorgarh,sebi,amfi,ipowatch_sme")
     args = p.parse_args()
     asyncio.run(main(args))
