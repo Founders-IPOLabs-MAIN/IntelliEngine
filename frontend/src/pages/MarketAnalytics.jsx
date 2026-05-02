@@ -1,5 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import Sidebar from "@/components/Sidebar";
+import {
+  BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, Legend, ResponsiveContainer,
+  Line,
+} from "recharts";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -155,13 +160,11 @@ const MarketAnalytics = ({ user, apiClient }) => {
 
           {/* ── DASHBOARDS ── */}
           <TabsContent value="dashboards">
-            <Card className="p-12 text-center">
-              <BarChart3 className="w-8 h-8 mx-auto text-indigo-400 mb-3" />
-              <h3 className="text-lg font-bold text-[#003366]">Dashboards — coming in Phase 3</h3>
-              <p className="text-sm text-gray-600 mt-2 max-w-lg mx-auto">
-                Top investors by deal count · Sector heatmap (industry × year) · City leaderboard · Yearly trends · QIB subscription patterns. All powered by Recharts on top of the live Mongo dataset.
-              </p>
-            </Card>
+            {!stats?.is_seeded ? (
+              <EmptyState title="Dataset not seeded yet" body="Refresh data first to see dashboards." />
+            ) : (
+              <DashboardsPanel apiClient={apiClient} />
+            )}
           </TabsContent>
 
           {/* ── ADMIN ── */}
@@ -617,3 +620,211 @@ const FindAnchorsPanel = ({ apiClient }) => {
 };
 
 export default MarketAnalytics;
+
+// ════════════════════════════════════════════════════════════════
+// DASHBOARDS — Recharts visualisations
+// ════════════════════════════════════════════════════════════════
+
+const COLORS = {
+  indigo: "#6366f1", purple: "#a855f7", cyan: "#06b6d4",
+  emerald: "#10b981", amber: "#f59e0b", pink: "#ec4899",
+  blue: "#3b82f6", red: "#ef4444",
+};
+const PIE_COLORS = [COLORS.indigo, COLORS.cyan, COLORS.purple, COLORS.emerald, COLORS.amber, COLORS.pink];
+
+function DashboardsPanel({ apiClient }) {
+  const [yearly, setYearly] = useState(null);
+  const [heatmap, setHeatmap] = useState(null);
+  const [cities, setCities] = useState(null);
+  const [boardMix, setBoardMix] = useState(null);
+  const [topInv, setTopInv] = useState(null);
+
+  useEffect(() => {
+    Promise.all([
+      apiClient.get("/market-analytics/dashboards/yearly-trends").then(r => setYearly(r.data.data)),
+      apiClient.get("/market-analytics/dashboards/industry-by-year").then(r => setHeatmap(r.data.data)),
+      apiClient.get("/market-analytics/dashboards/city-leaderboard").then(r => setCities(r.data.data)),
+      apiClient.get("/market-analytics/dashboards/board-mix").then(r => setBoardMix(r.data.data)),
+      apiClient.get("/market-analytics/dashboards/top-investors").then(r => setTopInv(r.data)),
+    ]);
+  }, [apiClient]);
+
+  const heatmapMatrix = (() => {
+    if (!heatmap) return null;
+    const fys = [...new Set(heatmap.map(r => r.fy))].sort();
+    const industries = [...new Set(heatmap.map(r => r.industry))]
+      .sort((a, b) => {
+        const totalA = heatmap.filter(x => x.industry === a).reduce((s, x) => s + x.count, 0);
+        const totalB = heatmap.filter(x => x.industry === b).reduce((s, x) => s + x.count, 0);
+        return totalB - totalA;
+      })
+      .slice(0, 12);
+    const max = Math.max(...heatmap.map(r => r.count));
+    const get = (industry, fy) => heatmap.find(r => r.industry === industry && r.fy === fy)?.count || 0;
+    return { fys, industries, max, get };
+  })();
+
+  return (
+    <div className="space-y-5" data-testid="dashboards-panel">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <Card className="lg:col-span-2 p-5" data-testid="chart-yearly">
+          <ChartHeader title="IPO Filings by Financial Year" subtitle="Volume + Total issue size (₹ Cr)" />
+          {yearly ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={yearly}>
+                <defs>
+                  <linearGradient id="cnt" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={COLORS.indigo} stopOpacity={0.6} />
+                    <stop offset="100%" stopColor={COLORS.indigo} stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+                <XAxis dataKey="fy" tick={{ fontSize: 11 }} />
+                <YAxis yAxisId="l" tick={{ fontSize: 11 }} />
+                <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 11 }} />
+                <RTooltip />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Area yAxisId="l" type="monotone" dataKey="count" name="Filings" stroke={COLORS.indigo} fill="url(#cnt)" strokeWidth={2} />
+                <Line yAxisId="r" type="monotone" dataKey="total_size_cr" name="Total Size (₹ Cr)" stroke={COLORS.amber} strokeWidth={2} dot={{ r: 3 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : <ChartLoader />}
+        </Card>
+
+        <Card className="p-5" data-testid="chart-board-mix">
+          <ChartHeader title="Main Board vs SME Mix" subtitle="By number of issuers" />
+          {boardMix ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie data={boardMix} dataKey="count" nameKey="board" cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={2}>
+                  {boardMix.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                </Pie>
+                <RTooltip formatter={(v, n, e) => [`${v} issuers · ₹${e.payload.total_size_cr?.toLocaleString("en-IN")} Cr`, e.payload.board?.toUpperCase()]} />
+                <Legend wrapperStyle={{ fontSize: 11 }} formatter={(v) => v?.toUpperCase()} />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : <ChartLoader />}
+        </Card>
+      </div>
+
+      <Card className="p-5" data-testid="chart-heatmap">
+        <ChartHeader title="Sector Heatmap" subtitle="Industry × Financial Year · IPO filing count (top 12 industries)" />
+        {heatmapMatrix ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr>
+                  <th className="text-left px-2 py-2 sticky left-0 bg-white z-10 font-semibold text-gray-600">Industry</th>
+                  {heatmapMatrix.fys.map(fy => (
+                    <th key={fy} className="px-2 py-2 text-center font-semibold text-gray-600">{fy}</th>
+                  ))}
+                  <th className="px-2 py-2 text-center font-semibold text-indigo-600">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {heatmapMatrix.industries.map((ind, i) => {
+                  const total = heatmapMatrix.fys.reduce((s, fy) => s + heatmapMatrix.get(ind, fy), 0);
+                  return (
+                    <tr key={ind} className="border-t" data-testid={`heatmap-row-${i}`}>
+                      <td className="px-2 py-1.5 sticky left-0 bg-white z-10 font-medium text-[#003366]">{ind}</td>
+                      {heatmapMatrix.fys.map(fy => {
+                        const c = heatmapMatrix.get(ind, fy);
+                        const intensity = c / heatmapMatrix.max;
+                        return (
+                          <td key={fy} className="px-1 py-1 text-center">
+                            <div
+                              className="rounded text-[11px] font-semibold py-1.5"
+                              style={{
+                                background: c === 0 ? "#f9fafb" : `rgba(99,102,241,${0.15 + intensity * 0.7})`,
+                                color: intensity > 0.55 ? "white" : c === 0 ? "#cbd5e1" : "#1e293b",
+                              }}
+                            >{c || "·"}</div>
+                          </td>
+                        );
+                      })}
+                      <td className="px-2 py-1.5 text-center font-bold text-indigo-700">{total}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : <ChartLoader />}
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <Card className="p-5" data-testid="chart-cities">
+          <ChartHeader title="Top Cities by IPO Issuers" subtitle="Top 15 cities · count" />
+          {cities ? (
+            <ResponsiveContainer width="100%" height={Math.max(280, cities.length * 26)}>
+              <BarChart data={cities} layout="vertical" margin={{ left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.25} horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11 }} />
+                <YAxis type="category" dataKey="city" tick={{ fontSize: 11 }} width={110} />
+                <RTooltip formatter={(v) => `${v} IPOs`} />
+                <Bar dataKey="count" name="IPOs" fill={COLORS.indigo} radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <ChartLoader />}
+        </Card>
+
+        <Card className="p-5" data-testid="chart-top-investors">
+          <ChartHeader
+            title={topInv?.mode === "empirical" ? "Top Anchor Investors" : "Top Fund Families (by AUM tier)"}
+            subtitle={topInv?.mode === "empirical" ? "By # of IPO anchor participations" : "Heuristic ordering · empirical kicks in once anchor data is ingested"}
+          />
+          {topInv ? (
+            <ResponsiveContainer width="100%" height={Math.max(280, topInv.data.length * 22)}>
+              <BarChart data={topInv.data} layout="vertical" margin={{ left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.25} horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 10 }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={150} />
+                <RTooltip />
+                <Bar
+                  dataKey={topInv.mode === "empirical" ? "deals" : "name"}
+                  name={topInv.mode === "empirical" ? "IPO Deals" : "AUM Tier"}
+                  fill={COLORS.purple}
+                  radius={[0, 4, 4, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <ChartLoader />}
+        </Card>
+      </div>
+
+      <Card className="p-5" data-testid="chart-board-by-fy">
+        <ChartHeader title="Main Board vs SME — Filing Volume by FY" subtitle="QIB-segment vs SME tier-2/3 capital activity over time" />
+        {yearly ? (
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={yearly}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+              <XAxis dataKey="fy" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <RTooltip />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Bar dataKey="main" name="Main Board" stackId="a" fill={COLORS.indigo} />
+              <Bar dataKey="sme"  name="SME"        stackId="a" fill={COLORS.amber} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : <ChartLoader />}
+      </Card>
+    </div>
+  );
+}
+
+function ChartHeader({ title, subtitle }) {
+  return (
+    <div className="mb-3">
+      <h3 className="text-sm font-bold text-[#003366]">{title}</h3>
+      {subtitle && <p className="text-[11px] text-gray-500 mt-0.5">{subtitle}</p>}
+    </div>
+  );
+}
+
+function ChartLoader() {
+  return (
+    <div className="h-72 flex items-center justify-center text-gray-400">
+      <Loader2 className="w-5 h-5 animate-spin" />
+    </div>
+  );
+}

@@ -9,7 +9,7 @@ import uuid
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://governance-dashboard-9.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://ipo-analytics-hub.preview.emergentagent.com").rstrip("/")
 
 ADMIN_EMAIL = "ronraj2312@gmail.com"
 ADMIN_PASSWORD = "Admin123"

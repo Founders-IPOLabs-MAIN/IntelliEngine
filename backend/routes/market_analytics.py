@@ -352,6 +352,85 @@ async def find_anchors(req: FindAnchorsRequest, user: User = Depends(get_current
     }
 
 
+# ============ DASHBOARDS (aggregations for charts) ============
+
+@router.get("/dashboards/yearly-trends")
+async def dash_yearly_trends(user: User = Depends(get_current_user)):
+    pipe = [
+        {"$match": {"fy": {"$ne": None}}},
+        {"$group": {
+            "_id": "$fy",
+            "count": {"$sum": 1},
+            "total_size_cr": {"$sum": {"$ifNull": ["$issue_size_cr", 0]}},
+            "main": {"$sum": {"$cond": [{"$eq": ["$board", "main"]}, 1, 0]}},
+            "sme":  {"$sum": {"$cond": [{"$eq": ["$board", "sme"]}, 1, 0]}},
+        }},
+        {"$sort": {"_id": 1}},
+    ]
+    rows = await db.ma_issuers.aggregate(pipe).to_list(length=20)
+    return {"data": [{"fy": r["_id"], "count": r["count"], "total_size_cr": round(r["total_size_cr"]),
+                       "main": r["main"], "sme": r["sme"]} for r in rows]}
+
+
+@router.get("/dashboards/industry-by-year")
+async def dash_industry_by_year(user: User = Depends(get_current_user)):
+    """Sector heatmap data — industry × FY counts."""
+    pipe = [
+        {"$match": {"industry": {"$ne": None}, "fy": {"$ne": None}}},
+        {"$group": {"_id": {"industry": "$industry", "fy": "$fy"}, "count": {"$sum": 1}}},
+    ]
+    rows = await db.ma_issuers.aggregate(pipe).to_list(length=2000)
+    return {"data": [{"industry": r["_id"]["industry"], "fy": r["_id"]["fy"], "count": r["count"]} for r in rows]}
+
+
+@router.get("/dashboards/city-leaderboard")
+async def dash_city_leaderboard(user: User = Depends(get_current_user), limit: int = 15):
+    pipe = [
+        {"$match": {"city": {"$ne": None}}},
+        {"$group": {
+            "_id": "$city",
+            "count": {"$sum": 1},
+            "total_size_cr": {"$sum": {"$ifNull": ["$issue_size_cr", 0]}},
+        }},
+        {"$sort": {"count": -1}},
+        {"$limit": limit},
+    ]
+    rows = await db.ma_issuers.aggregate(pipe).to_list(length=limit)
+    return {"data": [{"city": r["_id"], "count": r["count"], "total_size_cr": round(r["total_size_cr"])} for r in rows]}
+
+
+@router.get("/dashboards/board-mix")
+async def dash_board_mix(user: User = Depends(get_current_user)):
+    pipe = [
+        {"$group": {"_id": "$board", "count": {"$sum": 1},
+                    "total_size_cr": {"$sum": {"$ifNull": ["$issue_size_cr", 0]}}}},
+    ]
+    rows = await db.ma_issuers.aggregate(pipe).to_list(length=10)
+    return {"data": [{"board": r["_id"], "count": r["count"], "total_size_cr": round(r["total_size_cr"])} for r in rows]}
+
+
+@router.get("/dashboards/top-investors")
+async def dash_top_investors(user: User = Depends(get_current_user), limit: int = 20):
+    """Top investors by participation count (empirical) or fund families by AUM tier (heuristic)."""
+    n_part = await db.ma_anchor_participations.count_documents({})
+    if n_part > 0:
+        pipe = [
+            {"$group": {"_id": "$investor_raw", "deals": {"$sum": 1},
+                        "alloc": {"$sum": "$allocation_inr"}}},
+            {"$sort": {"deals": -1}},
+            {"$limit": limit},
+        ]
+        rows = await db.ma_anchor_participations.aggregate(pipe).to_list(length=limit)
+        return {"mode": "empirical",
+                "data": [{"name": r["_id"], "deals": r["deals"], "alloc_inr": r["alloc"]} for r in rows]}
+    # Heuristic — show fund families ordered by tier weight
+    families = await db.ma_fund_families.find({}, {"_id": 0}).to_list(length=200)
+    weight = {"Mega": 5, "Large": 4, "Mid": 3, "Small": 2}
+    ranked = sorted(families, key=lambda f: weight.get(f.get("aum_tier"), 0), reverse=True)[:limit]
+    return {"mode": "heuristic",
+            "data": [{"name": f["name"], "tier": f.get("aum_tier"), "deals": None} for f in ranked]}
+
+
 # ============ INVESTOR & ISSUER DETAIL ============
 
 @router.get("/issuers/{issuer_id}")

@@ -77,7 +77,7 @@ All responses now include:
 ### 5. CORS Locked Down
 
 ```python
-CORS_ORIGINS="https://governance-dashboard-9.preview.emergentagent.com"
+CORS_ORIGINS="https://ipo-analytics-hub.preview.emergentagent.com"
 ```
 
 ### 6. Dependencies Updated
