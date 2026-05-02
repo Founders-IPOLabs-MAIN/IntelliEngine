@@ -32,6 +32,46 @@ const BOARD_OPTIONS = ["BSE SME", "NSE Emerge", "NSE Main", "BSE Main"];
 
 const KEY_DATA_ROLES = ["CA", "CFO", "Sales POC", "IT POC", "Auditors"];
 
+const ISSUE_TYPE_OPTIONS = ["IPO", "FPO"];
+const PRICING_METHOD_OPTIONS = ["Bookbuilding", "Fixed Price"];
+const SALES_TYPE_OPTIONS = ["Fresh Capital Only", "OFS Only", "Fresh Capital cum OFS"];
+
+const REGISTRAR_OPTIONS = [
+  "Aarthi Consultants Pvt.Ltd.",
+  "Abhipra Capital Limited",
+  "Accurate Securities & Registry Pvt.Ltd.",
+  "Adroit Corporate Services Pvt.Ltd.",
+  "Alankit Assignments Ltd.",
+  "Ankit Consultancy Pvt.Ltd.",
+  "Beetal Financial & Computer Services Pvt.Ltd.",
+  "Bigshare Services Pvt.Ltd.",
+  "Cameo Corporate Services Ltd.",
+  "CB Management Services Pvt.Ltd.",
+  "Datamatics Business Soultions Ltd.",
+  "Integrated Registry Management Services Pvt.Ltd.",
+  "Investor Services of India Ltd.",
+  "Kfin Technologies Ltd.",
+  "Maashitla Securities Pvt.Ltd.",
+  "Maheshwari Datamatics Pvt.Ltd.",
+  "MAS Services Ltd.",
+  "MCS Share Transfer Agent Ltd.",
+  "Mondkar Computers Pvt.Ltd.",
+  "Mudra RTA Ventures Private Limited",
+  "MUFG Intime India Pvt.Ltd.",
+  "Niche Technologies Pvt.Ltd.",
+  "NSDL Database Management Ltd.",
+  "Purva Sharegistry (India) Pvt.Ltd.",
+  "RCMC Share Registry Pvt.Ltd.",
+  "S.K.D.C.Consultants Ltd.",
+  "S.K.Infosolutions Pvt.Ltd.",
+  "Satellite Corporate Services Pvt.Ltd.",
+  "Sharepro Services Pvt.Ltd.",
+  "Sharex Dynamic (India) Pvt.Ltd.",
+  "Skyline Financial Services Pvt.Ltd.",
+  "Universal Capital Securities Pvt.Ltd.",
+  "Venture Capital & Corporate Investments Ltd."
+];
+
 const CommandCenter = ({ user, apiClient }) => {
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -50,6 +90,10 @@ const CommandCenter = ({ user, apiClient }) => {
   const [boardSelection, setBoardSelection] = useState("");
   const [pendingItems, setPendingItems] = useState([]);
   const [customPending, setCustomPending] = useState("");
+  const [issueType, setIssueType] = useState("");
+  const [pricingMethod, setPricingMethod] = useState("");
+  const [salesType, setSalesType] = useState("");
+  const [registrar, setRegistrar] = useState("");
 
   const fetchData = useCallback(async () => {
     try {
@@ -67,6 +111,10 @@ const CommandCenter = ({ user, apiClient }) => {
         if (dashRes.data.drhp_first_draft_date) setDrhpFirstDraftDate(dashRes.data.drhp_first_draft_date);
         if (dashRes.data.board_selection) setBoardSelection(dashRes.data.board_selection);
         if (dashRes.data.pending_items?.length) setPendingItems(dashRes.data.pending_items);
+        if (dashRes.data.issue_type) setIssueType(dashRes.data.issue_type);
+        if (dashRes.data.pricing_method) setPricingMethod(dashRes.data.pricing_method);
+        if (dashRes.data.sales_type) setSalesType(dashRes.data.sales_type);
+        if (dashRes.data.registrar) setRegistrar(dashRes.data.registrar);
       }
     } catch (error) {
       console.error("Failed to fetch command center data:", error);
@@ -89,7 +137,11 @@ const CommandCenter = ({ user, apiClient }) => {
         drhp_submission_date: drhpSubmissionDate,
         drhp_first_draft_date: drhpFirstDraftDate,
         board_selection: boardSelection,
-        pending_items: pendingItems
+        pending_items: pendingItems,
+        issue_type: issueType,
+        pricing_method: pricingMethod,
+        sales_type: salesType,
+        registrar: registrar
       });
       toast.success("Dashboard saved");
     } catch { toast.error("Failed to save"); }
@@ -270,28 +322,60 @@ const CommandCenter = ({ user, apiClient }) => {
                 </div>
               </div>
 
-              {/* Column 2: Key Data */}
-              <div className="border border-gray-100 rounded-md p-2.5">
-                <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-[10px] font-bold text-gray-500 uppercase">Client Key Data</p>
-                  <button onClick={addKeyData} className="text-[#1DA1F2] hover:text-blue-700"><Plus className="w-3.5 h-3.5" /></button>
+              {/* Column 2: Issue Trackers */}
+              <div className="border border-gray-100 rounded-md p-2.5 space-y-2" data-testid="issue-trackers">
+                <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">Issue Trackers</p>
+
+                <div>
+                  <label className="text-[10px] font-semibold text-gray-600 mb-0.5 block">Issue Type</label>
+                  <select
+                    value={issueType}
+                    onChange={e => setIssueType(e.target.value)}
+                    className="w-full h-7 text-xs border rounded px-2"
+                    data-testid="tracker-issue-type"
+                  >
+                    <option value="">Select…</option>
+                    {ISSUE_TYPE_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
+                  </select>
                 </div>
-                <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
-                  {clientKeyData.map((item, i) => (
-                    <div key={i} className="flex gap-1 items-start bg-gray-50 rounded p-1.5">
-                      <div className="flex-1 space-y-0.5">
-                        <div className="flex gap-1">
-                          <Input placeholder="Role" value={item.role} onChange={e => { const u = [...clientKeyData]; u[i].role = e.target.value; setClientKeyData(u); }} className="h-5 text-[10px] w-16 font-semibold" />
-                          <Input placeholder="Name" value={item.name} onChange={e => { const u = [...clientKeyData]; u[i].name = e.target.value; setClientKeyData(u); }} className="h-5 text-[10px] flex-1" />
-                        </div>
-                        <div className="flex gap-1">
-                          <Input placeholder="Email" value={item.email} onChange={e => { const u = [...clientKeyData]; u[i].email = e.target.value; setClientKeyData(u); }} className="h-5 text-[10px] flex-1" />
-                          <Input placeholder="Mobile" value={item.mobile} onChange={e => { const u = [...clientKeyData]; u[i].mobile = e.target.value; setClientKeyData(u); }} className="h-5 text-[10px] w-20" />
-                        </div>
-                      </div>
-                      {clientKeyData.length > 1 && <button onClick={() => removeKeyData(i)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3 h-3" /></button>}
-                    </div>
-                  ))}
+
+                <div>
+                  <label className="text-[10px] font-semibold text-gray-600 mb-0.5 block">Pricing Method</label>
+                  <select
+                    value={pricingMethod}
+                    onChange={e => setPricingMethod(e.target.value)}
+                    className="w-full h-7 text-xs border rounded px-2"
+                    data-testid="tracker-pricing-method"
+                  >
+                    <option value="">Select…</option>
+                    {PRICING_METHOD_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-semibold text-gray-600 mb-0.5 block">Sales Type</label>
+                  <select
+                    value={salesType}
+                    onChange={e => setSalesType(e.target.value)}
+                    className="w-full h-7 text-xs border rounded px-2"
+                    data-testid="tracker-sales-type"
+                  >
+                    <option value="">Select…</option>
+                    {SALES_TYPE_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-semibold text-gray-600 mb-0.5 block">Registrar (RTA)</label>
+                  <select
+                    value={registrar}
+                    onChange={e => setRegistrar(e.target.value)}
+                    className="w-full h-7 text-xs border rounded px-2"
+                    data-testid="tracker-registrar"
+                  >
+                    <option value="">Select registrar…</option>
+                    {REGISTRAR_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
+                  </select>
                 </div>
               </div>
 
@@ -347,6 +431,96 @@ const CommandCenter = ({ user, apiClient }) => {
                     <button onClick={() => { if (customPending.trim()) { addPendingItem(customPending.trim()); setCustomPending(""); }}} className="h-6 px-2 text-[10px] bg-orange-500 text-white rounded hover:bg-orange-600">Add</button>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* ═══ KEY PERSONNEL TABLE ═══ */}
+            <div className="mt-6 pt-5 border-t border-gray-200" data-testid="key-personnel-section">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h4 className="text-sm font-bold text-gray-900">Key Personnel</h4>
+                  <p className="text-[11px] text-gray-500">Core people driving this IPO mandate — advisors, officers and operational POCs.</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={addKeyData}
+                  className="h-7 text-xs gap-1.5 border-[#1DA1F2]/30 text-[#1DA1F2] hover:bg-blue-50"
+                  data-testid="add-key-personnel-btn"
+                >
+                  <Plus className="w-3 h-3" /> Add Person
+                </Button>
+              </div>
+
+              <div className="overflow-hidden rounded-lg border border-gray-200">
+                <table className="w-full text-xs" data-testid="key-personnel-table">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide w-[18%]">Role</th>
+                      <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide w-[26%]">Name</th>
+                      <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide w-[30%]">Email</th>
+                      <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide w-[20%]">Mobile</th>
+                      <th className="px-3 py-2 w-[6%]"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clientKeyData.map((item, i) => (
+                      <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/60" data-testid={`key-personnel-row-${i}`}>
+                        <td className="px-3 py-1.5">
+                          <Input
+                            placeholder="Role"
+                            value={item.role}
+                            onChange={e => { const u = [...clientKeyData]; u[i].role = e.target.value; setClientKeyData(u); }}
+                            className="h-7 text-xs font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2"
+                          />
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <Input
+                            placeholder="Full name"
+                            value={item.name}
+                            onChange={e => { const u = [...clientKeyData]; u[i].name = e.target.value; setClientKeyData(u); }}
+                            className="h-7 text-xs border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2"
+                          />
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <Input
+                            placeholder="email@company.com"
+                            value={item.email}
+                            onChange={e => { const u = [...clientKeyData]; u[i].email = e.target.value; setClientKeyData(u); }}
+                            className="h-7 text-xs border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2"
+                          />
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <Input
+                            placeholder="+91 XXXXX XXXXX"
+                            value={item.mobile}
+                            onChange={e => { const u = [...clientKeyData]; u[i].mobile = e.target.value; setClientKeyData(u); }}
+                            className="h-7 text-xs border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2"
+                          />
+                        </td>
+                        <td className="px-3 py-1.5 text-right">
+                          {clientKeyData.length > 1 && (
+                            <button
+                              onClick={() => removeKeyData(i)}
+                              className="text-gray-300 hover:text-red-500 transition-colors"
+                              data-testid={`remove-key-personnel-${i}`}
+                              title="Remove"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    {clientKeyData.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="text-center py-6 text-gray-400 text-xs">
+                          No key personnel added. Click "Add Person" to start.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

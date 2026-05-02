@@ -786,6 +786,10 @@ class ProjectDashboardData(BaseModel):
     drhp_first_draft_date: Optional[str] = ""
     board_selection: Optional[str] = ""
     pending_items: Optional[List[dict]] = []
+    issue_type: Optional[str] = ""
+    pricing_method: Optional[str] = ""
+    sales_type: Optional[str] = ""
+    registrar: Optional[str] = ""
 
 @router.get("/projects/{project_id}/dashboard-data")
 async def get_project_dashboard_data(
@@ -835,6 +839,10 @@ async def update_project_dashboard_data(
         "drhp_first_draft_date": data.drhp_first_draft_date or "",
         "board_selection": data.board_selection or "",
         "pending_items": data.pending_items or [],
+        "issue_type": data.issue_type or "",
+        "pricing_method": data.pricing_method or "",
+        "sales_type": data.sales_type or "",
+        "registrar": data.registrar or "",
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "updated_by": user.user_id
     }
