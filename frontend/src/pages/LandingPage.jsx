@@ -1,321 +1,447 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
-  FileText, 
-  TrendingUp, 
-  Users, 
-  CheckCircle2,
-  ArrowRight,
-  MessageCircle,
-  Scale,
-  PlayCircle,
-  Film
+import {
+  FileText, TrendingUp, Users, CheckCircle2, Scale,
+  ArrowRight, PlayCircle, Sparkles, ShieldCheck,
+  Zap, Globe, MessageCircle, X,
 } from "lucide-react";
 import ContactLeadDialog from "@/components/ContactLeadDialog";
-import WaveDotsBackground from "@/components/WaveDotsBackground";
 import CookieConsent from "@/components/CookieConsent";
+
+const NAV_LINKS = [
+  { label: "Advisors",   path: "/advisors" },
+  { label: "Resources",  path: "/resources" },
+  { label: "Pricing",    path: "/pricing" },
+  { label: "Disclaimer", path: "/disclaimer" },
+  { label: "About Us",   path: "/about" },
+  { label: "Careers",    path: "/careers" },
+];
+
+const CORE_MODULES = [
+  {
+    id: "drhp",
+    title: "DRHP Builder",
+    tagline: "SEBI-compliant. Collaborative. On-cloud.",
+    description: "Build a complete Draft Red Herring Prospectus with real-time team collaboration, version control, and an AI assistant that knows the latest ICDR regulations.",
+    icon: FileText,
+    path: "/login?module=drhp",
+    accent: "from-indigo-500/30 to-purple-500/10",
+    iconBg: "from-indigo-500 to-purple-500",
+    badge: "Flagship",
+  },
+  {
+    id: "readiness",
+    title: "IPO Readiness Test",
+    tagline: "Free, AI-powered diagnostic.",
+    description: "A 75-question gap analysis across governance, financials, compliance and market readiness — with an expert-reviewed remediation plan.",
+    icon: CheckCircle2,
+    path: "/login?module=assessment",
+    accent: "from-cyan-500/30 to-blue-500/10",
+    iconBg: "from-cyan-500 to-blue-500",
+    badge: "Free",
+  },
+  {
+    id: "matchmaker",
+    title: "Expert Match-Making",
+    tagline: "Verified CAs, CS, CFOs, Merchant Bankers.",
+    description: "Find pre-vetted IPO subject-matter experts across India by industry, expertise and city — with verified SEBI/regulatory credentials.",
+    icon: Users,
+    path: "/login?module=matchmaker",
+    accent: "from-fuchsia-500/30 to-pink-500/10",
+    iconBg: "from-fuchsia-500 to-pink-500",
+    badge: "Network",
+  },
+];
+
+const SECONDARY_MODULES = [
+  {
+    id: "valuation",
+    title: "Business Valuation",
+    description: "AI-powered DCF, NAV & Comparable Company analysis with boardroom-ready reports.",
+    icon: Scale,
+    path: "/login?module=valuation",
+    iconBg: "from-amber-500 to-orange-500",
+  },
+  {
+    id: "funding",
+    title: "IPO Funding",
+    description: "Raise Pre-IPO, Post-IPO or Bridge funding with our personalised expert team.",
+    icon: TrendingUp,
+    path: "/login?module=funding1",
+    iconBg: "from-emerald-500 to-teal-500",
+  },
+];
+
+const TRUST_STATS = [
+  { value: "5",  label: "Integrated modules" },
+  { value: "200+", label: "Verified experts" },
+  { value: "₹0", label: "To start the readiness test" },
+  { value: "24/7", label: "Cloud-secure platform" },
+];
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [showNotification, setShowNotification] = useState(true);
-  const [shimmerIndex, setShimmerIndex] = useState(0);
   const [contactOpen, setContactOpen] = useState(false);
   const [contactType, setContactType] = useState("support");
+  const [scrolled, setScrolled] = useState(false);
 
-  // Shimmer effect every 5 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      setShimmerIndex(prev => (prev + 1) % 5);
-    }, 5000);
-    return () => clearInterval(interval);
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const modules = [
-    {
-      id: "drhp",
-      title: "DRHP Builder",
-      description: "SEBI Compliant, Secure & On-Cloud",
-      icon: FileText,
-      path: "/login?module=drhp",
-      iconBg: "bg-blue-100",
-      iconColor: "text-[#003366]"
-    },
-    {
-      id: "readiness",
-      title: "FREE IPO Readiness Test",
-      description: "Test your IPO Readiness & Identify Gaps",
-      icon: CheckCircle2,
-      path: "/login?module=assessment",
-      iconBg: "bg-cyan-100",
-      iconColor: "text-[#00D1FF]",
-      hasProgress: true
-    },
-    {
-      id: "funding",
-      title: "IPO Funding",
-      description: "Raise Pre, Post or Bridge Fund Rounds",
-      icon: TrendingUp,
-      path: "/login?module=funding1",
-      iconBg: "bg-green-100",
-      iconColor: "text-green-600"
-    },
-    {
-      id: "matchmaking",
-      title: "The Match-Making Platform",
-      description: "Join our Expert Network & Grow Your Business",
-      icon: Users,
-      path: "/login?module=matchmaker",
-      iconBg: "bg-purple-100",
-      iconColor: "text-purple-600"
-    },
-    {
-      id: "valuation",
-      title: "Business Valuation",
-      description: "AI-Powered DCF, NAV & Comparable Analysis",
-      icon: Scale,
-      path: "/login?module=valuation",
-      iconBg: "bg-amber-100",
-      iconColor: "text-amber-600"
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col relative overflow-hidden">
-      {/* Subtle Background Texture */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-0 w-full h-full" 
-             style={{backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,51,102,0.05) 1px, transparent 0)', backgroundSize: '40px 40px'}} />
+    <div className="min-h-screen bg-[#0a0a0a] text-white relative overflow-hidden font-sans" data-testid="landing-page">
+      {/* ── Global mesh-gradient background blobs ── */}
+      <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+        <div className="absolute -top-40 left-1/4 w-[600px] h-[600px] rounded-full bg-indigo-600/20 blur-[140px]" />
+        <div className="absolute top-1/3 -right-40 w-[500px] h-[500px] rounded-full bg-purple-600/20 blur-[140px]" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-blue-600/15 blur-[140px]" />
+        <div className="absolute inset-0 opacity-[0.03]"
+             style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
       </div>
 
-      {/* Animated wave-dot data-stream — half the viewport width, 3/4 height, offset to the right */}
-      <div
-        className="pointer-events-none absolute top-0 right-0 hidden lg:block"
-        style={{ width: "55%", height: "75%", zIndex: 0 }}
-        aria-hidden="true"
-        data-testid="landing-wave-bg"
+      {/* ════════════════════════════════════════════════════════════ */}
+      {/* HEADER — glassmorphism sticky nav, logo left, links centered */}
+      {/* ════════════════════════════════════════════════════════════ */}
+      <header
+        className={`sticky top-0 z-40 transition-all duration-300 ${
+          scrolled
+            ? "bg-black/60 backdrop-blur-2xl border-b border-white/10"
+            : "bg-transparent"
+        }`}
+        data-testid="landing-header"
       >
-        <WaveDotsBackground />
-      </div>
+        <div className="max-w-7xl mx-auto h-16 px-4 lg:px-6 grid grid-cols-[auto_1fr_auto] items-center gap-6">
+          {/* Logo — pushed right by 20px (ml-5) */}
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center ml-5"
+            data-testid="landing-logo-btn"
+            aria-label="SETU home"
+          >
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-12 w-auto object-contain brightness-0 invert" data-testid="landing-logo" />
+          </button>
 
-      {/* Top Navigation */}
-      <nav className="relative z-10 flex items-center justify-between px-8 lg:px-16 py-5">
-        <div className="flex items-center -mt-3">
-          <img src="/setu-logo.png" alt="SETU Labs" className="h-[170px] w-auto object-contain" data-testid="landing-logo" />
-        </div>
-        <div className="flex items-center gap-6">
-          <button onClick={() => navigate("/advisors")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-advisors">Advisors</button>
-          <button onClick={() => navigate("/resources")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-resources">Resources</button>
-          <button onClick={() => navigate("/pricing")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-pricing">Pricing</button>
-          <button onClick={() => navigate("/disclaimer")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-disclaimer">Disclaimer</button>
-          <button onClick={() => navigate("/about")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-about">About Us</button>
-          <button onClick={() => navigate("/careers")} className="text-sm font-medium text-gray-600 hover:text-[#003366] transition-colors" data-testid="nav-careers">Careers</button>
-          <Button 
+          {/* Centered nav links */}
+          <nav className="hidden lg:flex items-center justify-center gap-1" data-testid="landing-nav">
+            {NAV_LINKS.map((l) => (
+              <button
+                key={l.path}
+                onClick={() => navigate(l.path)}
+                className="px-3.5 py-2 text-[13px] font-medium text-white/70 hover:text-white rounded-full hover:bg-white/5 transition-all"
+                data-testid={`nav-${l.label.toLowerCase().replace(/\s/g, "-")}`}
+              >
+                {l.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Right CTA */}
+          <Button
             onClick={() => navigate("/login")}
-            className="bg-[#003366] hover:bg-[#002244] text-white px-6 py-2 rounded-full font-medium text-sm shadow-lg"
+            className="bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-full px-5 h-9 text-sm font-medium backdrop-blur-xl transition-all"
             data-testid="landing-sign-in-btn"
           >
-            Sign In
+            Get Started
+            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
           </Button>
         </div>
-      </nav>
+      </header>
 
-      {/* Main Content */}
-      <div className="relative z-10 flex-1 flex items-center px-8 lg:px-16 py-8">
-        <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-stretch">
-          
-          {/* Left Side - Power Hero */}
-          <div className="space-y-5">
-            {/* Headline - Moved up, no welcome text */}
-            <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#003366] leading-tight" style={{fontFamily: "'General Sans', sans-serif"}}>
-              Building a Democratic IPO Ecosystem
-            </h1>
-            
-            {/* Sub-headline */}
-            <p className="text-gray-600 text-base lg:text-lg leading-relaxed">
-              Empowering ambitious companies across Tier 2, 3 &amp; 4 cities in India, to build complex DRHP's, get access to top Subject Matter Experts, raise Growth or IPO Capital and meet &ldquo;Talent to Hire&rdquo; or &ldquo;win Projects&rdquo; across India.
-            </p>
-            
-            {/* Utility Description - Category Bullets */}
-            <div className="border-l-4 border-[#00D1FF] pl-4 py-3 bg-white/50 rounded-r-lg space-y-2">
-              <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">DRHP:</strong> Build entire DRHP's in a safe and collaborative Platform. Work with teams across India, track progress real-time, and control every step.
-              </p>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">FUNDING:</strong> Raise Pre-IPO, Post-IPO or Bridge Funding Rounds, working closely with our expert Funding Team, who will provide personalised care &amp; attention.
-              </p>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">HIRE &amp; CONSULT:</strong> Experienced Experts like CA, CS, Auditors, Directors, CFO's, Merchant Bankers across India. Work with Subject-Matter-Experts who are experts in YOUR industry.
-              </p>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                <strong className="text-[#003366]">MATCHMAKING:</strong> Experts can join our platform to win New Clients, New Projects, and offer short term consulting across India.
-              </p>
-            </div>
-            
-            {/* Primary CTA */}
-            <div className="flex items-center gap-4 pt-2">
-              <Button 
-                onClick={() => navigate("/login")}
-                className="bg-[#00D1FF] hover:bg-[#00b8e6] text-[#003366] font-semibold px-8 py-6 rounded-full text-base shadow-lg shadow-cyan-200/50 transition-all hover:shadow-xl hover:shadow-cyan-300/50"
-                data-testid="landing-get-started-btn"
-              >
-                Get Started
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => { setContactType("support"); setContactOpen(true); }}
-                className="border-[#003366] text-[#003366] hover:bg-[#003366] hover:text-white px-6 py-6 rounded-full text-base"
-                data-testid="landing-contact-support-btn"
-              >
-                Contact Support
-              </Button>
-              <Button 
-                onClick={() => { setContactType("sales"); setContactOpen(true); }}
-                className="bg-[#FF6B1A] hover:bg-[#e55a0a] text-white px-6 py-6 rounded-full text-base font-semibold shadow-lg shadow-orange-200/50 transition-all hover:shadow-xl hover:shadow-orange-300/50"
-                data-testid="landing-contact-sales-btn"
-              >
-                Contact Sales
-              </Button>
-            </div>
+      {/* ════════════════════════════════════════════════════════════ */}
+      {/* HERO                                                        */}
+      {/* ════════════════════════════════════════════════════════════ */}
+      <section className="relative z-10 px-6" data-testid="landing-hero">
+        <div className="max-w-5xl mx-auto py-28 lg:py-36 flex flex-col items-center text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md text-[11px] tracking-[0.2em] uppercase text-white/60 mb-7">
+            <Sparkles className="w-3 h-3 text-indigo-400" />
+            India's first AI-powered IPO Operating System
           </div>
 
-          {/* Right Side — Corporate Video + Compact Modules */}
-          <div className="flex flex-col-reverse gap-5 h-full" data-testid="landing-right-column">
-            {/* Corporate Video Placeholder — now BELOW the modules */}
-            <div
-              className="relative flex-1 min-h-[252px] rounded-[28px] overflow-hidden bg-gradient-to-br from-[#001a33] via-[#003366] to-[#002244] shadow-2xl shadow-[#003366]/20 group cursor-pointer"
-              data-testid="landing-corporate-video-placeholder"
-              title="Corporate video — upload coming soon"
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight max-w-4xl">
+            <span className="bg-gradient-to-br from-white via-white to-white/60 bg-clip-text text-transparent">
+              Building a{" "}
+            </span>
+            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+              Democratic IPO
+            </span>
+            <br />
+            <span className="bg-gradient-to-br from-white via-white to-white/60 bg-clip-text text-transparent">
+              Ecosystem
+            </span>
+          </h1>
+
+          <p className="mt-7 text-lg lg:text-xl text-white/60 max-w-2xl leading-relaxed">
+            Empowering ambitious companies across Tier 2, 3 &amp; 4 cities in India to draft complex DRHPs,
+            access top subject-matter experts, raise growth or IPO capital, and win projects across the country.
+          </p>
+
+          <div className="mt-10 flex flex-col sm:flex-row items-center gap-3">
+            <Button
+              onClick={() => navigate("/login")}
+              className="bg-white text-black hover:bg-white/90 rounded-full px-7 h-12 text-sm font-semibold shadow-[0_0_40px_rgba(255,255,255,0.25)]"
+              data-testid="landing-get-started-btn"
             >
-              {/* Soft decorative grid overlay */}
-              <div className="absolute inset-0 opacity-[0.12]"
-                   style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)', backgroundSize: '36px 36px' }} />
-              {/* Corner accent gradient blobs */}
-              <div className="absolute -top-20 -right-20 w-60 h-60 bg-[#00D1FF]/15 rounded-full blur-3xl" />
-              <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-[#D8BFD8]/15 rounded-full blur-3xl" />
+              Get Started Free <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button
+              onClick={() => { setContactType("sales"); setContactOpen(true); }}
+              variant="outline"
+              className="bg-white/[0.03] border-white/15 hover:bg-white/10 text-white rounded-full px-7 h-12 text-sm backdrop-blur-md"
+              data-testid="landing-contact-sales-btn"
+            >
+              Contact Sales
+            </Button>
+          </div>
 
-              {/* Top-left meta badge */}
-              <div className="absolute top-5 left-5 flex items-center gap-2">
-                <span className="flex h-2 w-2 rounded-full bg-[#00D1FF]"></span>
-                <span className="text-[10px] tracking-[0.22em] uppercase text-white/70 font-semibold">Corporate Film</span>
+          {/* Trust strip */}
+          <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-6 w-full max-w-3xl">
+            {TRUST_STATS.map((s) => (
+              <div key={s.label} className="text-center">
+                <div className="text-3xl lg:text-4xl font-bold bg-gradient-to-br from-white to-white/50 bg-clip-text text-transparent">{s.value}</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-white/40 mt-1.5">{s.label}</div>
               </div>
-              {/* Top-right tag */}
-              <div className="absolute top-5 right-5">
-                <span className="text-[10px] tracking-[0.2em] uppercase text-white/50 font-medium bg-white/5 border border-white/10 rounded-full px-3 py-1">
-                  Coming Soon
-                </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════ */}
+      {/* CORE MODULES — 3-column grid                                 */}
+      {/* ════════════════════════════════════════════════════════════ */}
+      <section className="relative z-10 bg-[#0c0c0d] border-y border-white/5 px-6" data-testid="landing-modules">
+        <div className="max-w-7xl mx-auto py-28 lg:py-32">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <p className="text-[11px] tracking-[0.22em] uppercase text-indigo-400 font-semibold mb-3">Core platform</p>
+            <h2 className="text-4xl lg:text-5xl font-bold tracking-tight">
+              Three modules.{" "}
+              <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                One IPO journey.
+              </span>
+            </h2>
+            <p className="text-white/55 mt-5 text-base leading-relaxed">
+              Purpose-built for India. Trained on SEBI ICDR. Designed for collaboration across promoters, advisors and merchant bankers.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {CORE_MODULES.map((m) => {
+              const Icon = m.icon;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => navigate(m.path)}
+                  className="group relative text-left rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500 overflow-hidden p-7 hover:-translate-y-1"
+                  data-testid={`landing-module-${m.id}`}
+                >
+                  {/* Glow on hover */}
+                  <div className={`absolute -top-32 -right-32 w-72 h-72 rounded-full bg-gradient-to-br ${m.accent} blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+
+                  <div className="relative">
+                    <div className="flex items-start justify-between mb-7">
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${m.iconBg} flex items-center justify-center shadow-lg`}>
+                        <Icon className="w-6 h-6 text-white" strokeWidth={1.8} />
+                      </div>
+                      <span className="text-[10px] tracking-[0.18em] uppercase text-white/40 border border-white/10 rounded-full px-2.5 py-1 bg-white/[0.02]">
+                        {m.badge}
+                      </span>
+                    </div>
+
+                    <h3 className="text-2xl font-semibold mb-1.5 text-white">{m.title}</h3>
+                    <p className="text-[13px] text-indigo-300/80 mb-3">{m.tagline}</p>
+                    <p className="text-sm text-white/55 leading-relaxed mb-6">{m.description}</p>
+
+                    <div className="flex items-center gap-1.5 text-sm font-medium text-white group-hover:text-indigo-300 transition-colors">
+                      Explore module
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Secondary 2-up row */}
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+            {SECONDARY_MODULES.map((m) => {
+              const Icon = m.icon;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => navigate(m.path)}
+                  className="group flex items-start gap-5 text-left rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-all p-6"
+                  data-testid={`landing-module-${m.id}`}
+                >
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${m.iconBg} flex items-center justify-center flex-shrink-0`}>
+                    <Icon className="w-5 h-5 text-white" strokeWidth={1.8} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold mb-1">{m.title}</h3>
+                    <p className="text-sm text-white/55 leading-relaxed">{m.description}</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-white/40 group-hover:text-white group-hover:translate-x-1 transition-all mt-3 flex-shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════ */}
+      {/* VIDEO INTRODUCTION                                           */}
+      {/* ════════════════════════════════════════════════════════════ */}
+      <section className="relative z-10 bg-[#0a0a0a] px-6" data-testid="landing-video">
+        <div className="max-w-6xl mx-auto py-28 lg:py-32 flex flex-col items-center text-center">
+          <p className="text-[11px] tracking-[0.22em] uppercase text-indigo-400 font-semibold mb-3">Watch the story</p>
+          <h2 className="text-4xl lg:text-5xl font-bold tracking-tight max-w-3xl">
+            See how SETU{" "}
+            <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+              democratises India's IPO journey
+            </span>
+          </h2>
+          <p className="text-white/55 mt-5 text-base leading-relaxed max-w-xl">
+            A 90-second corporate film on why we built India's first AI-powered IPO Operating System — and what it means for entrepreneurs in Tier 2, 3 &amp; 4 cities.
+          </p>
+
+          <div className="mt-12 w-full">
+            <div
+              className="relative aspect-video w-full rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#0d0d10] via-[#0e0d18] to-[#0a0a0a] cursor-pointer group shadow-[0_0_80px_rgba(99,102,241,0.15)]"
+              data-testid="landing-corporate-video-placeholder"
+              title="Corporate video — coming soon"
+            >
+              {/* Mesh accents */}
+              <div className="absolute -top-20 -right-20 w-72 h-72 bg-indigo-500/25 rounded-full blur-3xl" />
+              <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl" />
+              <div className="absolute inset-0 opacity-[0.06]"
+                   style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+              {/* Top-left meta */}
+              <div className="absolute top-6 left-6 flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
+                <span className="text-[10px] tracking-[0.22em] uppercase text-white/60 font-semibold">Corporate Film</span>
+              </div>
+              <div className="absolute top-6 right-6 text-[10px] tracking-[0.18em] uppercase text-white/40 font-medium bg-white/5 border border-white/10 rounded-full px-3 py-1">
+                Coming Soon
               </div>
 
-              {/* Centered play + title */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
+              {/* Centered play */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center px-8">
                 <div className="relative">
-                  {/* Pulse rings */}
                   <span className="absolute inset-0 rounded-full border border-white/20 animate-ping" />
-                  <span className="absolute inset-0 rounded-full border border-white/10" />
-                  <div className="relative w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 group-hover:scale-110 group-hover:bg-white/20 transition-all duration-300">
-                    <PlayCircle className="w-10 h-10 text-white" strokeWidth={1.5} />
+                  <div className="relative w-24 h-24 rounded-full bg-white/5 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
+                    <PlayCircle className="w-12 h-12 text-white" strokeWidth={1.4} />
                   </div>
                 </div>
-                <h3 className="mt-6 text-white text-xl lg:text-2xl font-semibold tracking-tight">
-                  The IPO Labs Story
-                </h3>
-                <p className="mt-2 text-white/55 text-sm max-w-xs leading-relaxed">
-                  A 90-second film on how we're democratising India's IPO ecosystem &mdash; releasing shortly.
+                <h3 className="mt-7 text-2xl lg:text-3xl font-semibold text-white">The IPO Labs Story</h3>
+                <p className="mt-2 text-white/50 text-sm max-w-md leading-relaxed">
+                  A 90-second film on how we&apos;re democratising India&apos;s IPO ecosystem.
                 </p>
               </div>
 
-              {/* Bottom brand strip */}
-              <div className="absolute bottom-0 left-0 right-0 px-5 py-3 flex items-center justify-between bg-gradient-to-t from-black/40 to-transparent">
-                <div className="flex items-center gap-2 text-white/70 text-[11px]">
-                  <Film className="w-3.5 h-3.5" />
-                  <span className="tracking-wide uppercase font-semibold">IPO Labs</span>
+              {/* Bottom strip */}
+              <div className="absolute bottom-0 inset-x-0 px-6 py-4 flex items-center justify-between bg-gradient-to-t from-black/50 to-transparent">
+                <div className="flex items-center gap-2 text-white/70 text-[11px] uppercase tracking-[0.18em] font-semibold">
+                  <Globe className="w-3.5 h-3.5" /> IPO Labs
                 </div>
-                <div className="text-white/40 text-[10px] tracking-wider">1920 &times; 1080 &middot; 16:9</div>
+                <div className="text-white/40 text-[10px] tracking-[0.18em]">1920 × 1080 · 16:9</div>
               </div>
             </div>
-
-            {/* Module Buttons — enlarged further, now sit ABOVE the video */}
-            <div className="grid grid-cols-5 gap-3" data-testid="landing-compact-modules">
-              {modules.map((module, index) => (
-                <button
-                  key={module.id}
-                  onClick={() => navigate(module.path)}
-                  className={`module-cycle-border group relative p-5 rounded-2xl bg-white border-2
-                              hover:shadow-xl hover:-translate-y-0.5
-                              transition-transform duration-200 text-center overflow-hidden
-                              ${shimmerIndex === index ? 'shimmer-active' : ''}`}
-                  style={{ animationDelay: `${index * 0.4}s` }}
-                  data-testid={`landing-module-${module.id}`}
-                  title={`${module.title} — ${module.description}`}
-                >
-                  <div className={`w-14 h-14 ${module.iconBg} rounded-2xl flex items-center justify-center mx-auto mb-3 relative`}>
-                    {module.hasProgress ? (
-                      <div className="relative w-12 h-12">
-                        <svg className="w-12 h-12 transform -rotate-90">
-                          <circle cx="24" cy="24" r="19" stroke="#e5e7eb" strokeWidth="3" fill="none" />
-                          <circle cx="24" cy="24" r="19" stroke="#00D1FF" strokeWidth="3" fill="none"
-                                  strokeDasharray="119.38" strokeDashoffset="30" strokeLinecap="round" />
-                        </svg>
-                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#00D1FF]">75</span>
-                      </div>
-                    ) : (
-                      <module.icon className={`w-7 h-7 ${module.iconColor}`} />
-                    )}
-                  </div>
-                  <p className="text-sm font-semibold text-[#003366] leading-tight group-hover:text-[#00D1FF] transition-colors line-clamp-2">
-                    {module.title.replace("The ", "")}
-                  </p>
-                </button>
-              ))}
-            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Social Proof Ribbon */}
-      <div className="relative z-10 border-t border-gray-200 bg-white/80 backdrop-blur-sm py-4">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <div className="flex items-center justify-center gap-8 text-gray-400 text-xs">
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" />
-              Safe & Secure
-            </span>
-            <span className="w-px h-4 bg-gray-300" />
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" />
-              On-Cloud
-            </span>
-            <span className="w-px h-4 bg-gray-300" />
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" />
-              Build or Consult Anywhere, Anytime
-            </span>
+      {/* ════════════════════════════════════════════════════════════ */}
+      {/* WHY SETU — value props row                                   */}
+      {/* ════════════════════════════════════════════════════════════ */}
+      <section className="relative z-10 bg-[#0c0c0d] border-t border-white/5 px-6" data-testid="landing-why">
+        <div className="max-w-7xl mx-auto py-28 lg:py-32">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <p className="text-[11px] tracking-[0.22em] uppercase text-indigo-400 font-semibold mb-3">Why teams choose SETU</p>
+            <h2 className="text-4xl lg:text-5xl font-bold tracking-tight">
+              Built for{" "}
+              <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                India's capital markets.
+              </span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { icon: ShieldCheck, title: "SEBI-aware AI",
+                body: "Every chapter, every disclosure, every risk factor — drafted in step with the latest ICDR regulations and SEBI circulars." },
+              { icon: Zap, title: "10× faster drafting",
+                body: "Centralised corporate repository auto-syncs into your DRHP chapters. Stop copy-pasting numbers between Excel and Word." },
+              { icon: Users, title: "Verified expert network",
+                body: "Pre-vetted CAs, CS, CFOs, Auditors and Merchant Bankers — searchable by industry, expertise and city." },
+            ].map((p) => (
+              <div
+                key={p.title}
+                className="rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors p-7"
+              >
+                <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-5">
+                  <p.icon className="w-5 h-5 text-indigo-300" strokeWidth={1.8} />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{p.title}</h3>
+                <p className="text-sm text-white/55 leading-relaxed">{p.body}</p>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 bg-[#003366] text-white">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16 py-12">
+      {/* ════════════════════════════════════════════════════════════ */}
+      {/* CLOSING CTA                                                  */}
+      {/* ════════════════════════════════════════════════════════════ */}
+      <section className="relative z-10 bg-[#0a0a0a] px-6" data-testid="landing-cta">
+        <div className="max-w-4xl mx-auto py-28 lg:py-32 flex flex-col items-center text-center">
+          <h2 className="text-4xl lg:text-6xl font-bold tracking-tight max-w-3xl">
+            <span className="bg-gradient-to-br from-white to-white/50 bg-clip-text text-transparent">Ready to build your</span>{" "}
+            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">IPO journey?</span>
+          </h2>
+          <p className="text-white/55 mt-6 text-lg max-w-xl leading-relaxed">
+            Start with a free IPO readiness test. No credit card required.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={() => navigate("/login?module=assessment")}
+              className="bg-white text-black hover:bg-white/90 rounded-full px-7 h-12 text-sm font-semibold shadow-[0_0_40px_rgba(255,255,255,0.25)]"
+              data-testid="landing-cta-readiness"
+            >
+              Start free readiness test <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button
+              onClick={() => { setContactType("support"); setContactOpen(true); }}
+              variant="outline"
+              className="bg-white/[0.03] border-white/15 hover:bg-white/10 text-white rounded-full px-7 h-12 text-sm backdrop-blur-md"
+              data-testid="landing-cta-support"
+            >
+              Talk to support
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════ */}
+      {/* FOOTER                                                       */}
+      {/* ════════════════════════════════════════════════════════════ */}
+      <footer className="relative z-10 bg-[#070707] border-t border-white/5 text-white/70 px-6">
+        <div className="max-w-7xl mx-auto py-14">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-            {/* Brand Column */}
-            <div className="md:col-span-1">
+            <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                  <span className="text-[#003366] font-bold text-sm">IP</span>
-                </div>
-                <span className="text-lg font-bold tracking-tight">IPO Labs</span>
+                <img src="/setu-logo.png" alt="SETU" className="h-9 w-auto brightness-0 invert" />
               </div>
-              <p className="text-sm text-white/70 leading-relaxed">
-                India's first AI-powered IPO Operating System. End-to-end DRHP journey with complete privacy, expert marketplace, and funding solutions.
+              <p className="text-xs leading-relaxed text-white/45">
+                India's first AI-powered IPO Operating System. End-to-end DRHP journey with privacy, expert marketplace, and funding solutions.
               </p>
             </div>
-
-            {/* Platform Column */}
             <div>
-              <h4 className="font-semibold text-sm mb-4 text-white/90">Platform</h4>
-              <ul className="space-y-2.5 text-sm text-white/60">
+              <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80 mb-4">Platform</h4>
+              <ul className="space-y-2.5 text-sm">
                 <li><button onClick={() => navigate("/login?module=drhp")} className="hover:text-white transition-colors">DRHP Builder</button></li>
                 <li><button onClick={() => navigate("/login?module=assessment")} className="hover:text-white transition-colors">IPO Readiness Test</button></li>
                 <li><button onClick={() => navigate("/login?module=matchmaker")} className="hover:text-white transition-colors">Expert Marketplace</button></li>
@@ -323,41 +449,36 @@ const LandingPage = () => {
                 <li><button onClick={() => navigate("/login?module=valuation")} className="hover:text-white transition-colors">Business Valuation</button></li>
               </ul>
             </div>
-
-            {/* Company Column */}
             <div>
-              <h4 className="font-semibold text-sm mb-4 text-white/90">Company</h4>
-              <ul className="space-y-2.5 text-sm text-white/60">
+              <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80 mb-4">Company</h4>
+              <ul className="space-y-2.5 text-sm">
                 <li><button onClick={() => navigate("/about")} className="hover:text-white transition-colors">About Us</button></li>
                 <li><button onClick={() => navigate("/pricing")} className="hover:text-white transition-colors">Pricing</button></li>
                 <li><button onClick={() => navigate("/resources")} className="hover:text-white transition-colors">Resources</button></li>
                 <li><button onClick={() => navigate("/disclaimer")} className="hover:text-white transition-colors">Disclaimer</button></li>
-                <li><a href="https://ipo-labs.com/contact" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Contact Us</a></li>
+                <li><button onClick={() => navigate("/careers")} className="hover:text-white transition-colors">Careers</button></li>
               </ul>
             </div>
-
-            {/* Contact Column */}
             <div>
-              <h4 className="font-semibold text-sm mb-4 text-white/90">Get in Touch</h4>
-              <ul className="space-y-2.5 text-sm text-white/60">
+              <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80 mb-4">Get in touch</h4>
+              <ul className="space-y-2.5 text-sm">
                 <li>Mumbai, Maharashtra, India</li>
                 <li><a href="mailto:founders.ipolabs@gmail.com" className="hover:text-white transition-colors">founders.ipolabs@gmail.com</a></li>
               </ul>
-              <div className="flex gap-3 mt-5">
-                <a href="https://www.linkedin.com/company/ipo-labs" target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+              <div className="flex gap-2.5 mt-5">
+                <a href="https://www.linkedin.com/company/ipo-labs" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0z"/></svg>
                 </a>
-                <a href="https://twitter.com/ipolabs" target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors">
+                <a href="https://twitter.com/ipolabs" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 </a>
               </div>
             </div>
           </div>
 
-          {/* Bottom Bar */}
-          <div className="border-t border-white/10 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-white/50">&copy; {new Date().getFullYear()} IPO Labs Private Limited. All rights reserved.</p>
-            <div className="flex gap-6 text-xs text-white/50">
+          <div className="border-t border-white/5 mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
+            <p className="text-[11px] text-white/40">© {new Date().getFullYear()} IPO Labs Private Limited. All rights reserved.</p>
+            <div className="flex gap-6 text-[11px] text-white/40">
               <button onClick={() => navigate("/disclaimer")} className="hover:text-white transition-colors">Privacy Policy</button>
               <button onClick={() => navigate("/disclaimer")} className="hover:text-white transition-colors">Terms of Service</button>
               <button onClick={() => navigate("/disclaimer")} className="hover:text-white transition-colors">SEBI Compliance</button>
@@ -366,73 +487,33 @@ const LandingPage = () => {
         </div>
       </footer>
 
-      {/* Floating Notification Bar - Sniply Touch */}
+      {/* ── Floating notification ── */}
       {showNotification && (
-        <div className="fixed bottom-6 left-6 z-50 max-w-sm animate-slide-up">
-          <div className="bg-[#003366] text-white rounded-2xl shadow-2xl p-4 flex items-start gap-3">
-            <div className="w-8 h-8 bg-[#00D1FF] rounded-full flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="w-4 h-4 text-[#003366]" />
+        <div className="fixed bottom-6 left-6 z-40 max-w-sm animate-in slide-in-from-bottom-4 duration-500">
+          <div className="bg-white/[0.04] border border-white/10 backdrop-blur-2xl text-white rounded-2xl shadow-2xl p-4 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium mb-1">New Update</p>
-              <p className="text-xs text-gray-300 leading-relaxed">
-                SEBI's 2026 DRHP Guidelines now integrated into our Builder.
-              </p>
-              <button 
+              <p className="text-xs text-white/55 leading-relaxed">SEBI's 2026 DRHP Guidelines now integrated into our Builder.</p>
+              <button
                 onClick={() => navigate("/login?module=drhp")}
-                className="text-[#00D1FF] text-xs font-semibold mt-2 hover:underline inline-flex items-center gap-1"
+                className="text-indigo-300 text-xs font-semibold mt-2 hover:text-indigo-200 inline-flex items-center gap-1"
               >
                 Check Now <ArrowRight className="w-3 h-3" />
               </button>
             </div>
-            <button 
+            <button
               onClick={() => setShowNotification(false)}
-              className="text-gray-400 hover:text-white text-lg leading-none"
+              className="text-white/40 hover:text-white"
+              aria-label="Dismiss"
             >
-              ×
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
-
-      {/* Custom Styles */}
-      <style>{`
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-slide-up {
-          animation: slide-up 0.5s ease-out;
-        }
-
-        /* Cycling dark-blue border for module buttons (logo navy family) */
-        @keyframes module-border-cycle {
-          0%   { border-color: #003366; box-shadow: 0 0 0 0 rgba(0, 51, 102, 0.00); }
-          20%  { border-color: #0052A3; box-shadow: 0 0 0 3px rgba(0, 82, 163, 0.18); }
-          40%  { border-color: #00D1FF; box-shadow: 0 0 0 3px rgba(0, 209, 255, 0.18); }
-          60%  { border-color: #1E40AF; box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.18); }
-          80%  { border-color: #002244; box-shadow: 0 0 0 2px rgba(0, 34, 68, 0.15); }
-          100% { border-color: #003366; box-shadow: 0 0 0 0 rgba(0, 51, 102, 0.00); }
-        }
-        .module-cycle-border {
-          border-color: #003366;
-          animation: module-border-cycle 2.4s ease-in-out infinite;
-        }
-        .module-cycle-border:hover {
-          animation-play-state: paused;
-          border-color: #00D1FF !important;
-          box-shadow: 0 10px 24px -6px rgba(0, 209, 255, 0.35) !important;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .module-cycle-border { animation: none; border-color: #003366; }
-        }
-      `}</style>
 
       <ContactLeadDialog
         open={contactOpen}
