@@ -103,6 +103,269 @@ async def refresh_history(user: User = Depends(get_current_user), limit: int = 2
     return {"runs": await cursor.to_list(length=limit)}
 
 
+# ============ FACETS ============
+
+@router.get("/facets")
+async def get_facets(user: User = Depends(get_current_user)):
+    """Distinct values for filter dropdowns."""
+    industries = sorted([i for i in await db.ma_issuers.distinct("industry") if i])
+    cities = sorted([c for c in await db.ma_issuers.distinct("city") if c])
+    fys = sorted([f for f in await db.ma_issuers.distinct("fy") if f])
+    boards = sorted([b for b in await db.ma_issuers.distinct("board") if b])
+    families = await db.ma_fund_families.find({}, {"_id": 0}).to_list(length=200)
+    return {
+        "industries": industries,
+        "cities": cities,
+        "fys": fys,
+        "boards": boards,
+        "fund_families": families,
+        "aum_tiers": ["Mega", "Large", "Mid", "Small"],
+    }
+
+
+# ============ SEARCH ============
+
+class SearchRequest(BaseModel):
+    q: Optional[str] = None
+    industries: Optional[List[str]] = None
+    cities: Optional[List[str]] = None
+    boards: Optional[List[str]] = None
+    fys: Optional[List[str]] = None
+    min_size_cr: Optional[float] = None
+    max_size_cr: Optional[float] = None
+    sort_by: str = "filing_date"  # filing_date | issue_size_cr | name
+    sort_dir: int = -1  # -1 desc, 1 asc
+    page: int = 1
+    page_size: int = 25
+
+
+@router.post("/search")
+async def search_issuers(req: SearchRequest, user: User = Depends(get_current_user)):
+    where = {}
+    if req.q:
+        where["name"] = {"$regex": req.q.strip(), "$options": "i"}
+    if req.industries:
+        where["industry"] = {"$in": req.industries}
+    if req.cities:
+        where["city"] = {"$in": req.cities}
+    if req.boards:
+        where["board"] = {"$in": req.boards}
+    if req.fys:
+        where["fy"] = {"$in": req.fys}
+    if req.min_size_cr is not None or req.max_size_cr is not None:
+        rng = {}
+        if req.min_size_cr is not None: rng["$gte"] = req.min_size_cr
+        if req.max_size_cr is not None: rng["$lte"] = req.max_size_cr
+        where["issue_size_cr"] = rng
+
+    total = await db.ma_issuers.count_documents(where)
+    skip = max(0, (req.page - 1) * req.page_size)
+    sort_field = req.sort_by if req.sort_by in ("filing_date", "issue_size_cr", "name", "year") else "filing_date"
+    cursor = db.ma_issuers.find(where, {"_id": 0}).sort(sort_field, req.sort_dir).skip(skip).limit(req.page_size)
+    results = await cursor.to_list(length=req.page_size)
+    return {"total": total, "page": req.page, "page_size": req.page_size, "results": results}
+
+
+# ============ SIMILAR ISSUERS ============
+
+class SimilarRequest(BaseModel):
+    issuer_name: Optional[str] = None
+    industry: Optional[str] = None
+    city: Optional[str] = None
+    issue_size_cr: Optional[float] = None
+    board: Optional[str] = None
+    limit: int = 10
+
+
+@router.post("/find-similar")
+async def find_similar(req: SimilarRequest, user: User = Depends(get_current_user)):
+    """Returns issuers most similar to a given anchor (industry + size + board + city overlap)."""
+    base = None
+    if req.issuer_name:
+        base = await db.ma_issuers.find_one({"name": req.issuer_name}, {"_id": 0})
+        if not base:
+            raise HTTPException(status_code=404, detail="Issuer not found")
+
+    industry = req.industry or (base or {}).get("industry") or "Other"
+    city = req.city or (base or {}).get("city")
+    size = req.issue_size_cr or (base or {}).get("issue_size_cr") or 0
+    board = req.board or (base or {}).get("board")
+    name = req.issuer_name or ""
+
+    # Pull candidate pool: same industry first, then near sector
+    candidates = await db.ma_issuers.find(
+        {"name": {"$ne": name}},
+        {"_id": 0},
+    ).to_list(length=2000)
+
+    def score(c):
+        s = 0
+        if c.get("industry") == industry: s += 40
+        if board and c.get("board") == board: s += 15
+        if city and c.get("city") == city: s += 10
+        cs = c.get("issue_size_cr") or 0
+        if size > 0 and cs > 0:
+            ratio = min(cs, size) / max(cs, size)
+            s += ratio * 25  # up to +25 for size match
+        # recency bonus (more recent = more relevant)
+        y = c.get("year") or 2018
+        s += min(10, max(0, (y - 2018) * 1.4))
+        return s
+
+    scored = sorted(candidates, key=score, reverse=True)[: req.limit]
+    return {
+        "base_issuer": base,
+        "matched_on": {"industry": industry, "city": city, "size_cr": size, "board": board},
+        "similar": [{**c, "match_score": round(score(c), 1)} for c in scored],
+    }
+
+
+# ============ FIND ANCHORS (heuristic, anchor-data-aware) ============
+
+# Industry preferences by investor type — empirically observed in Indian markets
+INDUSTRY_AFFINITY = {
+    "Mutual Fund": {  # MFs play everything but skew growth + financials
+        "Technology": 1.4, "Banking": 1.3, "Pharma": 1.3, "FMCG": 1.2,
+        "Auto": 1.2, "Healthcare": 1.2, "Manufacturing": 1.1, "Fintech": 1.3,
+    },
+    "Insurance": {  # Insurers prefer steady cash-flow sectors
+        "Banking": 1.5, "Insurance": 1.4, "FMCG": 1.4, "Energy": 1.3,
+        "Real Estate": 1.3, "Telecom": 1.2, "Auto": 1.1,
+    },
+    "FPI": {  # FPIs hunt growth + global comparables
+        "Technology": 1.5, "Pharma": 1.4, "Fintech": 1.4, "Healthcare": 1.3,
+        "Auto": 1.2, "FMCG": 1.2, "Banking": 1.2,
+    },
+    "Pension": {
+        "Banking": 1.4, "FMCG": 1.3, "Energy": 1.3, "Telecom": 1.2, "Real Estate": 1.2,
+    },
+}
+
+TIER_WEIGHT = {"Mega": 5.0, "Large": 4.0, "Mid": 3.0, "Small": 2.0, "Unknown": 1.5}
+
+
+def _classify_family_type(name: str) -> str:
+    n = (name or "").lower()
+    if "insurance" in n or "life " in n: return "Insurance"
+    if "pension" in n: return "Pension"
+    foreign_kw = ["blackrock", "vanguard", "norges", "gic", "abu dhabi", "goldman", "morgan stanley", "fidelity", "schroder", "t rowe"]
+    if any(k in n for k in foreign_kw): return "FPI"
+    return "Mutual Fund"
+
+
+class FindAnchorsRequest(BaseModel):
+    issuer_name: Optional[str] = None
+    industry: Optional[str] = None
+    issue_size_cr: Optional[float] = None
+    board: Optional[str] = None
+    limit: int = 25
+
+
+@router.post("/find-anchors")
+async def find_anchors(req: FindAnchorsRequest, user: User = Depends(get_current_user)):
+    """Ranked likely-anchor list.
+
+    Strategy:
+      1. If we have real anchor_participations data → empirical ranking by similar-IPO backing.
+      2. Otherwise, heuristic: fund-family AUM tier × industry affinity → still actionable.
+    """
+    # Resolve target
+    base = None
+    if req.issuer_name:
+        base = await db.ma_issuers.find_one({"name": req.issuer_name}, {"_id": 0})
+    industry = req.industry or (base or {}).get("industry") or "Other"
+    size = req.issue_size_cr or (base or {}).get("issue_size_cr") or 0
+    board = req.board or (base or {}).get("board") or "main"
+
+    # If we have empirical anchor data, use it
+    n_participations = await db.ma_anchor_participations.count_documents({})
+    use_empirical = n_participations > 0
+
+    if use_empirical:
+        # Aggregate anchor history for issuers in same industry
+        pipe = [
+            {"$match": {"issuer_industry": industry}},
+            {"$group": {
+                "_id": "$investor_raw",
+                "n_similar": {"$sum": 1},
+                "total_alloc_inr": {"$sum": "$allocation_inr"},
+                "issuers": {"$addToSet": "$issuer_name"},
+            }},
+            {"$sort": {"n_similar": -1}},
+            {"$limit": req.limit * 2},
+        ]
+        rows = await db.ma_anchor_participations.aggregate(pipe).to_list(length=req.limit * 2)
+
+        # Enrich with investor metadata
+        enriched = []
+        for r in rows:
+            inv = await db.ma_investors.find_one({"name": r["_id"]}, {"_id": 0})
+            family = (inv or {}).get("fund_family", "Unknown")
+            tier = (inv or {}).get("aum_tier", "Unknown")
+            enriched.append({
+                "investor": r["_id"],
+                "fund_family": family,
+                "aum_tier": tier,
+                "n_similar_backings": r["n_similar"],
+                "issuers_backed": list(r.get("issuers", []))[:5],
+                "score": r["n_similar"] * 10 + TIER_WEIGHT.get(tier, 1.5),
+                "rationale": f"{r['_id']} has anchored {r['n_similar']} {industry}-sector IPOs · last seen {(inv or {}).get('last_seen','—')}",
+            })
+        enriched.sort(key=lambda x: x["score"], reverse=True)
+        return {
+            "mode": "empirical",
+            "base_issuer": base,
+            "matched_on": {"industry": industry, "size_cr": size, "board": board},
+            "anchors": enriched[: req.limit],
+        }
+
+    # Heuristic fallback: rank fund families by industry affinity × AUM tier
+    families = await db.ma_fund_families.find({}, {"_id": 0}).to_list(length=200)
+    ranked = []
+    for f in families:
+        ftype = _classify_family_type(f["name"])
+        affinity = INDUSTRY_AFFINITY.get(ftype, {}).get(industry, 1.0)
+        tier_score = TIER_WEIGHT.get(f.get("aum_tier", "Unknown"), 1.5)
+        score = round(tier_score * affinity, 2)
+        rationale = (
+            f"{f['name']} is a {f.get('aum_tier','—')}-tier {ftype} with "
+            f"{'strong' if affinity > 1.2 else 'moderate' if affinity > 1.0 else 'baseline'} "
+            f"affinity for {industry} sector issues."
+        )
+        ranked.append({
+            "investor": f["name"],
+            "fund_family": f["name"],
+            "aum_tier": f.get("aum_tier"),
+            "investor_type": ftype,
+            "score": score,
+            "industry_affinity": affinity,
+            "rationale": rationale,
+            "n_similar_backings": None,
+        })
+    ranked.sort(key=lambda x: x["score"], reverse=True)
+    return {
+        "mode": "heuristic",
+        "base_issuer": base,
+        "matched_on": {"industry": industry, "size_cr": size, "board": board},
+        "anchors": ranked[: req.limit],
+        "note": "Empirical anchor data not yet ingested. Showing heuristic ranking based on AUM tier × industry affinity. Will switch to empirical mode once participations data is loaded.",
+    }
+
+
+# ============ INVESTOR & ISSUER DETAIL ============
+
+@router.get("/issuers/{issuer_id}")
+async def get_issuer(issuer_id: str, user: User = Depends(get_current_user)):
+    """Issuer detail by name (URL-encoded)."""
+    iss = await db.ma_issuers.find_one({"name": issuer_id}, {"_id": 0})
+    if not iss:
+        raise HTTPException(status_code=404, detail="Not found")
+    anchors = await db.ma_anchor_participations.find(
+        {"issuer_name": issuer_id}, {"_id": 0}
+    ).to_list(length=100)
+    return {"issuer": iss, "anchors": anchors}
+
+
 # ============ ADMIN: TRIGGER SCRAPE ============
 
 def _is_admin(user: User) -> bool:
