@@ -8,10 +8,13 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import Sidebar from "@/components/Sidebar";
 import {
-  ArrowLeft, Upload, RotateCcw, Trash2, Plus, FileText, Download,
-  Loader2, FolderOpen, CheckCircle2, AlertTriangle, Clock, CornerDownRight,
+  ArrowLeft, Upload, Trash2, Plus, FileText, Download, Eye,
+  Loader2, FolderOpen, CheckCircle2, AlertTriangle, Clock, CornerDownRight, X,
 } from "lucide-react";
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -41,6 +44,33 @@ const DocumentRepository = ({ user, apiClient }) => {
   const [confirm, setConfirm] = useState(null); // { kind, item }
   const [draftDesc, setDraftDesc] = useState({}); // item_id -> local draft
   const fileInputs = useRef({});
+  const [viewer, setViewer] = useState(null); // { item, url, contentType, filename } | null
+
+  const closeViewer = () => {
+    setViewer((v) => {
+      if (v?.url) URL.revokeObjectURL(v.url);
+      return null;
+    });
+  };
+
+  const openViewer = async (item) => {
+    if (!item.file) return;
+    const ct = (item.file.content_type || "").toLowerCase();
+    setBusyId(item.item_id);
+    try {
+      const r = await apiClient.get(
+        `/projects/${projectId}/document-repository/items/${item.item_id}/view`,
+        { responseType: "blob" }
+      );
+      const blob = new Blob([r.data], { type: ct || "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      setViewer({ item, url, contentType: ct, filename: item.file.filename });
+    } catch {
+      toast.error("Could not open document");
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -177,10 +207,6 @@ const DocumentRepository = ({ user, apiClient }) => {
                   <span className="font-medium truncate max-w-[260px]">{item.file.filename}</span>
                   <span className="text-gray-400">·</span>
                   <span>{prettySize(item.file.size)}</span>
-                  <span className="text-gray-400">·</span>
-                  <button onClick={() => downloadFile(item)} className="text-[#1DA1F2] hover:underline inline-flex items-center gap-0.5" data-testid={`docrepo-download-${item.item_id}`}>
-                    <Download className="w-3 h-3" /> Download
-                  </button>
                 </div>
                 <span className="inline-flex items-center gap-1 text-[11px] text-gray-500" data-testid={`docrepo-last-upload-${item.item_id}`}>
                   <Clock className="w-3 h-3" /> Last upload: <span className="text-gray-700 font-medium">{formatDT(item.file.uploaded_at)}</span>
@@ -199,6 +225,22 @@ const DocumentRepository = ({ user, apiClient }) => {
           />
 
           <div className="flex items-center gap-1.5 flex-shrink-0">
+            {hasFile && (
+              <>
+                <Button size="sm" variant="outline"
+                  className="h-8 text-xs gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+                  onClick={() => openViewer(item)} disabled={isBusy}
+                  data-testid={`docrepo-view-btn-${item.item_id}`}>
+                  <Eye className="w-3.5 h-3.5" /> View
+                </Button>
+                <Button size="sm" variant="outline"
+                  className="h-8 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  onClick={() => downloadFile(item)} disabled={isBusy}
+                  data-testid={`docrepo-download-btn-${item.item_id}`}>
+                  <Download className="w-3.5 h-3.5" /> Download
+                </Button>
+              </>
+            )}
             {!hasFile ? (
               <Button size="sm" className="h-8 bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white text-xs gap-1.5"
                 onClick={() => triggerFilePick(item.item_id)} disabled={isBusy}
@@ -206,11 +248,11 @@ const DocumentRepository = ({ user, apiClient }) => {
                 {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} Upload
               </Button>
             ) : (
-              <Button size="sm" variant="outline"
-                className="h-8 text-xs gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50"
+              <Button size="sm"
+                className="h-8 bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white text-xs gap-1.5"
                 onClick={() => setConfirm({ kind: "reupload", item })} disabled={isBusy}
-                data-testid={`docrepo-reupload-btn-${item.item_id}`}>
-                <RotateCcw className="w-3.5 h-3.5" /> Re-Upload
+                data-testid={`docrepo-upload-btn-${item.item_id}`}>
+                <Upload className="w-3.5 h-3.5" /> Upload
               </Button>
             )}
             <Button size="sm" variant="outline"
@@ -253,20 +295,18 @@ const DocumentRepository = ({ user, apiClient }) => {
           {/* Upload tracker */}
           <div className="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-3" data-testid="docrepo-tracker">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-5">
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Total line items</p>
-                  <p className="text-2xl font-bold text-[#003366]" data-testid="tracker-total">{summary.total_lines}</p>
+              {/* Big X/Y counter */}
+              <div className="flex items-center gap-3" data-testid="docrepo-counter">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold text-emerald-600 tabular-nums" data-testid="docrepo-counter-uploaded">{summary.uploaded}</span>
+                  <span className="text-2xl font-semibold text-gray-400">/</span>
+                  <span className="text-3xl font-extrabold text-[#003366] tabular-nums" data-testid="docrepo-counter-total">{summary.total_lines}</span>
                 </div>
-                <div className="w-px h-10 bg-blue-200" />
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Uploaded</p>
-                  <p className="text-2xl font-bold text-emerald-600" data-testid="tracker-uploaded">{summary.uploaded}</p>
-                </div>
-                <div className="w-px h-10 bg-blue-200" />
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Pending</p>
-                  <p className="text-2xl font-bold text-rose-600" data-testid="tracker-pending">{summary.pending}</p>
+                <div className="flex flex-col leading-tight">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">documents uploaded</span>
+                  <span className="text-[11px] text-rose-600 font-medium" data-testid="docrepo-counter-pending">
+                    {summary.pending} pending to upload
+                  </span>
                 </div>
               </div>
               <div className="flex-1 min-w-[240px] max-w-md">
@@ -345,21 +385,49 @@ const DocumentRepository = ({ user, apiClient }) => {
         <AlertDialogContent data-testid="docrepo-confirm-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirm?.kind === "reupload" && "Are you sure you want to re-upload this document?"}
-              {confirm?.kind === "delete_file" && "Are you sure you want to delete this document?"}
-              {confirm?.kind === "delete_line" && "Are you sure you want to delete this line item?"}
+              {confirm?.kind === "reupload" && "Replace existing document?"}
+              {confirm?.kind === "delete_file" && "Delete this document?"}
+              {confirm?.kind === "delete_line" && "Delete this line item?"}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {confirm?.kind === "reupload" && <>The existing file <b>{confirm?.item?.file?.filename}</b> will be replaced. Recorded in the Project Audit Log.</>}
-              {confirm?.kind === "delete_file" && <>The uploaded file <b>{confirm?.item?.file?.filename}</b> will be removed. The line item stays in the checklist. Recorded in the Project Audit Log.</>}
-              {confirm?.kind === "delete_line" && <>The line item <b>{confirm?.item?.title}</b>{confirm?.item?.file && <> along with its uploaded file <b>{confirm?.item?.file?.filename}</b></>} will be permanently removed. Recorded in the Project Audit Log.</>}
+              {confirm?.kind === "reupload" && (
+                <>
+                  A document already exists for this line — <b>{confirm?.item?.file?.filename}</b>.
+                  Choose <b>Yes, replace</b> to upload a new file (the current one will be archived for 60&nbsp;days before being permanently deleted),
+                  <b> View current</b> to inspect it first, or <b>No</b> to cancel.
+                </>
+              )}
+              {confirm?.kind === "delete_file" && (
+                <>
+                  The uploaded file <b>{confirm?.item?.file?.filename}</b> will be removed from this line and stored in the audit log for <b>60&nbsp;days</b> before being permanently deleted. The line item itself stays in the checklist.
+                </>
+              )}
+              {confirm?.kind === "delete_line" && (
+                <>
+                  The line item <b>{confirm?.item?.title}</b>{confirm?.item?.file && <> along with its uploaded file <b>{confirm?.item?.file?.filename}</b> (archived for 60&nbsp;days)</>} will be permanently removed from the checklist. Recorded in the Project Audit Log.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="docrepo-confirm-no">No</AlertDialogCancel>
+            {confirm?.kind === "reupload" && (
+              <Button
+                variant="outline"
+                className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 gap-1.5"
+                data-testid="docrepo-confirm-view-current"
+                onClick={() => {
+                  const item = confirm.item;
+                  setConfirm(null);
+                  setTimeout(() => openViewer(item), 80);
+                }}
+              >
+                <Eye className="w-3.5 h-3.5" /> View current document
+              </Button>
+            )}
             <AlertDialogAction
               data-testid="docrepo-confirm-yes"
-              className="bg-red-600 hover:bg-red-700"
+              className={confirm?.kind === "reupload" ? "bg-[#1DA1F2] hover:bg-[#1a8cd8]" : "bg-red-600 hover:bg-red-700"}
               onClick={() => {
                 if (!confirm) return;
                 if (confirm.kind === "reupload") {
@@ -368,10 +436,79 @@ const DocumentRepository = ({ user, apiClient }) => {
                 } else if (confirm.kind === "delete_file") { doDeleteFile(confirm.item); }
                 else if (confirm.kind === "delete_line") { doDeleteLine(confirm.item); }
               }}
-            >Yes</AlertDialogAction>
+            >
+              {confirm?.kind === "reupload" ? "Yes, replace" : "Yes"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ─── In-app document viewer (read-only) ─── */}
+      <Dialog open={!!viewer} onOpenChange={(o) => !o && closeViewer()}>
+        <DialogContent
+          className="max-w-5xl w-[92vw] h-[88vh] p-0 flex flex-col"
+          data-testid="docrepo-viewer-dialog"
+        >
+          <DialogHeader className="px-5 py-3 border-b border-gray-200 flex-row items-center justify-between space-y-0">
+            <div className="min-w-0 flex-1">
+              <DialogTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2 truncate">
+                <Eye className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                <span className="truncate">{viewer?.filename || "Document viewer"}</span>
+              </DialogTitle>
+              <DialogDescription className="text-[11px] text-gray-500 mt-0.5">
+                Read-only preview. Download disabled inside this viewer — close to use the dedicated Download button.
+              </DialogDescription>
+            </div>
+            <button
+              onClick={closeViewer}
+              className="ml-3 inline-flex items-center justify-center w-8 h-8 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 flex-shrink-0"
+              data-testid="docrepo-viewer-close"
+              aria-label="Close viewer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </DialogHeader>
+          <div className="flex-1 bg-gray-100 overflow-hidden" onContextMenu={(e) => e.preventDefault()}>
+            {viewer && (() => {
+              const ct = viewer.contentType || "";
+              if (ct.startsWith("image/")) {
+                return (
+                  <div className="w-full h-full flex items-center justify-center overflow-auto p-4">
+                    <img
+                      src={viewer.url}
+                      alt={viewer.filename}
+                      className="max-w-full max-h-full object-contain shadow"
+                      draggable={false}
+                      data-testid="docrepo-viewer-image"
+                    />
+                  </div>
+                );
+              }
+              if (ct === "application/pdf") {
+                // #toolbar=0 hides Chrome PDF download/print buttons (best-effort)
+                return (
+                  <iframe
+                    src={`${viewer.url}#toolbar=0&navpanes=0`}
+                    title={viewer.filename}
+                    className="w-full h-full border-0 bg-white"
+                    data-testid="docrepo-viewer-pdf"
+                  />
+                );
+              }
+              return (
+                <div className="h-full flex flex-col items-center justify-center text-center p-10">
+                  <FileText className="w-14 h-14 text-gray-300 mb-3" />
+                  <p className="text-sm font-semibold text-gray-700 mb-1">In-browser preview not available for this format</p>
+                  <p className="text-xs text-gray-500 max-w-md">
+                    Word documents (.doc / .docx) cannot render natively in the browser viewer.
+                    Close this dialog and use <b>Download</b> to open the file in Word or Google Docs.
+                  </p>
+                </div>
+              );
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

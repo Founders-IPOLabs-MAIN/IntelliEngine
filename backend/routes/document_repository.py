@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Request, UploadFile, File
 from fastapi.responses import Response
 from shared import (db, fs_bucket, logger, User, get_current_user,
-    datetime, timezone, uuid, ObjectId)
+    datetime, timezone, timedelta, uuid, ObjectId)
 from pydantic import BaseModel
 from typing import Optional
 from drhp_checklist_seed import DRHP_DOCUMENT_CHECKLIST
@@ -40,6 +40,67 @@ async def _log_project_audit(
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     await db.project_audit_logs.insert_one(entry)
+
+
+# ───────── Audit retention (60-day) ─────────────────────────────────────────
+DOCREPO_AUDIT_RETENTION_DAYS = 60
+
+
+async def _archive_file_version(
+    file_meta: dict,
+    item: dict,
+    user: "User",
+    request: Request,
+    reason: str,
+):
+    """Move a previously-uploaded file's metadata into `document_audit_versions`
+    with a 60-day purge window. The underlying GridFS blob is NOT deleted —
+    `_purge_expired_audit_versions` permanently removes it once the window expires.
+    """
+    if not file_meta or not file_meta.get("gridfs_id"):
+        return
+    now = datetime.now(timezone.utc)
+    entry = {
+        "version_id": f"dav_{uuid.uuid4().hex[:12]}",
+        "project_id": item.get("project_id"),
+        "item_id": item.get("item_id"),
+        "title": item.get("title"),
+        "category": item.get("category"),
+        "filename": file_meta.get("filename"),
+        "content_type": file_meta.get("content_type"),
+        "size": file_meta.get("size"),
+        "gridfs_id": file_meta.get("gridfs_id"),
+        "original_uploaded_at": file_meta.get("uploaded_at"),
+        "original_uploaded_by": file_meta.get("uploaded_by_email"),
+        "archived_at": now.isoformat(),
+        "archived_by_email": getattr(user, "email", None),
+        "archived_by_user_id": getattr(user, "user_id", None),
+        "reason": reason,  # "reupload" | "delete_file" | "delete_line"
+        "purge_after": (now + timedelta(days=DOCREPO_AUDIT_RETENTION_DAYS)).isoformat(),
+        "ip": request.client.host if request and request.client else None,
+    }
+    await db.document_audit_versions.insert_one(entry)
+
+
+async def _purge_expired_audit_versions():
+    """Permanently delete archived versions whose 60-day window has passed."""
+    now_iso = datetime.now(timezone.utc).isoformat()
+    expired_cur = db.document_audit_versions.find(
+        {"purge_after": {"$lt": now_iso}}, {"_id": 0}
+    )
+    purged = 0
+    async for v in expired_cur:
+        gid = v.get("gridfs_id")
+        if gid:
+            try:
+                await fs_bucket.delete(ObjectId(gid))
+            except Exception:
+                pass
+        await db.document_audit_versions.delete_one({"version_id": v["version_id"]})
+        purged += 1
+    if purged:
+        logger.info(f"[docrepo] purged {purged} expired audit versions")
+    return purged
 
 
 async def _ensure_repository_seeded(project_id: str, project_owner_id: str):
@@ -82,6 +143,11 @@ async def get_document_repository(project_id: str, request: Request, user: User 
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     await _ensure_repository_seeded(project_id, user.user_id)
+    # Opportunistically purge any expired (>60-day) archived versions
+    try:
+        await _purge_expired_audit_versions()
+    except Exception:
+        pass
     raw = await db.document_repository.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
     items = [_sanitise_repo_item(i) for i in raw]
 
@@ -309,12 +375,9 @@ async def upload_repository_file(
         raise HTTPException(status_code=400, detail="Empty file")
 
     is_reupload = bool(item.get("file"))
-    # Delete previous file from GridFS if re-uploading
-    if is_reupload and item["file"].get("gridfs_id"):
-        try:
-            await fs_bucket.delete(ObjectId(item["file"]["gridfs_id"]))
-        except Exception:
-            pass
+    # On re-upload: archive the previous file for 60-day audit retention (don't drop from GridFS yet)
+    if is_reupload:
+        await _archive_file_version(item["file"], item, user, request, "reupload")
 
     gridfs_id = await fs_bucket.upload_from_stream(file.filename, data, metadata={"project_id": project_id, "item_id": item_id})
     now = datetime.now(timezone.utc).isoformat()
@@ -358,13 +421,9 @@ async def delete_repository_file(project_id: str, item_id: str, request: Request
         raise HTTPException(status_code=404, detail="Line item not found")
     if not item.get("file"):
         raise HTTPException(status_code=400, detail="No file attached to this item")
-    gridfs_id = item["file"].get("gridfs_id")
     filename = item["file"].get("filename")
-    if gridfs_id:
-        try:
-            await fs_bucket.delete(ObjectId(gridfs_id))
-        except Exception:
-            pass
+    # Archive previous file for 60-day audit retention (don't delete from GridFS yet)
+    await _archive_file_version(item["file"], item, user, request, "delete_file")
     await db.document_repository.update_one(
         {"item_id": item_id, "project_id": project_id},
         {"$set": {"file": None, "updated_at": datetime.now(timezone.utc).isoformat()}},
@@ -391,6 +450,36 @@ async def download_repository_file(project_id: str, item_id: str, user: User = D
     stream = await fs_bucket.open_download_stream(ObjectId(gridfs_id))
     data = await stream.read()
     return Response(content=data, media_type=content_type, headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@router.get("/projects/{project_id}/document-repository/items/{item_id}/view")
+async def view_repository_file(project_id: str, item_id: str, user: User = Depends(get_current_user)):
+    """Returns the file inline (Content-Disposition: inline) so it renders inside an iframe / img tag for preview."""
+    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    item = await db.document_repository.find_one({"item_id": item_id, "project_id": project_id}, {"_id": 0})
+    if not item or not item.get("file"):
+        raise HTTPException(status_code=404, detail="File not found")
+    gridfs_id = item["file"]["gridfs_id"]
+    filename = item["file"]["filename"]
+    content_type = item["file"].get("content_type") or "application/octet-stream"
+    stream = await fs_bucket.open_download_stream(ObjectId(gridfs_id))
+    data = await stream.read()
+    return Response(content=data, media_type=content_type, headers={"Content-Disposition": f'inline; filename="{filename}"'})
+
+
+@router.get("/projects/{project_id}/document-repository/audit-versions")
+async def list_audit_versions(project_id: str, user: User = Depends(get_current_user)):
+    """List all archived (soft-deleted) document versions still within the 60-day retention window."""
+    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    versions = await db.document_audit_versions.find(
+        {"project_id": project_id},
+        {"_id": 0, "gridfs_id": 0, "ip": 0},
+    ).sort("archived_at", -1).to_list(500)
+    return {"project_id": project_id, "retention_days": DOCREPO_AUDIT_RETENTION_DAYS, "versions": versions, "count": len(versions)}
 
 
 @router.get("/projects/{project_id}/audit-log")
