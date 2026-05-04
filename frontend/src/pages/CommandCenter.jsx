@@ -94,14 +94,17 @@ const CommandCenter = ({ user, apiClient }) => {
   const [pricingMethod, setPricingMethod] = useState("");
   const [salesType, setSalesType] = useState("");
   const [registrar, setRegistrar] = useState("");
+  const [docRepoSummary, setDocRepoSummary] = useState({ total_lines: 0, uploaded: 0, pending: 0, pct: 0 });
 
   const fetchData = useCallback(async () => {
     try {
-      const [projectRes, dashRes] = await Promise.all([
+      const [projectRes, dashRes, repoRes] = await Promise.all([
         apiClient.get(`/projects/${projectId}/command-center`),
-        apiClient.get(`/projects/${projectId}/dashboard-data`).catch(() => ({ data: null }))
+        apiClient.get(`/projects/${projectId}/dashboard-data`).catch(() => ({ data: null })),
+        apiClient.get(`/projects/${projectId}/document-repository/summary`).catch(() => ({ data: null }))
       ]);
       setData(projectRes.data);
+      if (repoRes.data) setDocRepoSummary(repoRes.data);
 
       if (dashRes.data && dashRes.data.project_head) {
         setProjectHead(dashRes.data.project_head || { name: "", email: "", mobile: "" });
@@ -302,7 +305,18 @@ const CommandCenter = ({ user, apiClient }) => {
             )}
             <button onClick={() => navigate(`/project/${projectId}/document-repository`)} className="flex items-center gap-2 px-3 py-2 rounded-md border border-indigo-200 bg-indigo-50 hover:shadow-sm hover:border-indigo-300 transition-all group flex-1" data-testid="cc-document-repository-btn">
               <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center"><FolderOpen className="w-3.5 h-3.5 text-white" /></div>
-              <span className="text-xs font-semibold text-gray-900">Document Repository</span>
+              <div className="flex flex-col items-start leading-tight">
+                <span className="text-xs font-semibold text-gray-900">Document Repository</span>
+                <span className="text-[10px] text-gray-500 tabular-nums" data-testid="cc-docrepo-counter">
+                  <span className="font-bold text-emerald-600">{docRepoSummary.uploaded}</span>
+                  <span className="text-gray-400"> / </span>
+                  <span className="font-bold text-indigo-700">{docRepoSummary.total_lines}</span>
+                  <span className="text-gray-500"> uploaded</span>
+                  {docRepoSummary.pending > 0 && (
+                    <span className="text-rose-600"> · {docRepoSummary.pending} pending</span>
+                  )}
+                </span>
+              </div>
               <ChevronRight className="w-3.5 h-3.5 text-indigo-400 ml-auto" />
             </button>
             <button onClick={() => navigate(`/project/${projectId}/audit-log`)} className="flex items-center gap-2 px-3 py-2 rounded-md border border-purple-200 bg-purple-50 hover:shadow-sm hover:border-purple-300 transition-all group flex-1" data-testid="cc-audit-log-btn">

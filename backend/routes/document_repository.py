@@ -137,6 +137,25 @@ def _sanitise_repo_item(d: dict) -> dict:
     return d
 
 
+@router.get("/projects/{project_id}/document-repository/summary")
+async def get_document_repository_summary(project_id: str, user: User = Depends(get_current_user)):
+    """Lightweight counter endpoint — used by the Command Center tile.
+    Seeds the repository on first call so the tile shows the correct total
+    (e.g. `0 / 114`) even before the user has visited the full page."""
+    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    await _ensure_repository_seeded(project_id, user.user_id)
+    items = await db.document_repository.find(
+        {"project_id": project_id}, {"_id": 0, "file": 1}
+    ).to_list(2000)
+    total = len(items)
+    uploaded = sum(1 for i in items if i.get("file"))
+    pending = total - uploaded
+    pct = round((uploaded / total) * 100) if total else 0
+    return {"total_lines": total, "uploaded": uploaded, "pending": pending, "pct": pct}
+
+
 @router.get("/projects/{project_id}/document-repository")
 async def get_document_repository(project_id: str, request: Request, user: User = Depends(get_current_user)):
     project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
