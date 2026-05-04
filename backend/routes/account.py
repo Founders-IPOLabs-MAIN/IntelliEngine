@@ -58,8 +58,57 @@ async def get_user_profile(user: User = Depends(get_current_user)):
             "status": "active",
             "started_at": user_doc.get("created_at")
         }
-    
+
     return user_doc
+
+
+# ============ DRHP ONBOARDING (one-time profile capture) ============
+
+class DRHPOnboardingPayload(BaseModel):
+    user_login_type: str          # "merchant_banker" | "company" | "ca_firm"
+    company_name: str
+    full_name: str
+    mobile: str
+    email: str
+    website: Optional[str] = ""
+    referral_source: Optional[str] = ""   # "Friends" | "Google" | "Event" | "Reference"
+
+
+@router.get("/account/drhp-onboarding")
+async def get_drhp_onboarding(user: User = Depends(get_current_user)):
+    """Returns the saved one-time onboarding profile (or completed=False if never filled)."""
+    doc = await db.user_drhp_onboarding.find_one({"user_id": user.user_id}, {"_id": 0})
+    if not doc:
+        return {"completed": False}
+    return {"completed": True, **doc}
+
+
+@router.post("/account/drhp-onboarding")
+async def save_drhp_onboarding(payload: DRHPOnboardingPayload, user: User = Depends(get_current_user)):
+    """Save the user's first-time DRHP onboarding capture. Idempotent — calling
+    again updates the record (we still keep it as the single source of truth)."""
+    if payload.user_login_type not in ("merchant_banker", "company", "ca_firm"):
+        raise HTTPException(status_code=400, detail="Invalid user_login_type")
+    for field, label in (("company_name", "Company name"), ("full_name", "Full name"),
+                         ("mobile", "Mobile"), ("email", "Email")):
+        if not (getattr(payload, field) or "").strip():
+            raise HTTPException(status_code=400, detail=f"{label} is required")
+
+    now = datetime.now(timezone.utc).isoformat()
+    record = payload.model_dump()
+    record["user_id"] = user.user_id
+    record["updated_at"] = now
+
+    existing = await db.user_drhp_onboarding.find_one({"user_id": user.user_id}, {"_id": 0})
+    if existing:
+        await db.user_drhp_onboarding.update_one(
+            {"user_id": user.user_id}, {"$set": record}
+        )
+    else:
+        record["created_at"] = now
+        await db.user_drhp_onboarding.insert_one(record)
+
+    return {"message": "Onboarding saved", "user_login_type": payload.user_login_type}
 
 @router.put("/account/profile")
 async def update_user_profile(
