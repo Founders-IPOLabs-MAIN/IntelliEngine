@@ -66,8 +66,15 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
     referral_source: "",
   });
 
-  // On mount: check if user has already onboarded → redirect, else show selector
+  const isAdmin = user?.is_admin === true;
+
+  // On mount: check if user has already onboarded → redirect, else show selector.
+  // Admins are always given the full selector with all 3 modules — no auto-redirect, no modal.
   useEffect(() => {
+    if (isAdmin) {
+      setBootstrapping(false);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -97,9 +104,14 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
       }
     })();
     return () => { cancelled = true; };
-  }, [apiClient, navigate]);
+  }, [apiClient, navigate, isAdmin]);
 
   const handleCardClick = (typeId) => {
+    // Admins: full access, no popup, no persisted type — straight to the chosen module.
+    if (isAdmin) {
+      navigate(`/drhp/${typeId}`);
+      return;
+    }
     // Already onboarded once? Skip the form, just persist the chosen type and route.
     if (savedProfile) {
       apiClient.post("/account/drhp-onboarding", { ...savedProfile, user_login_type: typeId }).catch(() => {});
