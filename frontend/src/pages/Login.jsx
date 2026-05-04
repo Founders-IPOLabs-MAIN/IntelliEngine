@@ -256,7 +256,7 @@ const Login = ({ apiClient }) => {
           {/* LEFT */}
           <div className="bg-white/[0.96] backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl overflow-hidden">
             <div className="bg-[#003366]/[0.04] px-3 py-2 border-b text-center">
-              <p className="text-[11px] tracking-widest uppercase text-[#003366] font-bold">Internal User Login</p>
+              <p className="text-sm tracking-widest uppercase text-[#003366] font-bold">Internal User Login</p>
             </div>
             <div className="p-5">
               <div className="flex gap-2 mb-4">
@@ -277,7 +277,7 @@ const Login = ({ apiClient }) => {
           {/* RIGHT */}
           <div className="bg-white/[0.96] backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl overflow-hidden">
             <div className="bg-orange-500/[0.04] px-3 py-1.5 border-b text-center">
-              <p className="text-[11px] tracking-widest uppercase text-orange-600 font-bold">External User Login</p>
+              <p className="text-sm tracking-widest uppercase text-orange-600 font-bold">External User Login</p>
             </div>
             <div className="p-5">
               <div className="flex gap-2 mb-4">
