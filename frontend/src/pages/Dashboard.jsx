@@ -211,12 +211,6 @@ const Dashboard = ({ user, apiClient }) => {
               })}
             </div>
           </section>
-
-          <footer className="px-8 pb-4 flex justify-end pr-12">
-            <span className="text-[11px] text-white/40">
-              &copy; 2026 IPO Labs Private Limited
-            </span>
-          </footer>
         </div>
       </main>
     </div>
