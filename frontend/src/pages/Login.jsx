@@ -295,6 +295,33 @@ const Login = ({ apiClient }) => {
             </div>
           </div>
         </div>
+
+        {/* Legal links */}
+        <div className="mt-8 flex items-center justify-center gap-1 text-[11px] text-white/50" data-testid="login-legal-links">
+          <button
+            onClick={() => navigate("/terms-of-use")}
+            className="hover:text-white transition-colors px-2"
+            data-testid="login-legal-terms"
+          >
+            Terms &amp; Conditions
+          </button>
+          <span className="text-white/20">·</span>
+          <button
+            onClick={() => navigate("/disclaimer")}
+            className="hover:text-white transition-colors px-2"
+            data-testid="login-legal-cookies"
+          >
+            Cookies Policy
+          </button>
+          <span className="text-white/20">·</span>
+          <button
+            onClick={() => navigate("/disclaimer")}
+            className="hover:text-white transition-colors px-2"
+            data-testid="login-legal-privacy"
+          >
+            Privacy Policy
+          </button>
+        </div>
       </div>
 
       {/* Forgot Password Dialog */}
