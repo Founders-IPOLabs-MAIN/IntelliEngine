@@ -1143,18 +1143,37 @@ const DRHPOutput = ({ user, apiClient }) => {
       const result = response.data;
       
       if (result.success) {
-        // Update the editor content with the imported HTML
-        const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
-        if (currentEditor) {
-          currentEditor.commands.setContent(result.html_content);
+        // If Syncfusion mode: load the SFDT from backend (already stored)
+        if (editorMode === "syncfusion" && result.has_sfdt) {
+          try {
+            const sfdtRes = await apiClient.get(
+              `/projects/${projectId}/drhp-sfdt?board_type=${activeTab}`
+            );
+            const containerEl = document.getElementById("container");
+            if (containerEl?.ej2_instances?.[0]) {
+              containerEl.ej2_instances[0].documentEditor.open(
+                typeof sfdtRes.data === "string" ? sfdtRes.data : JSON.stringify(sfdtRes.data)
+              );
+            }
+          } catch (sfdtErr) {
+            console.warn("SFDT load failed, falling back to content fetch", sfdtErr);
+          }
+        } else {
+          // TipTap mode: fetch saved content from backend
+          try {
+            const contentRes = await apiClient.get(`/projects/${projectId}/drhp-output`);
+            const field = activeTab === 'sme' ? 'sme_content' : 'mainboard_content';
+            const savedHtml = contentRes.data?.[field] || '';
+            const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
+            if (currentEditor && savedHtml) {
+              currentEditor.commands.setContent(savedHtml);
+            }
+            setContent(prev => ({ ...prev, [activeTab]: savedHtml }));
+          } catch (fetchErr) {
+            console.error("Failed to fetch imported content", fetchErr);
+          }
         }
-        
-        // Update state
-        setContent(prev => ({
-          ...prev,
-          [activeTab]: result.html_content
-        }));
-        
+
         setImportResult({
           success: true,
           filename: result.filename,
@@ -1255,11 +1274,15 @@ const DRHPOutput = ({ user, apiClient }) => {
 
         const result = response.data;
         if (result.success) {
+          // Fetch saved content separately (not in import response anymore)
+          const contentRes = await apiClient.get(`/projects/${projectId}/drhp-output`);
+          const field = activeTab === 'sme' ? 'sme_content' : 'mainboard_content';
+          const savedHtml = contentRes.data?.[field] || '';
           const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
-          if (currentEditor) {
-            currentEditor.commands.setContent(result.html_content);
+          if (currentEditor && savedHtml) {
+            currentEditor.commands.setContent(savedHtml);
           }
-          setContent(prev => ({ ...prev, [activeTab]: result.html_content }));
+          setContent(prev => ({ ...prev, [activeTab]: savedHtml }));
           setLastSaved(new Date().toISOString());
           toast.success(`DRHP document imported successfully!`);
         }

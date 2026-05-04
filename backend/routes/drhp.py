@@ -460,14 +460,13 @@ async def import_drhp_word(
         return {
             "success": True,
             "message": "DRHP document imported with full SEBI formatting preserved",
-            "html_content": html_content,
             "board_type": board_type,
             "filename": file.filename,
             "file_size": len(file_content),
-            "images": stored_images,
             "images_count": len(stored_images),
-            "warnings": warnings,
-            "warnings_count": len(warnings)
+            "warnings": warnings[:20],  # Limit warnings in response
+            "warnings_count": len(warnings),
+            "has_sfdt": sfdt_grid_id is not None
         }
         
     except HTTPException:
