@@ -319,6 +319,88 @@ const LandingPage = () => {
       </section>
 
       {/* ════════════════════════════════════════════════════════════ */}
+      {/* OUR TECHNOLOGY STACK — infinite marquee                      */}
+      {/* ════════════════════════════════════════════════════════════ */}
+      <section className="relative z-10 bg-[#0c0c0d] border-t border-white/5 px-6 py-16 lg:py-20" data-testid="landing-tech-stack">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-[11px] tracking-[0.22em] uppercase text-indigo-400 font-semibold mb-3">Our Technology Stack</p>
+            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight text-white">
+              Built on the{" "}
+              <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                world&apos;s most trusted infrastructure.
+              </span>
+            </h2>
+          </div>
+
+          {/* marquee CSS (scoped) */}
+          <style>{`
+            @keyframes setu-marquee {
+              0%   { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .setu-marquee-track {
+              animation: setu-marquee 32s linear infinite;
+              will-change: transform;
+            }
+            .setu-marquee-mask {
+              -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%);
+                      mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%);
+            }
+          `}</style>
+
+          <div className="relative overflow-hidden setu-marquee-mask">
+            <div className="setu-marquee-track flex items-center gap-14 lg:gap-20 w-max">
+              {[...Array(2)].map((_, dupIdx) => (
+                <div key={dupIdx} className="flex items-center gap-14 lg:gap-20 shrink-0" aria-hidden={dupIdx === 1}>
+                  {[
+                    { name: "Emergent.sh",          type: "text" },
+                    { name: "MongoDB",              type: "icon", slug: "mongodb" },
+                    { name: "Microsoft",            type: "text" },
+                    { name: "Razorpay",             type: "icon", slug: "razorpay" },
+                    { name: "Google Authenticator", type: "icon", slug: "googleauthenticator" },
+                    { name: "Google Gemini",        type: "icon", slug: "googlegemini" },
+                    { name: "Claude.ai",            type: "icon", slug: "claude" },
+                    { name: "Flow.ai",              type: "text" },
+                    { name: "JavaScript",           type: "icon", slug: "javascript" },
+                  ].map((logo) => (
+                    <div
+                      key={`${dupIdx}-${logo.name}`}
+                      className="flex items-center gap-3 text-white/85 hover:text-white transition-colors shrink-0"
+                      title={logo.name}
+                    >
+                      {logo.type === "icon" ? (
+                        <img
+                          src={`https://cdn.simpleicons.org/${logo.slug}/ffffff`}
+                          alt={logo.name}
+                          className="h-7 lg:h-8 w-auto opacity-90"
+                          loading="lazy"
+                          onError={(e) => {
+                            // Fallback: hide broken image, render wordmark instead
+                            e.currentTarget.style.display = "none";
+                            e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                          }}
+                        />
+                      ) : null}
+                      {logo.type === "icon" ? (
+                        <span className="hidden text-base lg:text-lg font-semibold tracking-wide text-white whitespace-nowrap">
+                          {logo.name}
+                        </span>
+                      ) : (
+                        <span className="text-base lg:text-lg font-semibold tracking-wide text-white whitespace-nowrap">
+                          {logo.name}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════ */}
       {/* WHY SETU — value props row                                   */}
       {/* ════════════════════════════════════════════════════════════ */}
       <section className="relative z-10 bg-[#0c0c0d] border-t border-white/5 px-6" data-testid="landing-why">
