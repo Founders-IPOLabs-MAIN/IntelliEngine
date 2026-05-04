@@ -20,8 +20,15 @@ import {
   Building2,
   FolderOpen,
   Briefcase,
-  Calculator
+  Calculator,
+  Trash2,
+  RotateCcw,
+  History,
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const SECTORS = [
   "Technology",
@@ -67,11 +74,53 @@ const DRHPLandingPage = ({ user, apiClient }) => {
     issue_type: "",
   });
   const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // project pending confirmation
+  const [deletedProjects, setDeletedProjects] = useState([]);
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [busyArchive, setBusyArchive] = useState(null);
 
   useEffect(() => {
     fetchProjects();
+    fetchDeletedProjects();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLoginType]);
+
+  const fetchDeletedProjects = async () => {
+    try {
+      const r = await apiClient.get("/projects/deleted/list");
+      setDeletedProjects(r.data?.archives || []);
+    } catch {
+      // silent — endpoint may not be reachable yet on first deploy
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    try {
+      const r = await apiClient.delete(`/projects/${target.project_id}`);
+      toast.success(
+        `"${target.company_name}" deleted. You can restore it for the next ${r.data?.retention_days ?? 60} days from "Recently deleted".`
+      );
+      await Promise.all([fetchProjects(), fetchDeletedProjects()]);
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "Could not delete project");
+    }
+  };
+
+  const handleRestore = async (archive) => {
+    setBusyArchive(archive.archive_id);
+    try {
+      await apiClient.post(`/projects/deleted/${archive.archive_id}/restore`);
+      toast.success(`"${archive.company_name}" restored.`);
+      await Promise.all([fetchProjects(), fetchDeletedProjects()]);
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "Could not restore project");
+    } finally {
+      setBusyArchive(null);
+    }
+  };
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -222,11 +271,20 @@ const DRHPLandingPage = ({ user, apiClient }) => {
               {projects.map((project) => (
                 <Card
                   key={project.project_id}
-                  className="border border-gray-200 bg-white hover:shadow-lg hover:border-[#1DA1F2] transition-all duration-200 cursor-pointer group"
+                  className="border border-gray-200 bg-white hover:shadow-lg hover:border-[#1DA1F2] transition-all duration-200 cursor-pointer group relative"
                   onClick={() => navigate(`/project/${project.project_id}/command-center`)}
                   data-testid={`project-card-${project.project_id}`}
                 >
-                  <CardHeader className="pb-3">
+                  {/* Delete button — top-right of card */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(project); }}
+                    className="absolute top-3 right-3 z-10 w-8 h-8 inline-flex items-center justify-center rounded-md text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors opacity-60 group-hover:opacity-100"
+                    title="Delete project"
+                    data-testid={`project-delete-btn-${project.project_id}`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <CardHeader className="pb-3 pr-12">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-[#1DA1F2] rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -283,6 +341,63 @@ const DRHPLandingPage = ({ user, apiClient }) => {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          )}
+
+          {/* ─── Recently Deleted (recoverable up to 60 days) ─── */}
+          {deletedProjects.length > 0 && (
+            <div className="mt-10" data-testid="deleted-projects-section">
+              <button
+                onClick={() => setShowDeleted((s) => !s)}
+                className="inline-flex items-center gap-2 text-xs font-semibold text-gray-600 hover:text-gray-900 mb-3"
+                data-testid="toggle-deleted-projects"
+              >
+                <History className="w-4 h-4" />
+                Recently deleted ({deletedProjects.length}) — recoverable for 60 days
+                <ArrowRight className={`w-3 h-3 transition-transform ${showDeleted ? "rotate-90" : ""}`} />
+              </button>
+              {showDeleted && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead className="bg-white border-b border-gray-200">
+                      <tr>
+                        <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide">Company</th>
+                        <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide">Deleted</th>
+                        <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide">Auto-purge after</th>
+                        <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide">Rows archived</th>
+                        <th className="px-3 py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {deletedProjects.map((a) => (
+                        <tr key={a.archive_id} className="border-b border-gray-100 last:border-0 hover:bg-white" data-testid={`deleted-row-${a.archive_id}`}>
+                          <td className="px-3 py-2 font-semibold text-gray-900">{a.company_name}</td>
+                          <td className="px-3 py-2 text-gray-600">{new Date(a.deleted_at).toLocaleString()}</td>
+                          <td className="px-3 py-2 text-amber-700">{new Date(a.purge_after).toLocaleDateString()}</td>
+                          <td className="px-3 py-2 text-gray-700 tabular-nums">{a.total_rows_archived}</td>
+                          <td className="px-3 py-2 text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                              onClick={() => handleRestore(a)}
+                              disabled={busyArchive === a.archive_id}
+                              data-testid={`restore-archive-btn-${a.archive_id}`}
+                            >
+                              {busyArchive === a.archive_id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <RotateCcw className="w-3.5 h-3.5" />
+                              )}
+                              Restore
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -402,6 +517,31 @@ const DRHPLandingPage = ({ user, apiClient }) => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Delete confirmation */}
+        <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+          <AlertDialogContent data-testid="project-delete-confirm-dialog">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+              <AlertDialogDescription>
+                <b>{deleteTarget?.company_name}</b> will be removed from your active projects.
+                A complete copy (project metadata, dashboard, all checklists, document repository, audit trail)
+                is preserved in the <b>Recently deleted</b> archive for <b>60 days</b>, after which it is permanently purged.
+                You can restore the project anytime within that window.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="project-delete-confirm-no">No</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-600 hover:bg-red-700"
+                data-testid="project-delete-confirm-yes"
+                onClick={handleConfirmDelete}
+              >
+                Yes, delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
     </div>
   );

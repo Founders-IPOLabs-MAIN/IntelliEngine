@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
 from shared import (db, User, get_current_user, promote_new_user,
     Project, ProjectCreate, ProjectUpdate, DRHPSection, SectionUpdate,
-    datetime, timezone, uuid)
+    datetime, timezone, timedelta, uuid)
 from typing import List, Optional
 
 router = APIRouter()
+
+PROJECT_DELETE_RETENTION_DAYS = 60
 
 # ============ PROJECT ENDPOINTS ============
 
@@ -113,6 +115,153 @@ async def update_project(project_id: str, update_data: ProjectUpdate, user: User
         raise HTTPException(status_code=404, detail="Project not found")
     
     return await get_project(project_id, user)
+
+
+# ============ PROJECT DELETE / ARCHIVE / RESTORE ============
+
+# Collections that hold project-scoped data. Each row in these collections is
+# expected to carry a `project_id` field. We snapshot all of these on delete,
+# and re-insert them on restore.
+PROJECT_SCOPED_COLLECTIONS = [
+    "project_dashboards",
+    "document_repository",
+    "document_audit_versions",
+    "promoters",
+    "kmps",
+    "project_audit_logs",
+    "drhp_sections",
+    "drhp_chapter_content",
+    "drhp_chapters",
+    "company_data",
+    "pre_ipo_tracker",
+    "non_drhp_tracker",
+]
+
+
+@router.delete("/projects/{project_id}")
+async def delete_project(project_id: str, user: User = Depends(get_current_user)):
+    """Soft-delete a project: snapshot the project + every scoped row into
+    `project_deletion_archive` (60-day retention), then remove the live records.
+    The user can restore from `/projects/deleted` within the retention window.
+    """
+    project = await db.projects.find_one(
+        {"project_id": project_id, "user_id": user.user_id}, {"_id": 0}
+    )
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    now = datetime.now(timezone.utc)
+    snapshots: dict = {}
+    total_rows = 0
+    for coll_name in PROJECT_SCOPED_COLLECTIONS:
+        rows = await db[coll_name].find({"project_id": project_id}, {"_id": 0}).to_list(10000)
+        if rows:
+            snapshots[coll_name] = rows
+            total_rows += len(rows)
+
+    archive_id = f"parch_{uuid.uuid4().hex[:12]}"
+    archive_entry = {
+        "archive_id": archive_id,
+        "project_id": project_id,
+        "user_id": user.user_id,
+        "company_name": project.get("company_name"),
+        "sector": project.get("sector"),
+        "board_type": project.get("board_type"),
+        "exchange": project.get("exchange"),
+        "issue_type": project.get("issue_type"),
+        "current_stage": project.get("current_stage"),
+        "progress_percentage": project.get("progress_percentage"),
+        "deleted_by_email": user.email,
+        "deleted_by_user_id": user.user_id,
+        "deleted_at": now.isoformat(),
+        "purge_after": (now + timedelta(days=PROJECT_DELETE_RETENTION_DAYS)).isoformat(),
+        "project_snapshot": project,
+        "snapshots": snapshots,
+        "total_rows_archived": total_rows,
+        "retention_days": PROJECT_DELETE_RETENTION_DAYS,
+    }
+    await db.project_deletion_archive.insert_one(archive_entry)
+
+    # Now remove the live rows
+    for coll_name in PROJECT_SCOPED_COLLECTIONS:
+        await db[coll_name].delete_many({"project_id": project_id})
+    await db.projects.delete_one({"project_id": project_id, "user_id": user.user_id})
+
+    return {
+        "message": "Project deleted",
+        "archive_id": archive_id,
+        "total_rows_archived": total_rows,
+        "retention_days": PROJECT_DELETE_RETENTION_DAYS,
+        "purge_after": archive_entry["purge_after"],
+    }
+
+
+@router.get("/projects/deleted/list")
+async def list_deleted_projects(user: User = Depends(get_current_user)):
+    """List the current user's archived (soft-deleted) projects still within
+    the 60-day retention window. Heavy snapshot fields are stripped to keep
+    the response light."""
+    # Opportunistic purge of expired archives
+    now_iso = datetime.now(timezone.utc).isoformat()
+    expired = db.project_deletion_archive.find(
+        {"purge_after": {"$lt": now_iso}}, {"_id": 0, "archive_id": 1}
+    )
+    async for v in expired:
+        await db.project_deletion_archive.delete_one({"archive_id": v["archive_id"]})
+
+    archives = await db.project_deletion_archive.find(
+        {"user_id": user.user_id},
+        {"_id": 0, "snapshots": 0, "project_snapshot": 0},
+    ).sort("deleted_at", -1).to_list(200)
+    return {
+        "retention_days": PROJECT_DELETE_RETENTION_DAYS,
+        "count": len(archives),
+        "archives": archives,
+    }
+
+
+@router.post("/projects/deleted/{archive_id}/restore")
+async def restore_deleted_project(archive_id: str, user: User = Depends(get_current_user)):
+    """Restore a soft-deleted project from `project_deletion_archive`. The
+    project itself plus every scoped row is re-inserted exactly as captured."""
+    archive = await db.project_deletion_archive.find_one(
+        {"archive_id": archive_id, "user_id": user.user_id}, {"_id": 0}
+    )
+    if not archive:
+        raise HTTPException(status_code=404, detail="Archive not found or access denied")
+
+    project_id = archive["project_id"]
+    # Refuse to restore if a live project with this id already exists
+    existing = await db.projects.find_one({"project_id": project_id}, {"_id": 1})
+    if existing:
+        raise HTTPException(status_code=409, detail="A live project with this id already exists")
+
+    project_doc = archive.get("project_snapshot") or {}
+    if project_doc:
+        project_doc.pop("_id", None)
+        project_doc["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.projects.insert_one(project_doc)
+
+    snapshots = archive.get("snapshots") or {}
+    restored_rows = 0
+    for coll_name, rows in snapshots.items():
+        if not rows:
+            continue
+        for r in rows:
+            r.pop("_id", None)
+        await db[coll_name].insert_many(rows)
+        restored_rows += len(rows)
+
+    # Remove the archive entry now that it's restored
+    await db.project_deletion_archive.delete_one({"archive_id": archive_id})
+
+    return {
+        "message": "Project restored",
+        "project_id": project_id,
+        "restored_rows": restored_rows,
+    }
+
+
 
 # ============ DRHP SECTION ENDPOINTS ============
 

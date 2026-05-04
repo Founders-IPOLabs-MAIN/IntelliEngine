@@ -225,22 +225,20 @@ const DocumentRepository = ({ user, apiClient }) => {
           />
 
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            {hasFile && (
-              <>
-                <Button size="sm" variant="outline"
-                  className="h-8 text-xs gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50"
-                  onClick={() => openViewer(item)} disabled={isBusy}
-                  data-testid={`docrepo-view-btn-${item.item_id}`}>
-                  <Eye className="w-3.5 h-3.5" /> View
-                </Button>
-                <Button size="sm" variant="outline"
-                  className="h-8 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                  onClick={() => downloadFile(item)} disabled={isBusy}
-                  data-testid={`docrepo-download-btn-${item.item_id}`}>
-                  <Download className="w-3.5 h-3.5" /> Download
-                </Button>
-              </>
-            )}
+            <Button size="sm" variant="outline"
+              className="h-8 text-xs gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => openViewer(item)} disabled={isBusy || !hasFile}
+              title={hasFile ? "View document" : "No file uploaded yet"}
+              data-testid={`docrepo-view-btn-${item.item_id}`}>
+              <Eye className="w-3.5 h-3.5" /> View
+            </Button>
+            <Button size="sm" variant="outline"
+              className="h-8 text-xs gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => downloadFile(item)} disabled={isBusy || !hasFile}
+              title={hasFile ? "Download document" : "No file uploaded yet"}
+              data-testid={`docrepo-download-btn-${item.item_id}`}>
+              <Download className="w-3.5 h-3.5" /> Download
+            </Button>
             {!hasFile ? (
               <Button size="sm" className="h-8 bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white text-xs gap-1.5"
                 onClick={() => triggerFilePick(item.item_id)} disabled={isBusy}
