@@ -242,15 +242,9 @@ const Login = ({ apiClient }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50" />
       </div>
 
-      <div className="relative z-10 w-full max-w-2xl">
+      <div className="relative z-10 w-full max-w-2xl -mt-16">
         {/* Header */}
         <div className="text-center mb-7">
-          <div className="flex items-center justify-center -mt-3">
-            <img src="/setu-logo.png" alt="SETU Labs" className="h-[200px] w-auto object-contain p-3 drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]" data-testid="login-logo" />
-          </div>
-          <p className="text-sm lg:text-base text-white/80 font-medium tracking-wide -mt-2 mb-5" data-testid="login-modules-tag">
-            Login to the Modules
-          </p>
           <h1 className="text-3xl lg:text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
             Login Page
           </h1>
