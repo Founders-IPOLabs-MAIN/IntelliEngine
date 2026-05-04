@@ -121,7 +121,7 @@ const CommandCenter = ({ user, apiClient }) => {
       }
     } catch (error) {
       console.error("Failed to fetch command center data:", error);
-      if (error.response?.status === 404) navigate("/drhp");
+      if (error.response?.status === 404) navigate(data?.project?.user_login_type ? `/drhp/${data.project.user_login_type}` : "/drhp");
       toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);
@@ -198,7 +198,13 @@ const CommandCenter = ({ user, apiClient }) => {
         <header className="bg-white border-b border-gray-200 px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button onClick={() => navigate("/drhp")} className="text-gray-500 hover:text-gray-700 text-sm">DRHP Projects</button>
+              <button
+                onClick={() => navigate(data?.project?.user_login_type ? `/drhp/${data.project.user_login_type}` : "/drhp")}
+                className="text-gray-500 hover:text-gray-700 text-sm"
+                data-testid="cc-back-to-projects"
+              >
+                DRHP Projects
+              </button>
               <ChevronRight className="w-4 h-4 text-gray-400" />
               <h1 className="text-lg font-semibold text-gray-900">{project.company_name}</h1>
               <Badge className="bg-[#1DA1F2]/10 text-[#1DA1F2] border-[#1DA1F2]/20">Command Center</Badge>
