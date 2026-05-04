@@ -231,27 +231,42 @@ const Login = ({ apiClient }) => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4" data-testid="login-page">
-      <div className="w-full max-w-2xl">
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-[#0a0a0a]" data-testid="login-page">
+      {/* Mesh gradient background — same palette as landing page */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-indigo-500/15 blur-[140px]" />
+        <div className="absolute top-1/3 right-1/4 w-[480px] h-[480px] rounded-full bg-cyan-400/12 blur-[140px]" />
+        <div className="absolute bottom-1/4 left-1/3 w-[420px] h-[420px] rounded-full bg-fuchsia-500/10 blur-[130px]" />
+        <div className="absolute inset-0 opacity-[0.04]"
+             style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-2xl">
         {/* Header */}
-        <div className="text-center mb-5">
+        <div className="text-center mb-7">
           <div className="flex items-center justify-center -mt-3">
-            <img src="/setu-logo.png" alt="SETU Labs" className="h-[150px] w-auto object-contain p-3" data-testid="login-logo" />
+            <img src="/setu-logo.png" alt="SETU Labs" className="h-[200px] w-auto object-contain p-3 drop-shadow-[0_0_30px_rgba(99,102,241,0.25)]" data-testid="login-logo" />
           </div>
-          <h1 className="text-base font-bold text-black">Login Page</h1>
-          <p className="text-xs text-gray-400">Select your role to continue</p>
+          <p className="text-sm lg:text-base text-white/80 font-medium tracking-wide -mt-2 mb-5" data-testid="login-modules-tag">
+            Login to the Modules
+          </p>
+          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+            Login Page
+          </h1>
+          <p className="text-base text-white/70 mt-1.5">Select your role to continue</p>
         </div>
 
         {/* Split panels */}
         <div className="grid grid-cols-2 gap-3">
           {/* LEFT */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white/[0.96] backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl overflow-hidden">
             <div className="bg-[#003366]/[0.04] px-3 py-2 border-b text-center">
               <p className="text-[11px] tracking-widest uppercase text-[#003366] font-bold">Internal Access</p>
             </div>
             <div className="p-5">
               <div className="flex gap-2 mb-4">
-                {[{ id: "admin", label: "Admins", icon: Shield, active: "border-[#003366] bg-[#003366] text-white", idle: "border-gray-200 text-gray-400 hover:border-[#003366]/40 hover:bg-[#003366]/5" }, { id: "employee", label: "Employees", icon: Users, active: "border-indigo-600 bg-indigo-600 text-white", idle: "border-gray-200 text-gray-400 hover:border-indigo-400/40 hover:bg-indigo-50" }].map(r => (
+                {[{ id: "admin", label: "Admin Login", icon: Shield, active: "border-[#003366] bg-[#003366] text-white", idle: "border-gray-200 text-gray-400 hover:border-[#003366]/40 hover:bg-[#003366]/5" }, { id: "employee", label: "Employee", icon: Users, active: "border-indigo-600 bg-indigo-600 text-white", idle: "border-gray-200 text-gray-400 hover:border-indigo-400/40 hover:bg-indigo-50" }].map(r => (
                   <button key={r.id} onClick={() => { setLeftRole(r.id); setRightRole(null); setError(""); }}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border-2 transition-all ${leftRole === r.id ? r.active : r.idle}`}
                     data-testid={`role-btn-${r.id}`}>
@@ -266,7 +281,7 @@ const Login = ({ apiClient }) => {
           </div>
 
           {/* RIGHT */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white/[0.96] backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl overflow-hidden">
             <div className="bg-orange-500/[0.04] px-3 py-1.5 border-b text-center">
               <p className="text-[11px] tracking-widest uppercase text-orange-600 font-bold">User Access</p>
             </div>
