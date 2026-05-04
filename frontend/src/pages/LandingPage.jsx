@@ -340,54 +340,90 @@ const LandingPage = () => {
               100% { transform: translateX(-50%); }
             }
             .setu-marquee-track {
-              animation: setu-marquee 32s linear infinite;
+              animation: setu-marquee 36s linear infinite;
               will-change: transform;
             }
+            .setu-marquee-track:hover { animation-play-state: paused; }
             .setu-marquee-mask {
-              -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%);
-                      mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%);
+              -webkit-mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+                      mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
             }
           `}</style>
 
           <div className="relative overflow-hidden setu-marquee-mask">
-            <div className="setu-marquee-track flex items-center gap-14 lg:gap-20 w-max">
+            <div className="setu-marquee-track flex items-center gap-5 lg:gap-6 w-max">
               {[...Array(2)].map((_, dupIdx) => (
-                <div key={dupIdx} className="flex items-center gap-14 lg:gap-20 shrink-0" aria-hidden={dupIdx === 1}>
+                <div key={dupIdx} className="flex items-center gap-5 lg:gap-6 shrink-0" aria-hidden={dupIdx === 1}>
                   {[
-                    { name: "Emergent.sh",          type: "text" },
-                    { name: "MongoDB",              type: "icon", slug: "mongodb" },
-                    { name: "Microsoft",            type: "text" },
-                    { name: "Razorpay",             type: "icon", slug: "razorpay" },
-                    { name: "Google Authenticator", type: "icon", slug: "googleauthenticator" },
-                    { name: "Google Gemini",        type: "icon", slug: "googlegemini" },
-                    { name: "Claude.ai",            type: "icon", slug: "claude" },
-                    { name: "Flow.ai",              type: "text" },
-                    { name: "JavaScript",           type: "icon", slug: "javascript" },
+                    {
+                      name: "Emergent.sh",
+                      kind: "wordmark",
+                      mark: <span className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-fuchsia-400 to-purple-500 bg-clip-text text-transparent">{"{ E }"}</span>,
+                    },
+                    {
+                      name: "MongoDB",
+                      kind: "img",
+                      src: "https://cdn.simpleicons.org/mongodb",
+                    },
+                    {
+                      name: "Microsoft",
+                      kind: "img",
+                      src: "https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg",
+                      imgClass: "h-5 lg:h-6",
+                      hideName: true,
+                    },
+                    {
+                      name: "Razorpay",
+                      kind: "img",
+                      src: "https://cdn.simpleicons.org/razorpay",
+                    },
+                    {
+                      name: "Google Authenticator",
+                      kind: "img",
+                      src: "https://cdn.simpleicons.org/googleauthenticator",
+                    },
+                    {
+                      name: "Google Gemini",
+                      kind: "img",
+                      src: "https://cdn.simpleicons.org/googlegemini",
+                    },
+                    {
+                      name: "Claude.ai",
+                      kind: "img",
+                      src: "https://cdn.simpleicons.org/claude",
+                    },
+                    {
+                      name: "Flow.ai",
+                      kind: "wordmark",
+                      mark: (
+                        <span className="inline-flex items-center gap-1">
+                          <span className="w-6 h-6 rounded-md bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-[11px] font-black">F</span>
+                        </span>
+                      ),
+                    },
+                    {
+                      name: "JavaScript",
+                      kind: "img",
+                      src: "https://cdn.simpleicons.org/javascript",
+                    },
                   ].map((logo) => (
                     <div
                       key={`${dupIdx}-${logo.name}`}
-                      className="flex items-center gap-3 text-white/85 hover:text-white transition-colors shrink-0"
+                      className="flex items-center gap-3 px-5 lg:px-6 py-3 lg:py-3.5 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] hover:border-white/20 transition-colors shrink-0 backdrop-blur-sm"
                       title={logo.name}
                     >
-                      {logo.type === "icon" ? (
+                      {logo.kind === "img" ? (
                         <img
-                          src={`https://cdn.simpleicons.org/${logo.slug}/ffffff`}
-                          alt={logo.name}
-                          className="h-7 lg:h-8 w-auto opacity-90"
+                          src={logo.src}
+                          alt={`${logo.name} logo`}
+                          className={logo.imgClass || "h-6 lg:h-7 w-auto"}
                           loading="lazy"
-                          onError={(e) => {
-                            // Fallback: hide broken image, render wordmark instead
-                            e.currentTarget.style.display = "none";
-                            e.currentTarget.nextElementSibling?.classList.remove("hidden");
-                          }}
                         />
-                      ) : null}
-                      {logo.type === "icon" ? (
-                        <span className="hidden text-base lg:text-lg font-semibold tracking-wide text-white whitespace-nowrap">
-                          {logo.name}
-                        </span>
                       ) : (
-                        <span className="text-base lg:text-lg font-semibold tracking-wide text-white whitespace-nowrap">
+                        logo.mark
+                      )}
+                      {!logo.hideName && (
+                        <span className="text-sm lg:text-base font-semibold tracking-tight text-white whitespace-nowrap">
                           {logo.name}
                         </span>
                       )}
