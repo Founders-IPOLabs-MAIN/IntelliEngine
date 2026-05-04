@@ -100,14 +100,24 @@ const Dashboard = ({ user, apiClient }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white" data-testid="dashboard-page">
+    <div className="flex min-h-screen bg-[#0a0a0a]" data-testid="dashboard-page">
       <Sidebar user={user} apiClient={apiClient} />
 
       <main className="flex-1 ml-64 relative overflow-hidden">
-        {/* Full-page background video — no overlays, clean white feel */}
+        {/* Mesh gradient backdrop — same palette as landing page */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute top-1/4 left-[12%] w-[640px] h-[640px] rounded-full bg-indigo-500/15 blur-[150px]" />
+          <div className="absolute top-1/3 right-[10%] w-[520px] h-[520px] rounded-full bg-cyan-400/12 blur-[150px]" />
+          <div className="absolute bottom-1/4 left-1/3 w-[460px] h-[460px] rounded-full bg-fuchsia-500/10 blur-[140px]" />
+          <div className="absolute inset-0 opacity-[0.04]"
+               style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
+        </div>
+
+        {/* Background video kept for the subtle motion accent */}
         <video
           ref={videoRef}
-          className="absolute inset-0 w-full h-full object-cover opacity-30"
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.10] mix-blend-screen"
           src={VIDEO_URL}
           autoPlay
           loop
@@ -119,42 +129,45 @@ const Dashboard = ({ user, apiClient }) => {
         />
 
         <div className="relative z-10 min-h-screen flex flex-col">
-          {/* Clean white header */}
+          {/* Glass header */}
           <header
-            className="sticky top-0 z-20 bg-white/80 backdrop-blur-sm border-b border-gray-200 px-8 py-4 flex items-center justify-between"
+            className="sticky top-0 z-20 backdrop-blur-md bg-black/40 border-b border-white/10 px-8 py-4 flex items-center justify-between"
             data-testid="dashboard-header"
           >
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-black" style={{ letterSpacing: "-0.02em" }}>
+              <h1 className="text-xl font-bold tracking-tight text-white" style={{ letterSpacing: "-0.02em" }}>
                 Dashboard
               </h1>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-white/55 mt-0.5">
                 Welcome back, {user?.name || "User"}
               </p>
             </div>
-            <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden">
+            <div className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center overflow-hidden backdrop-blur-sm">
               {user?.picture ? (
                 <img src={user.picture} alt={user?.name} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-gray-700 text-sm font-semibold">{user?.name?.charAt(0) || "U"}</span>
+                <span className="text-white/85 text-sm font-semibold">{user?.name?.charAt(0) || "U"}</span>
               )}
             </div>
           </header>
 
-          {/* Hero Section — black text, left-aligned */}
+          {/* Hero — left-aligned, dark, gradient accent */}
           <section className="px-8 pt-10 pb-6" data-testid="dashboard-hero">
             <h2
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-black leading-[1.08]"
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08]"
               data-testid="dashboard-hero-h1"
             >
-              Build your IPO Journey<br /> with <span className="text-[#1DA1F2]">SETU</span>, by IPO Labs.
+              Build your IPO Journey<br /> with{" "}
+              <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                SETU, by IPO Labs.
+              </span>
             </h2>
-            <p className="mt-4 text-gray-500 text-lg lg:text-xl leading-relaxed max-w-2xl">
+            <p className="mt-4 text-white/70 text-lg lg:text-xl leading-relaxed max-w-2xl">
               SETU has everything you need to go public.
             </p>
           </section>
 
-          {/* Module Cards — grow to fill available space */}
+          {/* Module cards — glass-morph dark */}
           <section className="px-8 pb-6 flex-1 flex flex-col" data-testid="dashboard-modules">
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl flex-1">
               {MODULES.map((mod) => {
@@ -163,10 +176,10 @@ const Dashboard = ({ user, apiClient }) => {
                   <Card
                     key={mod.id}
                     onClick={() => handleModuleClick(mod)}
-                    className="bg-white/80 backdrop-blur-sm border border-gray-200 hover:border-gray-300 cursor-pointer group shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+                    className="bg-white/[0.05] backdrop-blur-xl border border-white/10 hover:bg-white/[0.08] cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1"
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = mod.accent;
-                      e.currentTarget.style.boxShadow = `0 8px 24px -6px ${mod.accent}30`;
+                      e.currentTarget.style.boxShadow = `0 18px 40px -10px ${mod.accent}50`;
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.borderColor = "";
@@ -176,14 +189,14 @@ const Dashboard = ({ user, apiClient }) => {
                   >
                     <CardContent className="p-5 flex flex-col h-full">
                       <div
-                        className={`w-11 h-11 rounded-lg bg-gradient-to-br ${mod.iconGrad} flex items-center justify-center mb-4 shadow group-hover:scale-105 transition-transform`}
+                        className={`w-11 h-11 rounded-lg bg-gradient-to-br ${mod.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
                       >
                         <Icon className="w-5 h-5 text-white" />
                       </div>
-                      <h3 className="text-sm font-bold text-black leading-snug mb-2">
+                      <h3 className="text-sm font-bold text-white leading-snug mb-2 drop-shadow">
                         {mod.title}
                       </h3>
-                      <p className="text-xs text-gray-500 leading-relaxed mb-4 flex-1">
+                      <p className="text-xs text-white/65 leading-relaxed mb-4 flex-1">
                         {mod.desc}
                       </p>
                       <div
@@ -199,9 +212,8 @@ const Dashboard = ({ user, apiClient }) => {
             </div>
           </section>
 
-          {/* Copyright — far right */}
           <footer className="px-8 pb-4 flex justify-end pr-12">
-            <span className="text-[11px] text-gray-400">
+            <span className="text-[11px] text-white/40">
               &copy; 2026 IPO Labs Private Limited
             </span>
           </footer>
