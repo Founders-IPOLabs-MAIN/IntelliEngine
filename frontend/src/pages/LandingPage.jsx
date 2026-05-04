@@ -80,10 +80,39 @@ const LandingPage = () => {
   const [contactType, setContactType] = useState("support");
   const [scrolled, setScrolled] = useState(false);
 
+  // Flash-message rotator (above Core Platform)
+  const FLASH_MESSAGES = [
+    "BUILD END-TO-END DRHP — SEBI & LODR APPROVED",
+    "GET HELP WITH PRE, POST AND BRIDGE IPO FUNDING",
+    "CHECK YOUR IPO READINESS — FOR FREE!",
+    "CONSULT WITH IPO EXPERTS IN OUR MATCH-MAKING MODULE",
+    "HIRE CAs, CFOs & INDEPENDENT DIRECTORS TO FULFIL YOUR IPO DREAMS",
+    "TALK TO EXPERTS — START YOUR DRHP",
+    "RUN BUSINESS VALUATIONS — FOR FREE!",
+  ];
+  const [flashIdx, setFlashIdx] = useState(() => Math.floor(Math.random() * FLASH_MESSAGES.length));
+  const [flashKey, setFlashKey] = useState(0);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setFlashIdx((prev) => {
+        if (FLASH_MESSAGES.length < 2) return prev;
+        let next = prev;
+        while (next === prev) {
+          next = Math.floor(Math.random() * FLASH_MESSAGES.length);
+        }
+        return next;
+      });
+      setFlashKey((k) => k + 1);
+    }, 3400);
+    return () => clearInterval(tick);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -199,6 +228,56 @@ const LandingPage = () => {
                 <div className="text-[11px] uppercase tracking-[0.18em] text-white/40 mt-1.5">{s.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════ */}
+      {/* FLASH MESSAGE STRIP — random rotating callouts                */}
+      {/* ════════════════════════════════════════════════════════════ */}
+      <section
+        className="relative z-10 bg-[#0a0a0a] border-t border-white/5 overflow-hidden"
+        data-testid="landing-flash-strip"
+      >
+        {/* localized mesh accents — won't bleed outside */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[260px] rounded-full bg-indigo-500/15 blur-[120px]" />
+          <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[260px] h-[260px] rounded-full bg-cyan-400/10 blur-[110px]" />
+          <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[260px] h-[260px] rounded-full bg-fuchsia-500/10 blur-[110px]" />
+          <div className="absolute inset-0 opacity-[0.04]"
+               style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        </div>
+
+        {/* scoped keyframes */}
+        <style>{`
+          @keyframes setu-flash {
+            0%    { transform: translate(-50%, -50%) scale(0.18); opacity: 0; filter: blur(8px); letter-spacing: 0.02em; }
+            12%   { transform: translate(-50%, -50%) scale(0.55); opacity: 0.6; filter: blur(2px); letter-spacing: 0.04em; }
+            28%   { transform: translate(-50%, -50%) scale(1);    opacity: 1;   filter: blur(0);   letter-spacing: 0.06em; }
+            82%   { transform: translate(-50%, -50%) scale(1.02); opacity: 1;   filter: blur(0);   letter-spacing: 0.06em; }
+            100%  { transform: translate(-50%, -50%) scale(1.45); opacity: 0;   filter: blur(4px); letter-spacing: 0.08em; }
+          }
+          .setu-flash-text {
+            animation: setu-flash 3.4s cubic-bezier(.22,.61,.36,1) forwards;
+          }
+        `}</style>
+
+        <div className="relative max-w-7xl mx-auto px-6">
+          <div className="relative h-[200px] lg:h-[240px] flex items-center justify-center">
+            {/* Soft decorative top + bottom hairlines */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+            {/* The flashing message — re-mounted via key */}
+            <div
+              key={flashKey}
+              className="absolute top-1/2 left-1/2 setu-flash-text text-center px-4 select-none whitespace-nowrap max-w-[95vw]"
+              data-testid="flash-message"
+            >
+              <span className="block text-[clamp(1rem,3.4vw,2.6rem)] font-black tracking-[0.06em] text-white drop-shadow-[0_0_24px_rgba(99,102,241,0.45)]">
+                {FLASH_MESSAGES[flashIdx]}
+              </span>
+            </div>
           </div>
         </div>
       </section>
