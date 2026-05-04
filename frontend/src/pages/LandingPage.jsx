@@ -82,13 +82,13 @@ const LandingPage = () => {
 
   // Flash-message rotator (above Core Platform)
   const FLASH_MESSAGES = [
-    "BUILD END-TO-END DRHP — SEBI & LODR APPROVED",
-    "GET HELP WITH PRE, POST AND BRIDGE IPO FUNDING",
-    "CHECK YOUR IPO READINESS — FOR FREE!",
-    "CONSULT WITH IPO EXPERTS IN OUR MATCH-MAKING MODULE",
-    "HIRE CAs, CFOs & INDEPENDENT DIRECTORS TO FULFIL YOUR IPO DREAMS",
-    "TALK TO EXPERTS — START YOUR DRHP",
-    "RUN BUSINESS VALUATIONS — FOR FREE!",
+    "Build end-to-end DRHP, that is SEBI and LODR approved",
+    "Get help with — Pre, Post and Bridge IPO Funding",
+    'Check your "IPO Readiness" — For FREE!!',
+    "Consult with IPO Experts — in our Match-Making Module",
+    "Hire CA's, CFO's, Independent Directors to help fulfil your IPO Dreams!!",
+    "TALK to EXPERTS — Start your DRHP",
+    "Run Business Valuations — for FREE!!",
   ];
   const [flashIdx, setFlashIdx] = useState(() => Math.floor(Math.random() * FLASH_MESSAGES.length));
   const [flashKey, setFlashKey] = useState(0);
@@ -274,7 +274,7 @@ const LandingPage = () => {
               className="absolute top-1/2 left-1/2 setu-flash-text text-center px-4 select-none whitespace-nowrap max-w-[95vw]"
               data-testid="flash-message"
             >
-              <span className="block text-[clamp(1rem,3.4vw,2.6rem)] font-black tracking-[0.06em] text-white drop-shadow-[0_0_24px_rgba(99,102,241,0.45)]">
+              <span className="block text-[clamp(0.85rem,2.2vw,1.7rem)] font-bold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(129,140,248,0.35)]">
                 {FLASH_MESSAGES[flashIdx]}
               </span>
             </div>
