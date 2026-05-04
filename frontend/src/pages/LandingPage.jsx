@@ -263,7 +263,7 @@ const LandingPage = () => {
         `}</style>
 
         <div className="relative max-w-7xl mx-auto px-6">
-          <div className="relative h-[200px] lg:h-[240px] flex items-center justify-center">
+          <div className="relative h-[184px] lg:h-[224px] flex items-center justify-center">
             {/* Soft decorative top + bottom hairlines */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
