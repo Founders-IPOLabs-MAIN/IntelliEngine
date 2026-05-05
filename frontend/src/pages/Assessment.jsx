@@ -21,7 +21,7 @@ import {
 const MODULES = [
   {
     id: "pre_ipo",
-    title: "Pre-IPO Assessment",
+    title: "Pre-IPO Financial Assessment",
     desc: "Evaluate your company's readiness for IPO. SEBI eligibility, governance, and financial health checks.",
     icon: TrendingUp,
     accent: "#00D1FF",
