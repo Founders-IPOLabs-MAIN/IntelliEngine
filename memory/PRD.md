@@ -144,6 +144,17 @@
 1. **P2**: RTA Professional Registration "Next" button bug (recurring x4, not started)
 
 ## Recent Changes (Feb 2026)
+- **SME IPO Self-Assessment Module** (Feb 2026): The "Post-IPO Review" card on
+  `/assessment` is renamed to **"BSE SME / NSE EMERGE SME IPO Self Assessment"**
+  and routes to the new `/assessment/sme-self` page. Users tick Yes/No across 63
+  BSE SME or 67 NSE EMERGE checkpoints (data: `frontend/src/data/sme_eligibility_checklists.js`,
+  sourced verbatim from the official exchange criteria documents). Items left blank
+  are treated as No. On submit the page renders an inline readiness score, band
+  ("Filing-Ready / Substantially Ready / Partially Ready / Not Ready") and a
+  category-grouped To-Do checklist of every open item. **Save PDF** generates a
+  branded report via `jspdf` — stamped on every page top with the SETU logo,
+  "IPO Labs AI Pvt Ltd", `founders@ipo-labs.com`, `+91 9967816957` — containing
+  the score box, To-Do list and a full Yes/No response log.
 - **Central Admin Cross-User Access** (Feb 2026): The 4 emails in `CENTRAL_ADMIN_EMAILS`
   (ronraj2312@gmail.com, founders.ipolabs@gmail.com, cajagrutisahu@gmail.com,
   neeraj@emergent.sh) now have unrestricted visibility into every user's projects,

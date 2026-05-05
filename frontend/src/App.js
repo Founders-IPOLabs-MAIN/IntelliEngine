@@ -45,6 +45,7 @@ import FundingQuiz from "@/pages/FundingQuiz";
 import Assessment from "@/pages/Assessment";
 import AssessmentWizard from "@/pages/AssessmentWizard";
 import AssessmentResults from "@/pages/AssessmentResults";
+import SMESelfAssessment from "@/pages/SMESelfAssessment";
 import AdminCenter from "@/pages/AdminCenter";
 import AdminLogin from "@/pages/AdminLogin";
 import AccessDenied from "@/pages/AccessDenied";
@@ -592,6 +593,14 @@ const AppRouter = () => {
         element={
           <ModuleRoute requiredModule="assessment">
             {({ user, apiClient }) => <AssessmentWizard user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/assessment/sme-self"
+        element={
+          <ModuleRoute requiredModule="assessment">
+            {({ user, apiClient }) => <SMESelfAssessment user={user} apiClient={apiClient} />}
           </ModuleRoute>
         }
       />
