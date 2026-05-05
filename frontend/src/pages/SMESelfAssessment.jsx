@@ -362,7 +362,7 @@ const SMESelfAssessment = ({ user, apiClient }) => {
                 Self Assessment
               </div>
               <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
-                BSE SME / NSE EMERGE — Eligibility Self Assessment
+                BSE/NSE SME - Self Assessment
               </h1>
               <p className="text-sm text-white/55 mt-2 max-w-2xl">
                 Tick Yes / No against every checkpoint sourced from the official

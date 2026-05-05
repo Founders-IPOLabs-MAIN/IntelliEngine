@@ -43,7 +43,7 @@ const MODULES = [
   },
   {
     id: "post_ipo",
-    title: "BSE SME / NSE EMERGE SME IPO Self Assessment",
+    title: "BSE/NSE SME - Self Assessment",
     desc: "Self-check your eligibility against BSE SME and NSE EMERGE listing criteria. Yes/No checklist, instant analysis & downloadable PDF report.",
     icon: Building2,
     accent: "#A78BFA",
