@@ -1194,19 +1194,18 @@ const DRHPOutput = ({ user, apiClient }) => {
     }
   };
 
-
-  // Direct upload handler - shows spinner while loading, success only when editor is ready
+  // Direct upload handler - immediately uploads and imports the file
   const handleDirectUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
+    
     // Validate file extension - only .docx allowed
     if (!file.name.toLowerCase().endsWith('.docx')) {
       toast.error("Only Word documents (.docx) are allowed. Please select a valid file.");
-      e.target.value = '';
+      e.target.value = ''; // Reset input
       return;
     }
-
+    
     // Validate file size - max 50MB
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
@@ -1215,51 +1214,6 @@ const DRHPOutput = ({ user, apiClient }) => {
       return;
     }
 
-    if (editorMode === "syncfusion") {
-      // Show spinner immediately
-      setImporting(true);
-      toast.info(`Uploading "${file.name}"...`);
-
-      const inputEl = e.target;
-      const importFormData = new FormData();
-      importFormData.append('files', file);
-
-      fetch(
-        "https://document.syncfusion.com/web-services/docx-editor/api/documenteditor/Import",
-        { method: "POST", body: importFormData }
-      ).then(async (importRes) => {
-        if (importRes.ok) {
-          const sfdt = await importRes.text();
-          // Yield to browser before heavy render so UI stays responsive
-          setTimeout(() => {
-            try {
-              const containerEl = document.getElementById("container");
-              if (containerEl && containerEl.ej2_instances && containerEl.ej2_instances[0]) {
-                containerEl.ej2_instances[0].documentEditor.open(sfdt);
-              }
-              setLastSaved(new Date().toISOString());
-              toast.success(`Document "${file.name}" uploaded successfully!`);
-            } finally {
-              setImporting(false);
-              inputEl.value = '';
-            }
-          }, 0);
-        } else {
-          toast.error("Failed to upload document. Please try again.");
-          setImporting(false);
-          inputEl.value = '';
-        }
-      }).catch((err) => {
-        console.error("Editor load failed:", err);
-        toast.error("Failed to upload document.");
-        setImporting(false);
-        inputEl.value = '';
-      });
-
-      return;
-    }
-
-    // Legacy TipTap mode
     setImporting(true);
     toast.info(`Uploading "${file.name}"... This may take a moment for large documents.`);
 
@@ -1267,21 +1221,48 @@ const DRHPOutput = ({ user, apiClient }) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await apiClient.post(
-        `/projects/${projectId}/drhp-output/import?board_type=${activeTab}`,
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
+      // For Syncfusion mode: upload and convert to SFDT, then open in editor
+      if (editorMode === "syncfusion") {
+        // Upload file to Syncfusion cloud service for conversion
+        const importFormData = new FormData();
+        importFormData.append('files', file);
 
-      const result = response.data;
-      if (result.success) {
-        const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
-        if (currentEditor) {
-          currentEditor.commands.setContent(result.html_content);
+        const importRes = await fetch(
+          "https://document.syncfusion.com/web-services/docx-editor/api/documenteditor/Import",
+          { method: "POST", body: importFormData }
+        );
+
+        if (importRes.ok) {
+          const sfdt = await importRes.text();
+          const editor = syncEditorRef.current;
+          // Access the underlying DocumentEditorContainer's documentEditor
+          const containerEl = document.getElementById("container");
+          if (containerEl && containerEl.ej2_instances && containerEl.ej2_instances[0]) {
+            containerEl.ej2_instances[0].documentEditor.open(sfdt);
+          }
+          setLastSaved(new Date().toISOString());
+          toast.success(`Document "${file.name}" imported successfully!`);
+        } else {
+          toast.error("Failed to convert document. Please try again.");
         }
-        setContent(prev => ({ ...prev, [activeTab]: result.html_content }));
-        setLastSaved(new Date().toISOString());
-        toast.success(`DRHP document imported successfully!`);
+      } else {
+        // Legacy TipTap mode
+        const response = await apiClient.post(
+          `/projects/${projectId}/drhp-output/import?board_type=${activeTab}`,
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+
+        const result = response.data;
+        if (result.success) {
+          const currentEditor = activeTab === 'sme' ? smeEditor : mainboardEditor;
+          if (currentEditor) {
+            currentEditor.commands.setContent(result.html_content);
+          }
+          setContent(prev => ({ ...prev, [activeTab]: result.html_content }));
+          setLastSaved(new Date().toISOString());
+          toast.success(`DRHP document imported successfully!`);
+        }
       }
     } catch (error) {
       console.error("Upload failed:", error);
@@ -1289,9 +1270,10 @@ const DRHPOutput = ({ user, apiClient }) => {
       toast.error(errorMessage);
     } finally {
       setImporting(false);
-      e.target.value = '';
+      e.target.value = ''; // Reset input for next upload
     }
   };
+
   const resetImportDialog = () => {
     setShowImportDialog(false);
     setImportFile(null);
