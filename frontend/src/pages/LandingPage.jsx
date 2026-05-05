@@ -178,7 +178,7 @@ const LandingPage = () => {
       {/* HERO                                                        */}
       {/* ════════════════════════════════════════════════════════════ */}
       <section className="relative z-10 px-6" data-testid="landing-hero">
-        <div className="max-w-5xl mx-auto py-20 lg:py-28 flex flex-col items-center text-center">
+        <div className="max-w-5xl mx-auto pt-14 pb-20 lg:pt-[5.5rem] lg:pb-28 flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md text-[11px] tracking-[0.2em] uppercase text-white/60 mb-5">
             <Sparkles className="w-3 h-3 text-indigo-400" />
             India's first AI-powered IPO Operating System
