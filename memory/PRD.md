@@ -143,6 +143,22 @@
 ## Pending Issues
 1. **P2**: RTA Professional Registration "Next" button bug (recurring x4, not started)
 
+## Recent Changes (Feb 2026)
+- **Central Admin Cross-User Access** (Feb 2026): The 4 emails in `CENTRAL_ADMIN_EMAILS`
+  (ronraj2312@gmail.com, founders.ipolabs@gmail.com, cajagrutisahu@gmail.com,
+  neeraj@emergent.sh) now have unrestricted visibility into every user's projects,
+  document repositories, archives, valuations, assessments, and payments. Every
+  cross-user action by a central admin is recorded in the `admin_cross_user_audit`
+  collection and exposed at `GET /api/admin/audit/cross-user-access`.
+  - Helper: `is_central_admin(user)`, `admin_aware_user_filter(user, owner_field)`,
+    `audit_admin_cross_access(user, action, ...)` in `shared.py`.
+  - Modified routes: `projects.py`, `document_repository.py`, `account.py`,
+    `valuation.py`, `assessment.py`, `payments.py`.
+  - New admin-only endpoints in `account.py`:
+    `GET /api/admin/users/{user_id}/drhp-onboarding`,
+    `GET /api/admin/users/{user_id}/projects`,
+    `GET /api/admin/audit/cross-user-access`.
+
 ## Upcoming Tasks
 - **P0**: DRHP Data Synchronization (backend sync Corporate Repository → DRHP Chapters)
 - **P1**: Map Imported Word Document to Structured Chapter Modules

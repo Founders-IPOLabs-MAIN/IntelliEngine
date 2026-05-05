@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from shared import (db, User, get_current_user, promote_new_user,
     Project, ProjectCreate, ProjectUpdate, DRHPSection, SectionUpdate,
+    is_central_admin, admin_aware_user_filter, audit_admin_cross_access,
     datetime, timezone, timedelta, uuid)
 from typing import List, Optional
 
@@ -12,18 +13,26 @@ PROJECT_DELETE_RETENTION_DAYS = 60
 
 @router.get("/projects", response_model=List[Project])
 async def get_projects(user: User = Depends(get_current_user), user_login_type: Optional[str] = None):
-    """Get all projects for current user. Optionally filter by user_login_type."""
-    query = {"user_id": user.user_id}
+    """Get all projects for current user. Central admins receive every user's
+    project (full cross-user visibility). Optionally filter by user_login_type."""
+    query = {**admin_aware_user_filter(user)}
     if user_login_type:
         query["user_login_type"] = user_login_type
-    projects = await db.projects.find(query, {"_id": 0}).to_list(100)
-    
+    # Admins may have many users — bump the cap when admin
+    cap = 5000 if is_central_admin(user) else 100
+    projects = await db.projects.find(query, {"_id": 0}).to_list(cap)
+
     for project in projects:
         if isinstance(project.get('created_at'), str):
             project['created_at'] = datetime.fromisoformat(project['created_at'])
         if isinstance(project.get('updated_at'), str):
             project['updated_at'] = datetime.fromisoformat(project['updated_at'])
-    
+
+    if is_central_admin(user):
+        await audit_admin_cross_access(
+            user, action="list_projects", resource_type="projects",
+            details={"count": len(projects), "user_login_type": user_login_type},
+        )
     return projects
 
 @router.post("/projects", response_model=Project)
@@ -84,9 +93,9 @@ async def create_project(project_data: ProjectCreate, user: User = Depends(get_c
 
 @router.get("/projects/{project_id}", response_model=Project)
 async def get_project(project_id: str, user: User = Depends(get_current_user)):
-    """Get a specific project"""
+    """Get a specific project. Central admins can view any user's project."""
     project = await db.projects.find_one(
-        {"project_id": project_id, "user_id": user.user_id},
+        {"project_id": project_id, **admin_aware_user_filter(user)},
         {"_id": 0}
     )
     
@@ -97,23 +106,46 @@ async def get_project(project_id: str, user: User = Depends(get_current_user)):
         project['created_at'] = datetime.fromisoformat(project['created_at'])
     if isinstance(project.get('updated_at'), str):
         project['updated_at'] = datetime.fromisoformat(project['updated_at'])
-    
+
+    if is_central_admin(user) and project.get("user_id") != user.user_id:
+        await audit_admin_cross_access(
+            user, action="view_project", resource_type="project",
+            target_user_id=project.get("user_id"), resource_id=project_id,
+            details={"company_name": project.get("company_name")},
+        )
+
     return Project(**project)
 
 @router.put("/projects/{project_id}", response_model=Project)
 async def update_project(project_id: str, update_data: ProjectUpdate, user: User = Depends(get_current_user)):
-    """Update a project"""
+    """Update a project. Central admins can update any user's project."""
     update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
     update_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
-    
+
+    # First locate the project to capture target user (for audit) before mutating
+    target = await db.projects.find_one(
+        {"project_id": project_id, **admin_aware_user_filter(user)},
+        {"_id": 0, "user_id": 1, "company_name": 1},
+    )
+    if not target:
+        raise HTTPException(status_code=404, detail="Project not found")
+
     result = await db.projects.update_one(
-        {"project_id": project_id, "user_id": user.user_id},
+        {"project_id": project_id},
         {"$set": update_dict}
     )
-    
-    if result.modified_count == 0:
+
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Project not found")
-    
+
+    if is_central_admin(user) and target.get("user_id") != user.user_id:
+        await audit_admin_cross_access(
+            user, action="update_project", resource_type="project",
+            target_user_id=target.get("user_id"), resource_id=project_id,
+            details={"fields": list(update_dict.keys()),
+                     "company_name": target.get("company_name")},
+        )
+
     return await get_project(project_id, user)
 
 
@@ -143,9 +175,10 @@ async def delete_project(project_id: str, user: User = Depends(get_current_user)
     """Soft-delete a project: snapshot the project + every scoped row into
     `project_deletion_archive` (60-day retention), then remove the live records.
     The user can restore from `/projects/deleted` within the retention window.
+    Central admins can delete any user's project (audited).
     """
     project = await db.projects.find_one(
-        {"project_id": project_id, "user_id": user.user_id}, {"_id": 0}
+        {"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0}
     )
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -163,7 +196,8 @@ async def delete_project(project_id: str, user: User = Depends(get_current_user)
     archive_entry = {
         "archive_id": archive_id,
         "project_id": project_id,
-        "user_id": user.user_id,
+        # Preserve the original owner so restore returns it to them
+        "user_id": project.get("user_id"),
         "company_name": project.get("company_name"),
         "sector": project.get("sector"),
         "board_type": project.get("board_type"),
@@ -185,7 +219,18 @@ async def delete_project(project_id: str, user: User = Depends(get_current_user)
     # Now remove the live rows
     for coll_name in PROJECT_SCOPED_COLLECTIONS:
         await db[coll_name].delete_many({"project_id": project_id})
-    await db.projects.delete_one({"project_id": project_id, "user_id": user.user_id})
+    await db.projects.delete_one({"project_id": project_id})
+
+    if is_central_admin(user) and project.get("user_id") != user.user_id:
+        await audit_admin_cross_access(
+            user, action="delete_project", resource_type="project",
+            target_user_id=project.get("user_id"), resource_id=project_id,
+            details={
+                "company_name": project.get("company_name"),
+                "archive_id": archive_id,
+                "total_rows_archived": total_rows,
+            },
+        )
 
     return {
         "message": "Project deleted",
@@ -199,8 +244,8 @@ async def delete_project(project_id: str, user: User = Depends(get_current_user)
 @router.get("/projects/deleted/list")
 async def list_deleted_projects(user: User = Depends(get_current_user)):
     """List the current user's archived (soft-deleted) projects still within
-    the 60-day retention window. Heavy snapshot fields are stripped to keep
-    the response light."""
+    the 60-day retention window. Central admins receive archives across every
+    user. Heavy snapshot fields are stripped to keep the response light."""
     # Opportunistic purge of expired archives
     now_iso = datetime.now(timezone.utc).isoformat()
     expired = db.project_deletion_archive.find(
@@ -209,10 +254,18 @@ async def list_deleted_projects(user: User = Depends(get_current_user)):
     async for v in expired:
         await db.project_deletion_archive.delete_one({"archive_id": v["archive_id"]})
 
+    cap = 5000 if is_central_admin(user) else 200
     archives = await db.project_deletion_archive.find(
-        {"user_id": user.user_id},
+        {**admin_aware_user_filter(user)},
         {"_id": 0, "snapshots": 0, "project_snapshot": 0},
-    ).sort("deleted_at", -1).to_list(200)
+    ).sort("deleted_at", -1).to_list(cap)
+
+    if is_central_admin(user):
+        await audit_admin_cross_access(
+            user, action="list_deleted_projects", resource_type="project_archives",
+            details={"count": len(archives)},
+        )
+
     return {
         "retention_days": PROJECT_DELETE_RETENTION_DAYS,
         "count": len(archives),
@@ -223,9 +276,10 @@ async def list_deleted_projects(user: User = Depends(get_current_user)):
 @router.post("/projects/deleted/{archive_id}/restore")
 async def restore_deleted_project(archive_id: str, user: User = Depends(get_current_user)):
     """Restore a soft-deleted project from `project_deletion_archive`. The
-    project itself plus every scoped row is re-inserted exactly as captured."""
+    project itself plus every scoped row is re-inserted exactly as captured.
+    Central admins can restore any user's archived project (audited)."""
     archive = await db.project_deletion_archive.find_one(
-        {"archive_id": archive_id, "user_id": user.user_id}, {"_id": 0}
+        {"archive_id": archive_id, **admin_aware_user_filter(user)}, {"_id": 0}
     )
     if not archive:
         raise HTTPException(status_code=404, detail="Archive not found or access denied")
@@ -255,6 +309,14 @@ async def restore_deleted_project(archive_id: str, user: User = Depends(get_curr
     # Remove the archive entry now that it's restored
     await db.project_deletion_archive.delete_one({"archive_id": archive_id})
 
+    if is_central_admin(user) and archive.get("user_id") != user.user_id:
+        await audit_admin_cross_access(
+            user, action="restore_project", resource_type="project",
+            target_user_id=archive.get("user_id"), resource_id=project_id,
+            details={"archive_id": archive_id, "restored_rows": restored_rows,
+                     "company_name": archive.get("company_name")},
+        )
+
     return {
         "message": "Project restored",
         "project_id": project_id,
@@ -267,10 +329,9 @@ async def restore_deleted_project(archive_id: str, user: User = Depends(get_curr
 
 @router.get("/projects/{project_id}/sections", response_model=List[DRHPSection])
 async def get_sections(project_id: str, user: User = Depends(get_current_user)):
-    """Get all DRHP sections for a project"""
-    # Verify project ownership
+    """Get all DRHP sections for a project. Central admins bypass ownership."""
     project = await db.projects.find_one(
-        {"project_id": project_id, "user_id": user.user_id},
+        {"project_id": project_id, **admin_aware_user_filter(user)},
         {"_id": 0}
     )
     if not project:

@@ -55,7 +55,8 @@ if RESEND_API_KEY and RESEND_API_KEY != 're_placeholder_key':
 CENTRAL_ADMIN_EMAILS = [
     "ronraj2312@gmail.com",
     "founders.ipolabs@gmail.com",
-    "cajagrutisahu@gmail.com"
+    "cajagrutisahu@gmail.com",
+    "neeraj@emergent.sh"
 ]
 
 MASTER_ADMIN_CONFIG = {
@@ -364,6 +365,57 @@ async def promote_new_user(user_id: str):
 
 def is_master_admin(user_email: str) -> bool:
     return user_email.lower() in [e.lower() for e in CENTRAL_ADMIN_EMAILS]
+
+
+def is_central_admin(user: "User") -> bool:
+    """True for the 4 CENTRAL_ADMIN_EMAILS — these admins have unrestricted
+    cross-user access to projects, documents, audit logs, etc."""
+    if not user or not getattr(user, "email", None):
+        return False
+    return is_master_admin(user.email)
+
+
+def admin_aware_user_filter(user: "User", owner_field: str = "user_id") -> dict:
+    """Returns a MongoDB filter fragment to enforce per-user data ownership
+    for normal users while granting CENTRAL admins full cross-user access.
+
+    Usage:
+        query = {"project_id": pid, **admin_aware_user_filter(user)}
+    """
+    if is_central_admin(user):
+        return {}
+    return {owner_field: user.user_id}
+
+
+async def audit_admin_cross_access(
+    user: "User",
+    action: str,
+    resource_type: str,
+    target_user_id: Optional[str] = None,
+    resource_id: Optional[str] = None,
+    details: Optional[dict] = None,
+):
+    """Log when a central admin acts on another user's resource. No-op when
+    the actor is not a central admin or the resource belongs to the actor."""
+    if not is_central_admin(user):
+        return
+    if target_user_id and target_user_id == user.user_id:
+        return
+    entry = {
+        "log_id": f"adminx_{uuid.uuid4().hex[:12]}",
+        "admin_user_id": user.user_id,
+        "admin_email": user.email,
+        "action": action,
+        "resource_type": resource_type,
+        "target_user_id": target_user_id,
+        "resource_id": resource_id,
+        "details": details or {},
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        await db.admin_cross_user_audit.insert_one(entry)
+    except Exception as e:
+        logger.warning(f"Failed to write admin cross-access audit: {e}")
 
 
 async def ensure_master_admin_exists():

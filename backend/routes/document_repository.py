@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Request, UploadFile, File
 from fastapi.responses import Response
 from shared import (db, fs_bucket, logger, User, get_current_user,
+    is_central_admin, admin_aware_user_filter, audit_admin_cross_access,
     datetime, timezone, timedelta, uuid, ObjectId)
 from pydantic import BaseModel
 from typing import Optional
@@ -142,7 +143,7 @@ async def get_document_repository_summary(project_id: str, user: User = Depends(
     """Lightweight counter endpoint — used by the Command Center tile.
     Seeds the repository on first call so the tile shows the correct total
     (e.g. `0 / 114`) even before the user has visited the full page."""
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     await _ensure_repository_seeded(project_id, user.user_id)
@@ -158,7 +159,7 @@ async def get_document_repository_summary(project_id: str, user: User = Depends(
 
 @router.get("/projects/{project_id}/document-repository")
 async def get_document_repository(project_id: str, request: Request, user: User = Depends(get_current_user)):
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     await _ensure_repository_seeded(project_id, user.user_id)
@@ -223,7 +224,7 @@ class DocRepoItemPatch(BaseModel):
 
 @router.post("/projects/{project_id}/document-repository/items")
 async def add_repository_item(project_id: str, payload: DocRepoCustomItem, request: Request, user: User = Depends(get_current_user)):
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     if not (payload.title or "").strip() and not payload.parent_item_id:
@@ -307,7 +308,7 @@ async def add_repository_item(project_id: str, payload: DocRepoCustomItem, reque
 
 @router.patch("/projects/{project_id}/document-repository/items/{item_id}")
 async def patch_repository_item(project_id: str, item_id: str, payload: DocRepoItemPatch, request: Request, user: User = Depends(get_current_user)):
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     item = await db.document_repository.find_one({"item_id": item_id, "project_id": project_id}, {"_id": 0})
@@ -337,7 +338,7 @@ async def patch_repository_item(project_id: str, item_id: str, payload: DocRepoI
 
 @router.delete("/projects/{project_id}/document-repository/items/{item_id}")
 async def delete_repository_item(project_id: str, item_id: str, request: Request, user: User = Depends(get_current_user)):
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     item = await db.document_repository.find_one({"item_id": item_id, "project_id": project_id}, {"_id": 0})
@@ -367,7 +368,7 @@ async def upload_repository_file(
     file: UploadFile = File(...),
     user: User = Depends(get_current_user),
 ):
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     item = await db.document_repository.find_one({"item_id": item_id, "project_id": project_id}, {"_id": 0})
@@ -432,7 +433,7 @@ async def upload_repository_file(
 
 @router.delete("/projects/{project_id}/document-repository/items/{item_id}/file")
 async def delete_repository_file(project_id: str, item_id: str, request: Request, user: User = Depends(get_current_user)):
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     item = await db.document_repository.find_one({"item_id": item_id, "project_id": project_id}, {"_id": 0})
@@ -457,7 +458,7 @@ async def delete_repository_file(project_id: str, item_id: str, request: Request
 
 @router.get("/projects/{project_id}/document-repository/items/{item_id}/download")
 async def download_repository_file(project_id: str, item_id: str, user: User = Depends(get_current_user)):
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     item = await db.document_repository.find_one({"item_id": item_id, "project_id": project_id}, {"_id": 0})
@@ -474,7 +475,7 @@ async def download_repository_file(project_id: str, item_id: str, user: User = D
 @router.get("/projects/{project_id}/document-repository/items/{item_id}/view")
 async def view_repository_file(project_id: str, item_id: str, user: User = Depends(get_current_user)):
     """Returns the file inline (Content-Disposition: inline) so it renders inside an iframe / img tag for preview."""
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     item = await db.document_repository.find_one({"item_id": item_id, "project_id": project_id}, {"_id": 0})
@@ -491,7 +492,7 @@ async def view_repository_file(project_id: str, item_id: str, user: User = Depen
 @router.get("/projects/{project_id}/document-repository/audit-versions")
 async def list_audit_versions(project_id: str, user: User = Depends(get_current_user)):
     """List all archived (soft-deleted) document versions still within the 60-day retention window."""
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     versions = await db.document_audit_versions.find(
@@ -504,7 +505,7 @@ async def list_audit_versions(project_id: str, user: User = Depends(get_current_
 @router.get("/projects/{project_id}/audit-log")
 async def get_project_audit_log(project_id: str, request: Request, limit: int = 200, user: User = Depends(get_current_user)):
     """Returns the audit trail scoped strictly to this project only."""
-    project = await db.projects.find_one({"project_id": project_id, "user_id": user.user_id}, {"_id": 0})
+    project = await db.projects.find_one({"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     await _log_project_audit(project_id, user, "view_audit_log", "audit_log", request=request)

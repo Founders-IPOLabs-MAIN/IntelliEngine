@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Body, Form
 from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 from shared import (db, fs_bucket, logger, User, get_current_user, promote_new_user,
+    is_central_admin, admin_aware_user_filter, audit_admin_cross_access,
     datetime, timezone, uuid, io, os, ObjectId)
 from valuation_engine import (
     calculate_dcf_valuation as vengine_dcf,
@@ -35,17 +36,23 @@ async def create_valuation_project(data: dict = Body(...), user: User = Depends(
 
 @router.get("/valuation/projects")
 async def list_valuation_projects(user: User = Depends(get_current_user)):
-    """List user's valuation projects"""
+    """List user's valuation projects (admins see all)"""
+    cap = 5000 if is_central_admin(user) else 50
     projects = await db.valuation_projects.find(
-        {"user_id": user.user_id}, {"_id": 0}
-    ).sort("updated_at", -1).to_list(50)
+        {**admin_aware_user_filter(user)}, {"_id": 0}
+    ).sort("updated_at", -1).to_list(cap)
+    if is_central_admin(user):
+        await audit_admin_cross_access(
+            user, action="list_valuation_projects", resource_type="valuation_projects",
+            details={"count": len(projects)},
+        )
     return {"projects": projects}
 
 @router.get("/valuation/projects/{valuation_id}")
 async def get_valuation_project(valuation_id: str, user: User = Depends(get_current_user)):
     """Get a specific valuation project"""
     project = await db.valuation_projects.find_one(
-        {"valuation_id": valuation_id, "user_id": user.user_id}, {"_id": 0}
+        {"valuation_id": valuation_id, **admin_aware_user_filter(user)}, {"_id": 0}
     )
     if not project:
         raise HTTPException(status_code=404, detail="Valuation project not found")
@@ -55,7 +62,7 @@ async def get_valuation_project(valuation_id: str, user: User = Depends(get_curr
 async def update_valuation_project(valuation_id: str, data: dict = Body(...), user: User = Depends(get_current_user)):
     """Save/update valuation project step data"""
     project = await db.valuation_projects.find_one(
-        {"valuation_id": valuation_id, "user_id": user.user_id}
+        {"valuation_id": valuation_id, **admin_aware_user_filter(user)}
     )
     if not project:
         raise HTTPException(status_code=404, detail="Valuation project not found")
@@ -75,7 +82,7 @@ async def update_valuation_project(valuation_id: str, data: dict = Body(...), us
 async def delete_valuation_project(valuation_id: str, user: User = Depends(get_current_user)):
     """Delete a valuation project"""
     result = await db.valuation_projects.delete_one(
-        {"valuation_id": valuation_id, "user_id": user.user_id}
+        {"valuation_id": valuation_id, **admin_aware_user_filter(user)}
     )
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -90,7 +97,7 @@ async def upload_valuation_document(
 ):
     """Upload a document to a valuation project"""
     project = await db.valuation_projects.find_one(
-        {"valuation_id": valuation_id, "user_id": user.user_id}
+        {"valuation_id": valuation_id, **admin_aware_user_filter(user)}
     )
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -130,7 +137,7 @@ async def extract_financial_data(valuation_id: str, user: User = Depends(get_cur
     import io
 
     project = await db.valuation_projects.find_one(
-        {"valuation_id": valuation_id, "user_id": user.user_id}, {"_id": 0}
+        {"valuation_id": valuation_id, **admin_aware_user_filter(user)}, {"_id": 0}
     )
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -259,7 +266,7 @@ async def run_valuation_calculation(valuation_id: str, user: User = Depends(get_
     from emergentintegrations.llm.chat import LlmChat, UserMessage
 
     project = await db.valuation_projects.find_one(
-        {"valuation_id": valuation_id, "user_id": user.user_id}, {"_id": 0}
+        {"valuation_id": valuation_id, **admin_aware_user_filter(user)}, {"_id": 0}
     )
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from shared import (db, logger, User, get_current_user, promote_new_user,
+    is_central_admin, admin_aware_user_filter, audit_admin_cross_access,
     datetime, timezone, uuid, os)
 from pydantic import BaseModel
 from typing import List, Optional
@@ -628,12 +629,17 @@ Use professional Indian financial terminology. Be direct and actionable."""
 
 @router.get("/assessment/history")
 async def get_assessment_history(user: User = Depends(get_current_user)):
-    """Get user's assessment history"""
+    """Get user's assessment history (admins see all)"""
+    cap = 5000 if is_central_admin(user) else 20
     assessments = await db.ipo_assessments.find(
-        {"user_id": user.user_id},
+        {**admin_aware_user_filter(user)},
         {"_id": 0}
-    ).sort("created_at", -1).to_list(20)
-    
+    ).sort("created_at", -1).to_list(cap)
+    if is_central_admin(user):
+        await audit_admin_cross_access(
+            user, action="list_assessments", resource_type="ipo_assessments",
+            details={"count": len(assessments)},
+        )
     return {"assessments": assessments}
 
 @router.get("/assessment/{assessment_id}")
@@ -641,13 +647,19 @@ async def get_assessment_detail(
     assessment_id: str,
     user: User = Depends(get_current_user)
 ):
-    """Get specific assessment details"""
+    """Get specific assessment details (admins can view any user's)"""
     assessment = await db.ipo_assessments.find_one(
-        {"assessment_id": assessment_id, "user_id": user.user_id},
+        {"assessment_id": assessment_id, **admin_aware_user_filter(user)},
         {"_id": 0}
     )
     
     if not assessment:
         raise HTTPException(status_code=404, detail="Assessment not found")
-    
+
+    if is_central_admin(user) and assessment.get("user_id") != user.user_id:
+        await audit_admin_cross_access(
+            user, action="view_assessment", resource_type="ipo_assessment",
+            target_user_id=assessment.get("user_id"), resource_id=assessment_id,
+        )
+
     return assessment

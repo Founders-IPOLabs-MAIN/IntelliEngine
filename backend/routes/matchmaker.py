@@ -14,7 +14,8 @@ router = APIRouter()
 CENTRAL_ADMIN_EMAILS = [
     "ronraj2312@gmail.com",
     "founders.ipolabs@gmail.com",
-    "cajagrutisahu@gmail.com"
+    "cajagrutisahu@gmail.com",
+    "neeraj@emergent.sh"
 ]
 
 MASTER_ADMIN_CONFIG = {

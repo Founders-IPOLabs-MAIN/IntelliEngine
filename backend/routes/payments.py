@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field, EmailStr
 import razorpay
 from weasyprint import HTML
 
-from shared import db, logger, get_current_user, User
+from shared import db, logger, get_current_user, User, is_central_admin, admin_aware_user_filter, audit_admin_cross_access
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 
@@ -297,23 +297,37 @@ async def verify_payment(req: VerifyPaymentRequest, user: User = Depends(get_cur
 
 @router.get("/transactions")
 async def list_my_transactions(user: User = Depends(get_current_user)):
+    """List paid transactions. Central admins receive every user's transactions."""
     cursor = db.payment_transactions.find(
-        {"user_id": user.user_id, "status": "paid"},
+        {**admin_aware_user_filter(user), "status": "paid"},
         {"_id": 0, "razorpay_signature": 0}
     ).sort("created_at", -1)
-    return {"transactions": await cursor.to_list(length=200)}
+    txns = await cursor.to_list(length=5000 if is_central_admin(user) else 200)
+    if is_central_admin(user):
+        await audit_admin_cross_access(
+            user, action="list_transactions", resource_type="payment_transactions",
+            details={"count": len(txns)},
+        )
+    return {"transactions": txns}
 
 
 @router.get("/invoice/{transaction_id}")
 async def download_invoice(transaction_id: str, user: User = Depends(get_current_user)):
     txn = await db.payment_transactions.find_one(
-        {"transaction_id": transaction_id, "user_id": user.user_id},
+        {"transaction_id": transaction_id, **admin_aware_user_filter(user)},
         {"_id": 0}
     )
     if not txn:
         raise HTTPException(status_code=404, detail="Invoice not found")
     if txn.get("status") != "paid":
         raise HTTPException(status_code=400, detail="Invoice available only after successful payment")
+
+    if is_central_admin(user) and txn.get("user_id") != user.user_id:
+        await audit_admin_cross_access(
+            user, action="download_invoice", resource_type="payment_transaction",
+            target_user_id=txn.get("user_id"), resource_id=transaction_id,
+            details={"invoice_number": txn.get("invoice_number")},
+        )
 
     pdf_bytes = _render_invoice_pdf(txn)
     filename = f"Invoice_{txn['invoice_number']}.pdf"

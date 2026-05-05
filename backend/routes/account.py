@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Request, UploadFile, File
 from fastapi.responses import Response
 from shared import (
     DEFAULT_ROLES, SUBSCRIPTION_PLANS,db, fs_bucket, limiter, logger, User, get_current_user,
-    log_audit_action, validate_upload,
+    log_audit_action, validate_upload, is_central_admin, audit_admin_cross_access,
     datetime, timezone, uuid, io, os, ObjectId)
 from pydantic import BaseModel
 from typing import Optional
@@ -109,6 +109,53 @@ async def save_drhp_onboarding(payload: DRHPOnboardingPayload, user: User = Depe
         await db.user_drhp_onboarding.insert_one(record)
 
     return {"message": "Onboarding saved", "user_login_type": payload.user_login_type}
+
+
+@router.get("/admin/users/{target_user_id}/drhp-onboarding")
+async def admin_get_user_drhp_onboarding(target_user_id: str, user: User = Depends(get_current_user)):
+    """Central-admin-only endpoint: fetch any user's DRHP onboarding profile."""
+    if not is_central_admin(user):
+        raise HTTPException(status_code=403, detail="Central admin access required")
+    doc = await db.user_drhp_onboarding.find_one({"user_id": target_user_id}, {"_id": 0})
+    await audit_admin_cross_access(
+        user, action="view_drhp_onboarding", resource_type="user_drhp_onboarding",
+        target_user_id=target_user_id,
+    )
+    if not doc:
+        return {"completed": False, "user_id": target_user_id}
+    return {"completed": True, **doc}
+
+
+@router.get("/admin/users/{target_user_id}/projects")
+async def admin_list_user_projects(target_user_id: str, user: User = Depends(get_current_user)):
+    """Central-admin-only: list every project belonging to a specific user."""
+    if not is_central_admin(user):
+        raise HTTPException(status_code=403, detail="Central admin access required")
+    projects = await db.projects.find({"user_id": target_user_id}, {"_id": 0}).to_list(5000)
+    await audit_admin_cross_access(
+        user, action="list_user_projects", resource_type="projects",
+        target_user_id=target_user_id, details={"count": len(projects)},
+    )
+    return {"count": len(projects), "projects": projects}
+
+
+@router.get("/admin/audit/cross-user-access")
+async def admin_list_cross_user_audit(
+    user: User = Depends(get_current_user), limit: int = 500,
+    target_user_id: Optional[str] = None, admin_user_id: Optional[str] = None,
+):
+    """Central-admin-only: read the trail of every cross-user action a central
+    admin has performed (this lets admins see what other admins are doing)."""
+    if not is_central_admin(user):
+        raise HTTPException(status_code=403, detail="Central admin access required")
+    q: dict = {}
+    if target_user_id:
+        q["target_user_id"] = target_user_id
+    if admin_user_id:
+        q["admin_user_id"] = admin_user_id
+    cap = max(1, min(limit, 5000))
+    logs = await db.admin_cross_user_audit.find(q, {"_id": 0}).sort("timestamp", -1).to_list(cap)
+    return {"count": len(logs), "logs": logs}
 
 @router.put("/account/profile")
 async def update_user_profile(
