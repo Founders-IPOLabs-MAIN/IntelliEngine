@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, BarChart3, Loader2, Clock, ArrowRight, Sparkles, RefreshCcw } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  ArrowRight, Plus, Trash2, Loader2, Clock, Sparkles, Brain,
+  Calculator, Layers, BarChart3, Shield, CheckCircle2, RefreshCcw,
+  Building2, FileText, TrendingUp,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -69,124 +73,288 @@ const BVProjectsLanding = ({ user, apiClient }) => {
     }
   };
 
+  // Visual accent palette borrowed from /assessment for parity
+  const ACCENT_VIOLET = "#A78BFA";
+  const ACCENT_EMERALD = "#34D399";
+  const ACCENT_BLUE = "#00D1FF";
+  const ACCENT_AMBER = "#FB923C";
+  const ROTATING_ACCENTS = [ACCENT_VIOLET, ACCENT_EMERALD, ACCENT_BLUE, ACCENT_AMBER];
+
   return (
     <div className="flex min-h-screen bg-black" data-testid="bv-projects-landing">
       <Sidebar user={user} apiClient={apiClient} />
-      <main className="flex-1 ml-64 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a0a0a] to-[#111] pointer-events-none" />
-        <div
-          className="absolute inset-0 opacity-[0.07] pointer-events-none"
-          style={{ background: "radial-gradient(circle at 25% 20%, rgba(167,139,250,0.4), transparent 40%), radial-gradient(circle at 80% 70%, rgba(34,211,238,0.3), transparent 45%)" }}
-        />
 
-        <div className="relative z-10 px-8 lg:px-12 py-8 max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/10 bg-white/[0.04] text-[10px] tracking-[0.18em] uppercase text-white/55 mb-3">
-                <Sparkles className="w-3 h-3 text-violet-300" />
-                BV Engine
-              </div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
-                Business Valuation Projects
+      <main className="flex-1 ml-64 relative overflow-hidden">
+        {/* Black background with subtle gradient — exact /assessment treatment */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a0a0a] to-[#111] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 pointer-events-none" />
+
+        <div className="relative z-10 min-h-screen flex flex-col">
+          {/* Sticky Header */}
+          <header className="sticky top-0 z-20 backdrop-blur-md bg-black/35 border-b border-white/10 px-8 lg:px-12 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h1
+                className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white"
+                style={{ letterSpacing: "-0.02em" }}
+              >
+                BV Engine — Business Valuation
               </h1>
-              <p className="text-sm text-white/55 mt-2 max-w-2xl">
-                Each project captures your P&L, Balance Sheet and DCF assumptions, then runs DCF · NAV · Comparable Company in parallel.
-              </p>
+              <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs text-white/80">
+                <Brain className="w-3 h-3 text-yellow-300" />
+                <span className="font-medium">AI Powered</span>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowAudit(true)}
-                className="bg-transparent border-white/15 text-white/70 hover:bg-white/5 rounded-full gap-1.5 px-4 h-9 text-xs"
-                data-testid="bv-audit-btn"
-              >
-                <Clock className="w-3.5 h-3.5" /> Audit Log ({archives.length})
-              </Button>
-              <Button
-                onClick={handleCreate}
-                disabled={creating}
-                className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-white rounded-full gap-1.5 px-5 h-9 text-xs font-medium"
-                data-testid="bv-create-btn"
-              >
-                {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                Create New BV Project
-              </Button>
+            <div className="flex items-center gap-5 text-xs text-white/70">
+              <div className="text-center">
+                <p className="text-lg font-bold text-white">{projects.length}</p>
+                <p>Projects</p>
+              </div>
+              <div className="w-px h-8 bg-white/20" />
+              <div className="text-center">
+                <p className="text-lg font-bold text-white">3</p>
+                <p>Methods</p>
+              </div>
+              <div className="w-px h-8 bg-white/20" />
+              <div className="text-center">
+                <p className="text-lg font-bold text-white">30d</p>
+                <p>Audit</p>
+              </div>
+            </div>
+          </header>
+
+          {/* Features Bar */}
+          <div className="backdrop-blur-sm bg-white/5 border-b border-white/10">
+            <div className="px-8 lg:px-12 py-2.5 flex items-center justify-center gap-6 text-xs text-white/60">
+              <span className="flex items-center gap-1.5"><Calculator className="w-3.5 h-3.5 text-emerald-400" /> DCF Valuation</span>
+              <span className="w-px h-3 bg-white/20" />
+              <span className="flex items-center gap-1.5"><Layers className="w-3.5 h-3.5 text-emerald-400" /> NAV Method</span>
+              <span className="w-px h-3 bg-white/20" />
+              <span className="flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5 text-emerald-400" /> Comparable Co.</span>
+              <span className="w-px h-3 bg-white/20" />
+              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-emerald-400" /> 30-Day Audit</span>
             </div>
           </div>
 
-          {loading ? (
-            <div className="text-white/55 text-sm flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" /> Loading projects…
-            </div>
-          ) : projects.length === 0 ? (
-            <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/10">
-              <CardContent className="p-12 flex flex-col items-center text-center">
-                <BarChart3 className="w-10 h-10 text-violet-300/60 mb-3" />
-                <h3 className="text-white text-lg font-semibold tracking-tight">No BV projects yet</h3>
-                <p className="text-sm text-white/55 mt-1 mb-5">
-                  Create your first Business Valuation project — start with a blank input sheet.
-                </p>
-                <Button
+          {/* Hero */}
+          <section className="px-8 lg:px-12 pt-10 pb-6 max-w-5xl">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08]">
+              Three Valuations.{" "}
+              <span style={{ color: ACCENT_VIOLET }}>One Engine.</span>
+            </h2>
+            <p className="mt-4 text-white/70 text-base lg:text-lg leading-relaxed max-w-2xl">
+              Capture your P&amp;L, Balance Sheet and DCF assumptions once — the BV Engine runs DCF, NAV and Comparable Company valuations in parallel, with a sector-aware peer set.
+            </p>
+          </section>
+
+          {/* Content Grid: Projects + Sidebar */}
+          <section className="px-8 lg:px-12 pb-8 flex-1">
+            <div className="grid grid-cols-3 gap-5">
+              {/* LEFT — Projects column (2/3) */}
+              <div className="col-span-2 grid grid-cols-2 gap-4">
+                {/* Create New card — always visible, styled like a module tile */}
+                <Card
                   onClick={handleCreate}
-                  className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-white rounded-full px-6 h-10 text-xs font-medium"
+                  className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = ACCENT_VIOLET;
+                    e.currentTarget.style.boxShadow = `0 20px 40px -10px ${ACCENT_VIOLET}40`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
+                  data-testid="bv-create-btn"
                 >
-                  <Plus className="w-3.5 h-3.5 mr-1.5" /> Create New BV Project
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid lg:grid-cols-2 gap-4" data-testid="bv-projects-list">
-              {projects.map((p) => (
-                <Card key={p.project_id} className="bg-white/[0.04] backdrop-blur-xl border border-white/10 hover:border-white/25 transition-all group">
-                  <CardContent className="p-5 flex flex-col">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="text-white font-semibold tracking-tight" data-testid={`bv-proj-title-${p.project_id}`}>
-                          {p.company_name || "Untitled BV Project"}
-                        </h3>
-                        <div className="flex items-center gap-3 text-[11px] text-white/45 mt-0.5">
-                          <span>{p.website || "no website"}</span>
-                          {p.plan_for_ipo === "yes" && <span className="text-emerald-300/80">IPO planned · {p.ipo_timeline || "—"}</span>}
-                        </div>
-                      </div>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-white/40 hover:text-rose-300 hover:bg-rose-500/10"
-                        onClick={() => setConfirmDelete(p)}
-                        data-testid={`bv-delete-${p.project_id}`}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                  <CardContent className="p-5 flex flex-col h-full">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
+                      {creating ? <Loader2 className="w-6 h-6 text-white animate-spin" /> : <Plus className="w-6 h-6 text-white" />}
                     </div>
-                    <div className="text-[10px] text-white/40 mb-4">
-                      Updated {new Date(p.updated_at).toLocaleString("en-IN")}
-                    </div>
-                    <div className="flex gap-2 mt-auto">
-                      <Button
-                        onClick={() => navigate(`/valuation-2/${p.project_id}/inputs`)}
-                        variant="outline"
-                        size="sm"
-                        className="bg-transparent border-white/15 text-white/75 hover:bg-white/5 rounded-full text-xs"
-                        data-testid={`bv-open-inputs-${p.project_id}`}
-                      >
-                        Edit Inputs
-                      </Button>
-                      <Button
-                        onClick={() => navigate(`/valuation-2/${p.project_id}`)}
-                        size="sm"
-                        className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-white rounded-full text-xs gap-1"
-                        data-testid={`bv-open-engine-${p.project_id}`}
-                      >
-                        Open Valuation <ArrowRight className="w-3 h-3" />
-                      </Button>
+                    <h3 className="text-base font-bold text-white mb-1.5 drop-shadow">Create New BV Project</h3>
+                    <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1 drop-shadow">
+                      Start a fresh business valuation. We'll create a blank input sheet for your P&amp;L, Balance Sheet and DCF assumptions.
+                    </p>
+                    <div className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all" style={{ color: ACCENT_VIOLET }}>
+                      Start Now <ArrowRight className="w-3.5 h-3.5" />
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+
+                {/* Existing project cards */}
+                {loading ? (
+                  <Card className="bg-white/10 backdrop-blur-xl border-2 border-white/20 shadow-2xl">
+                    <CardContent className="p-5 flex flex-col items-center justify-center h-full text-white/55 text-sm gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" /> Loading projects…
+                    </CardContent>
+                  </Card>
+                ) : projects.length === 0 ? (
+                  <Card className="bg-white/5 backdrop-blur-xl border border-dashed border-white/20 shadow-2xl">
+                    <CardContent className="p-5 flex flex-col items-center justify-center h-full text-center">
+                      <BarChart3 className="w-8 h-8 text-white/30 mb-2" />
+                      <p className="text-xs text-white/55">
+                        No projects yet. Click <strong className="text-white/75">Create New BV Project</strong> to begin.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  projects.map((p, i) => {
+                    const accent = ROTATING_ACCENTS[i % ROTATING_ACCENTS.length];
+                    return (
+                      <Card
+                        key={p.project_id}
+                        className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 group shadow-2xl transition-all duration-300 hover:-translate-y-1 relative"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = accent;
+                          e.currentTarget.style.boxShadow = `0 20px 40px -10px ${accent}40`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = "";
+                          e.currentTarget.style.boxShadow = "";
+                        }}
+                        data-testid={`bv-card-${p.project_id}`}
+                      >
+                        <CardContent className="p-5 flex flex-col h-full">
+                          {/* Top row: icon tile + delete button */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                              <Building2 className="w-6 h-6 text-white" />
+                            </div>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setConfirmDelete(p); }}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-white/55 hover:text-rose-300 hover:bg-rose-500/15"
+                              data-testid={`bv-delete-${p.project_id}`}
+                              aria-label="Delete project"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          {/* Title + meta */}
+                          <h3
+                            className="text-base font-bold text-white mb-1.5 drop-shadow line-clamp-2"
+                            data-testid={`bv-proj-title-${p.project_id}`}
+                          >
+                            {p.company_name || "Untitled BV Project"}
+                          </h3>
+                          <div className="text-[10px] text-white/55 leading-relaxed mb-3 flex flex-wrap gap-2">
+                            {p.website && <span className="truncate max-w-[140px]">{p.website}</span>}
+                            {p.plan_for_ipo === "yes" && (
+                              <span className="text-emerald-300/85">IPO {p.ipo_timeline ? `· ${p.ipo_timeline}` : ""}</span>
+                            )}
+                            <span className="text-white/35">
+                              Updated {new Date(p.updated_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+                            </span>
+                          </div>
+                          {/* Action row */}
+                          <div className="mt-auto flex items-center justify-between gap-2">
+                            <button
+                              onClick={() => navigate(`/valuation-2/${p.project_id}/inputs`)}
+                              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-white/65 hover:text-white"
+                              data-testid={`bv-open-inputs-${p.project_id}`}
+                            >
+                              Edit Inputs
+                            </button>
+                            <button
+                              onClick={() => navigate(`/valuation-2/${p.project_id}`)}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all"
+                              style={{ color: accent }}
+                              data-testid={`bv-open-engine-${p.project_id}`}
+                            >
+                              Open Engine <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* RIGHT — How It Works + Quick Start + Audit Log + Disclaimer */}
+              <div className="space-y-4">
+                <Card className="bg-white/10 backdrop-blur-xl border border-white/20">
+                  <CardContent className="p-5">
+                    <h3 className="text-sm font-bold text-white mb-4">How It Works</h3>
+                    <div className="space-y-3">
+                      {[
+                        { label: "New Project",    sub: "Create a workspace for your company" },
+                        { label: "Fill Inputs",    sub: "P&L, Balance Sheet, DCF assumptions" },
+                        { label: "Open Engine",    sub: "DCF · NAV · Comparable Co. in parallel" },
+                        { label: "Save / Iterate", sub: "Tune assumptions; re-run anytime" },
+                      ].map((step, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="w-7 h-7 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-emerald-400">{i + 1}</span>
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-white text-xs">{step.label}</h4>
+                            <p className="text-[10px] text-white/50">{step.sub}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Quick Start — gradient violet/indigo to lean into BV Engine accent */}
+                <Card className="bg-gradient-to-br from-violet-600/80 to-indigo-700/80 backdrop-blur-xl border border-violet-400/30">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="w-4 h-4 text-yellow-300" />
+                      <span className="text-xs font-medium text-white">Quick Start</span>
+                    </div>
+                    <h3 className="font-semibold text-sm text-white mb-2">Run your first valuation in minutes.</h3>
+                    <p className="text-[10px] text-violet-100 mb-3">
+                      Three valuation methods. Sector-aware peers. SEBI &amp; RBI-aligned outputs.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={handleCreate}
+                      disabled={creating}
+                      className="w-full bg-white text-violet-700 hover:bg-violet-50 gap-1.5 h-8 text-xs"
+                      data-testid="bv-quickstart-btn"
+                    >
+                      {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                      Start New Valuation
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Audit Log card */}
+                <Card className="bg-white/10 backdrop-blur-xl border border-white/20">
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-amber-300" />
+                        <h3 className="text-xs font-bold text-white">Audit Log</h3>
+                      </div>
+                      <span className="text-[10px] text-white/45">{archives.length} item{archives.length !== 1 && "s"}</span>
+                    </div>
+                    <p className="text-[10px] text-white/55 mb-3">
+                      Deleted projects stay recoverable for <strong className="text-white/75">30 days</strong>, then are permanently purged.
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowAudit(true)}
+                      className="w-full bg-white/5 border-white/15 text-white/80 hover:bg-white/10 h-8 text-xs"
+                      data-testid="bv-audit-btn"
+                    >
+                      Open Audit Log
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Disclaimer */}
+                <div className="bg-amber-500/10 backdrop-blur-sm rounded-lg p-3 border border-amber-400/20">
+                  <div className="flex items-start gap-2">
+                    <Shield className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-amber-200/80">
+                      <strong>Disclaimer:</strong> Outputs are indicative. Validate with your CA / merchant banker before any transaction.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
+          </section>
         </div>
 
         {/* Delete confirm */}
@@ -195,7 +363,7 @@ const BVProjectsLanding = ({ user, apiClient }) => {
             <DialogHeader>
               <DialogTitle>Delete project?</DialogTitle>
               <DialogDescription className="text-white/60">
-                <strong className="text-white/80">{confirmDelete?.company_name}</strong> will move to the audit log. It will stay recoverable for <strong className="text-white/80">30 days</strong>, then be permanently deleted.
+                <strong className="text-white/80">{confirmDelete?.company_name}</strong> moves to the audit log. Recoverable for <strong className="text-white/80">30 days</strong>, then permanently deleted.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -205,7 +373,7 @@ const BVProjectsLanding = ({ user, apiClient }) => {
           </DialogContent>
         </Dialog>
 
-        {/* Audit log */}
+        {/* Audit log dialog */}
         <Dialog open={showAudit} onOpenChange={setShowAudit}>
           <DialogContent className="bg-[#0d0d0d] border border-white/10 text-white max-w-2xl">
             <DialogHeader>
