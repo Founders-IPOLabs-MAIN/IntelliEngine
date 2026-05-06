@@ -79,6 +79,7 @@ const Sidebar = ({ user, apiClient }) => {
     { id: "funding", label: "IPO Funding", icon: TrendingUp, path: null, onClick: handleFundingClick },
     { id: "matchmaker", label: "The Match-Making Platform", icon: Users, path: "/matchmaker" },
     { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation" },
+    { id: "valuation2", label: "Valuations 2", icon: Scale, path: "/valuation-2" },
   ];
 
   let navItems = [...moduleItems];
