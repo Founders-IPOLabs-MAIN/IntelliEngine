@@ -144,8 +144,23 @@
 1. **P2**: RTA Professional Registration "Next" button bug (recurring x4, not started)
 
 ## Recent Changes (Feb 2026)
+- **BV Engine Module** (Feb 2026): New "Valuations 2" sidebar entry → `/valuation-2`
+  hosts a Business Valuation Engine that computes **3 valuations in parallel**:
+  1. **DCF** — 5-year FCFF model with Gordon Growth terminal value (per RBI FDI
+     Pricing Master Directions / Sec. 56(2)(x)).
+  2. **NAV** — Adjusted Net Asset Value with brand-intangible & goodwill add-backs
+     and a 5% receivables haircut (per Rule 11UA, IT Rules 1962).
+  3. **Comparable Company** — EV/EBITDA, EV/Revenue and P/E sub-methods averaged,
+     using sector-median NSE/BSE-derived peer multiples with a 22.5% unlisted
+     discount applied. 16 sectors covered out-of-the-box (`sector_peer_multiples.js`).
+
+  All math is deterministic, frontend-only, recomputed live as inputs change.
+  Files: `frontend/src/pages/BVEngine.jsx`, `frontend/src/lib/bv_engine.js`,
+  `frontend/src/data/sector_peer_multiples.js`. Default inputs are the OERC Group
+  sample from the valuation tool prompt for instant verification.
+
 - **SME IPO Self-Assessment Module** (Feb 2026): The "Post-IPO Review" card on
-  `/assessment` is renamed to **"BSE SME / NSE EMERGE SME IPO Self Assessment"**
+  `/assessment` is renamed to **"BSE/NSE SME - Self Assessment"**
   and routes to the new `/assessment/sme-self` page. Users tick Yes/No across 63
   BSE SME or 67 NSE EMERGE checkpoints (data: `frontend/src/data/sme_eligibility_checklists.js`,
   sourced verbatim from the official exchange criteria documents). Items left blank
