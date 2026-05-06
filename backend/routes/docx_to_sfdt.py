@@ -95,7 +95,10 @@ def _run_to_inline(run_el, images: dict) -> list:
             cf["strikethrough"] = "SingleStrike"
         sz_el = rpr.find(qn("w:sz"))
         if sz_el is not None:
-            hp = int(sz_el.get(qn("w:val"), 0))
+            try:
+                hp = int(float(sz_el.get(qn("w:val"), 0)))
+            except (TypeError, ValueError):
+                hp = 0
             if hp:
                 pt = hp / 2.0
                 cf["fontSize"] = pt
@@ -171,7 +174,10 @@ def _para_format(p_el) -> dict:
     if ind is not None:
         def tw(attr):
             v = ind.get(qn(attr))
-            return round(int(v) / 20.0, 2) if v else 0
+            try:
+                return round(int(float(v)) / 20.0, 2) if v else 0
+            except (TypeError, ValueError):
+                return 0
         left = tw("w:left")
         right = tw("w:right")
         first = tw("w:firstLine")
@@ -189,7 +195,10 @@ def _para_format(p_el) -> dict:
     if spacing is not None:
         def sp(attr):
             v = spacing.get(qn(attr))
-            return round(int(v) / 20.0, 2) if v else None
+            try:
+                return round(int(float(v)) / 20.0, 2) if v else None
+            except (TypeError, ValueError):
+                return None
         before = sp("w:before")
         after = sp("w:after")
         line = spacing.get(qn("w:line"))
@@ -199,7 +208,10 @@ def _para_format(p_el) -> dict:
         if after is not None:
             pf["afterSpacing"] = after
         if line:
-            line_val = int(line)
+            try:
+                line_val = int(float(line))
+            except (TypeError, ValueError):
+                line_val = 0
             if line_rule == "exact":
                 pf["lineSpacing"] = round(line_val / 20.0, 4)
                 pf["lineSpacingType"] = "Exactly"

@@ -8,6 +8,62 @@ from docx import Document as DocxDocument
 
 router = APIRouter()
 
+# ============ DEFAULT DRHP TEMPLATE (AUTO-LOAD) ============
+#
+# On DRHP Output page entry, if a project has no SFDT yet, we auto-load a
+# predefined DOCX template so users never have to upload one manually.
+# Admins can replace the template by overwriting the file on disk:
+#   /app/backend/assets/drhp_defaults/{board}_board_default.docx
+# Cache busts automatically via file mtime.
+
+_DEFAULT_TEMPLATE_DIR = "/app/backend/assets/drhp_defaults"
+_DEFAULT_TEMPLATE_CACHE: dict = {}  # board -> (mtime, sfdt_bytes)
+
+
+def _default_template_path(board_type: str) -> str:
+    # board_type is validated against a small whitelist before use
+    return os.path.join(_DEFAULT_TEMPLATE_DIR, f"{board_type}_board_default.docx")
+
+
+@router.get("/drhp/default-template/sfdt")
+async def get_default_template_sfdt(
+    board: str = "sme",
+    user: User = Depends(get_current_user),
+):
+    """Return the pre-converted SFDT JSON for the default DRHP template for
+    the given board (sme | mainboard). The underlying .docx lives at
+    /app/backend/assets/drhp_defaults/<board>_board_default.docx — swap that
+    file to update the template for every new project."""
+    if board not in ("sme", "mainboard"):
+        raise HTTPException(status_code=400, detail="board must be 'sme' or 'mainboard'")
+    path = _default_template_path(board)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail=f"No default template configured for {board}")
+
+    mtime = os.path.getmtime(path)
+    cached = _DEFAULT_TEMPLATE_CACHE.get(board)
+    if cached and cached[0] == mtime:
+        return Response(content=cached[1], media_type="application/json")
+
+    try:
+        import asyncio
+        import functools
+        from routes.docx_to_sfdt import docx_to_sfdt
+        with open(path, "rb") as f:
+            file_bytes = f.read()
+        loop = asyncio.get_event_loop()
+        sfdt_raw = await loop.run_in_executor(
+            None, functools.partial(docx_to_sfdt, file_bytes)
+        )
+        data = sfdt_raw.encode("utf-8")
+        _DEFAULT_TEMPLATE_CACHE[board] = (mtime, data)
+        logger.info(f"Default DRHP template ({board}) converted: {len(data)} SFDT bytes")
+        return Response(content=data, media_type="application/json")
+    except Exception as e:
+        logger.error(f"Default template conversion failed for {board}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to load default template: {e}")
+
+
 # ============ DRHP CHAPTERS AND CONTENT ENDPOINTS ============
 
 @router.get("/projects/{project_id}/drhp-progress")
