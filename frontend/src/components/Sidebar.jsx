@@ -59,7 +59,8 @@ const Sidebar = ({ user, apiClient }) => {
       case 'drhp': return path === '/drhp' || path.startsWith('/drhp/') || path.includes('drhp-builder') || path.includes('command-center');
       case 'funding': return path.startsWith('/funding');
       case 'matchmaker': return path.startsWith('/matchmaker');
-      case 'valuation': return path.startsWith('/valuation');
+      case 'valuation': return path === '/valuation' || (path.startsWith('/valuation/') && !path.startsWith('/valuation-2'));
+      case 'valuation2': return path === '/valuation-2' || path.startsWith('/valuation-2/');
       case 'admin': return path.startsWith('/admin');
       case 'account': return path.startsWith('/account');
       case 'payments': return path.startsWith('/payments');

@@ -94,6 +94,10 @@ const BVProjectsLanding = ({ user, apiClient }) => {
     }
   };
 
+  // True when the backend tagged any project with owner info — i.e. caller
+  // is a central admin viewing across users.
+  const adminView = projects.some((p) => p.owner_email);
+
   // Visual accent palette borrowed from /assessment for parity
   const ACCENT_VIOLET = "#A78BFA";
   const ACCENT_EMERALD = "#34D399";
@@ -124,6 +128,16 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                 <Brain className="w-3 h-3 text-yellow-300" />
                 <span className="font-medium">AI Powered</span>
               </div>
+              {adminView && (
+                <div
+                  className="inline-flex items-center gap-1.5 bg-violet-500/20 border border-violet-400/30 px-2.5 py-1 rounded-full text-xs text-violet-100"
+                  data-testid="bv-admin-view-pill"
+                  title="You are viewing every user's projects (central admin)"
+                >
+                  <Shield className="w-3 h-3 text-violet-200" />
+                  <span className="font-medium">Admin View · All Users</span>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-5 text-xs text-white/70">
               <div className="text-center">
@@ -263,6 +277,15 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                             <span className="text-white/35">
                               Updated {new Date(p.updated_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
                             </span>
+                            {p.owner_email && (
+                              <span
+                                className="px-1.5 py-0.5 rounded-full bg-violet-500/15 border border-violet-400/25 text-violet-200/85 text-[9px] font-medium tracking-tight"
+                                title={`Owner: ${p.owner_email}`}
+                                data-testid={`bv-owner-${p.project_id}`}
+                              >
+                                {p.owner_name || p.owner_email}
+                              </span>
+                            )}
                           </div>
                           {/* Action row */}
                           <div className="mt-auto flex items-center justify-between gap-2">

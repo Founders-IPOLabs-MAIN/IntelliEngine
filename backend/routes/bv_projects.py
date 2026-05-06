@@ -15,13 +15,25 @@ from typing import Any, Dict, List, Optional
 
 from shared import (
     db, User, get_current_user,
-    is_central_admin, admin_aware_user_filter, audit_admin_cross_access,
+    is_central_admin, is_approved_admin, admin_aware_user_filter, audit_admin_cross_access,
     datetime, timezone, timedelta, uuid,
 )
 
 router = APIRouter()
 
 BV_DELETE_RETENTION_DAYS = 30
+
+
+def _bv_admin_bypass(user: User) -> bool:
+    """For BV projects we grant cross-user visibility to every admin role
+    (Admin, Super Admin, Master Admin, Central Admins, Internal staff) — not
+    just the 4 CENTRAL_ADMIN_EMAILS. This matches how every other module
+    surfaces 'all users' data inside the Admin Center."""
+    return is_approved_admin(user)
+
+
+def _bv_owner_filter(user: User) -> dict:
+    return {} if _bv_admin_bypass(user) else {"user_id": user.user_id}
 
 
 def _default_assumptions() -> Dict[str, float]:
@@ -56,11 +68,27 @@ def _default_engine_config() -> Dict[str, Any]:
 
 @router.get("/bv-projects")
 async def list_bv_projects(user: User = Depends(get_current_user)):
-    cap = 5000 if is_central_admin(user) else 200
+    cap = 5000 if _bv_admin_bypass(user) else 200
     items = await db.bv_projects.find(
-        {**admin_aware_user_filter(user)},
+        {**_bv_owner_filter(user)},
         {"_id": 0, "pl": 0, "bs": 0, "assumptions": 0, "engine_config": 0},
     ).sort("updated_at", -1).to_list(cap)
+
+    # When the caller is an admin, decorate each row with the owner's
+    # email/name so the UI can show "owned by" tags. Single round-trip lookup.
+    if _bv_admin_bypass(user) and items:
+        owner_ids = list({i.get("user_id") for i in items if i.get("user_id")})
+        owners = await db.users.find(
+            {"user_id": {"$in": owner_ids}},
+            {"_id": 0, "user_id": 1, "email": 1, "name": 1},
+        ).to_list(len(owner_ids))
+        by_id = {o["user_id"]: o for o in owners}
+        for it in items:
+            owner = by_id.get(it.get("user_id"))
+            if owner:
+                it["owner_email"] = owner.get("email")
+                it["owner_name"] = owner.get("name")
+
     if is_central_admin(user):
         await audit_admin_cross_access(
             user, action="list_bv_projects", resource_type="bv_projects",
@@ -109,7 +137,7 @@ async def create_bv_project(
 @router.get("/bv-projects/{project_id}")
 async def get_bv_project(project_id: str, user: User = Depends(get_current_user)):
     doc = await db.bv_projects.find_one(
-        {"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0}
+        {"project_id": project_id, **_bv_owner_filter(user)}, {"_id": 0}
     )
     if not doc:
         raise HTTPException(status_code=404, detail="BV project not found")
@@ -129,7 +157,7 @@ async def update_bv_project(
     user: User = Depends(get_current_user),
 ):
     target = await db.bv_projects.find_one(
-        {"project_id": project_id, **admin_aware_user_filter(user)},
+        {"project_id": project_id, **_bv_owner_filter(user)},
         {"_id": 0, "user_id": 1, "company_name": 1},
     )
     if not target:
@@ -165,7 +193,7 @@ async def update_bv_project(
 async def delete_bv_project(project_id: str, user: User = Depends(get_current_user)):
     """Soft-delete: archive the full project for 30 days, then purge."""
     project = await db.bv_projects.find_one(
-        {"project_id": project_id, **admin_aware_user_filter(user)}, {"_id": 0}
+        {"project_id": project_id, **_bv_owner_filter(user)}, {"_id": 0}
     )
     if not project:
         raise HTTPException(status_code=404, detail="BV project not found")
@@ -214,9 +242,9 @@ async def list_deleted_bv_projects(user: User = Depends(get_current_user)):
     async for v in expired:
         await db.bv_project_archives.delete_one({"archive_id": v["archive_id"]})
 
-    cap = 5000 if is_central_admin(user) else 200
+    cap = 5000 if _bv_admin_bypass(user) else 200
     archives = await db.bv_project_archives.find(
-        {**admin_aware_user_filter(user)},
+        {**_bv_owner_filter(user)},
         {"_id": 0, "snapshot": 0},
     ).sort("deleted_at", -1).to_list(cap)
     return {
@@ -229,7 +257,7 @@ async def list_deleted_bv_projects(user: User = Depends(get_current_user)):
 @router.post("/bv-projects/deleted/{archive_id}/restore")
 async def restore_bv_project(archive_id: str, user: User = Depends(get_current_user)):
     archive = await db.bv_project_archives.find_one(
-        {"archive_id": archive_id, **admin_aware_user_filter(user)}, {"_id": 0}
+        {"archive_id": archive_id, **_bv_owner_filter(user)}, {"_id": 0}
     )
     if not archive:
         raise HTTPException(status_code=404, detail="Archive not found or access denied")
