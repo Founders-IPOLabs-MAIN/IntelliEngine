@@ -1,13 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Sparkles, RefreshCcw, Calculator, Layers, Building2, TrendingUp, Info, BarChart3 } from "lucide-react";
+import { Sparkles, RefreshCcw, Calculator, Layers, Building2, TrendingUp, Info, BarChart3, Edit3, Loader2 } from "lucide-react";
 import { SECTOR_PEER_MULTIPLES, UNLISTED_DISCOUNT } from "@/data/sector_peer_multiples";
 import { calculateDCF, calculateNAV, calculateComparable, weightedSummary, fmtL } from "@/lib/bv_engine";
+import { bvProjectToEngineInputs } from "@/lib/bv_input_schema";
 
 const DEFAULT_INPUTS = {
   company_name: "",
@@ -81,7 +83,32 @@ const Section = ({ title, icon: Icon, children }) => (
 );
 
 const BVEngine = ({ user, apiClient }) => {
+  const { projectId } = useParams();
+  const navigate = useNavigate();
   const [inp, setInp] = useState(DEFAULT_INPUTS);
+  const [project, setProject] = useState(null);
+  const [loadingProject, setLoadingProject] = useState(!!projectId);
+
+  // When opened with a /:projectId, hydrate inputs from the saved project.
+  useEffect(() => {
+    if (!projectId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await apiClient.get(`/bv-projects/${projectId}`);
+        if (cancelled) return;
+        setProject(res.data);
+        const adapted = bvProjectToEngineInputs(res.data);
+        setInp((prev) => ({ ...prev, ...adapted }));
+      } catch (e) {
+        // fall back to default playground if not found
+        console.warn("BV project not found; opening as standalone", e);
+      } finally {
+        if (!cancelled) setLoadingProject(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [projectId]);  // eslint-disable-line
 
   const set = (path, value) => {
     setInp((prev) => {
@@ -91,6 +118,19 @@ const BVEngine = ({ user, apiClient }) => {
       }
       return { ...prev, [path]: value };
     });
+  };
+
+  // Persist engine_config tweaks (sector, multiples, weights, intangibles)
+  // back to the project so they survive a refresh.
+  const persistEngineConfig = async (patch) => {
+    if (!projectId) return;
+    try {
+      await apiClient.put(`/bv-projects/${projectId}`, {
+        engine_config: { ...(project?.engine_config || {}), ...patch },
+      });
+    } catch (e) {
+      // silent — best-effort
+    }
   };
 
   // When the user picks a sector, auto-fill the comparable multiples.
@@ -104,6 +144,12 @@ const BVEngine = ({ user, apiClient }) => {
       ev_revenue_multiple: s.ev_revenue,
       pe_multiple: s.pe,
     }));
+    persistEngineConfig({
+      sector_id,
+      ev_ebitda_multiple: s.ev_ebitda,
+      ev_revenue_multiple: s.ev_revenue,
+      pe_multiple: s.pe,
+    });
   };
 
   const sector = SECTOR_PEER_MULTIPLES.find((s) => s.id === inp.sector_id) || SECTOR_PEER_MULTIPLES[0];
@@ -148,21 +194,36 @@ const BVEngine = ({ user, apiClient }) => {
                 BV Engine
               </div>
               <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
-                Business Valuation Engine
+                {project?.company_name || "Business Valuation Engine"}
               </h1>
               <p className="text-sm text-white/55 mt-2 max-w-2xl">
                 DCF · NAV · Comparable Company — three valuations running in parallel.
                 All figures in <strong className="text-white/75">₹ Lakhs</strong>.
+                {projectId && project && <span className="ml-2 text-violet-300/70">· loaded from input sheet</span>}
               </p>
             </div>
-            <Button
-              onClick={handleReset}
-              variant="outline"
-              className="bg-transparent border-white/15 text-white/70 hover:bg-white/5 rounded-full gap-1.5 px-4 h-9 text-xs"
-              data-testid="bv-reset-btn"
-            >
-              <RefreshCcw className="w-3.5 h-3.5" /> Reset Inputs
-            </Button>
+            <div className="flex gap-2">
+              {projectId && (
+                <Button
+                  onClick={() => navigate(`/valuation-2/${projectId}/inputs`)}
+                  variant="outline"
+                  className="bg-transparent border-white/15 text-white/70 hover:bg-white/5 rounded-full gap-1.5 px-4 h-9 text-xs"
+                  data-testid="bv-edit-inputs-btn"
+                >
+                  <Edit3 className="w-3.5 h-3.5" /> Edit Inputs
+                </Button>
+              )}
+              {!projectId && (
+                <Button
+                  onClick={handleReset}
+                  variant="outline"
+                  className="bg-transparent border-white/15 text-white/70 hover:bg-white/5 rounded-full gap-1.5 px-4 h-9 text-xs"
+                  data-testid="bv-reset-btn"
+                >
+                  <RefreshCcw className="w-3.5 h-3.5" /> Reset Inputs
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Inputs */}

@@ -144,7 +144,32 @@
 1. **P2**: RTA Professional Registration "Next" button bug (recurring x4, not started)
 
 ## Recent Changes (Feb 2026)
-- **BV Engine Module** (Feb 2026): New "Valuations 2" sidebar entry → `/valuation-2`
+- **BV Engine — Project Workspace** (Feb 2026): `/valuation-2` is now a project
+  landing page (BVProjectsLanding) where users can **create / open / delete**
+  Business Valuation projects. Soft-deleted projects sit in `bv_project_archives`
+  for **30 days** before purge (audited). Each project carries a Company header
+  (name, website, Plan-for-IPO Yes/No, IPO timeline), three FY labels (default
+  FY 2024 / FY 2025 / FY 2026 — editable) and three input tabs (P&L, Balance
+  Sheet, DCF Assumptions). All formulas from the user-supplied
+  `Input sheet - Valuations.xlsx` are encoded verbatim in `bv_input_schema.js`
+  (Total Revenue, Gross Profit, Gross Margin, Adjusted SG&A, EBITDA, EBITDA
+  Margin, Operating Profit, Total Other Income, EBT, Income Tax, Net Profit,
+  Net Margin, EPS, Total NCA / CA / Assets, Total SE / NCL / CL, Total Equity &
+  Liab, Capex = ΔTangible, Working Capital = TCA − TCL, ΔWorking Capital).
+  All inputs start at **zero**; DCF Assumptions ship with the spreadsheet's
+  default values (WACC 0.12, CAGR 0.15, Tax 0.25, Terminal 0.04, Period 5)
+  plus AI-suggested historical averages for the 4 computed assumption rows.
+  The Save & Open Valuation Engine button hands the saved inputs to the
+  existing BV Engine (DCF / NAV / Comparable Co. / weighted summary) without
+  changing any of the existing valuation math.
+
+  New backend: `routes/bv_projects.py` (CRUD + 30-day archive + admin-aware).
+  New collections: `bv_projects`, `bv_project_archives`.
+  New frontend pages: `BVProjectsLanding.jsx`, `BVProjectInputs.jsx`. Existing
+  `BVEngine.jsx` was extended (no math changes) to optionally hydrate from
+  `/api/bv-projects/{id}` when opened with a `:projectId`.
+
+- **BV Engine Module** (Feb 2026): Original module — DCF / NAV / Comparable Co.
   hosts a Business Valuation Engine that computes **3 valuations in parallel**:
   1. **DCF** — 5-year FCFF model with Gordon Growth terminal value (per RBI FDI
      Pricing Master Directions / Sec. 56(2)(x)).
