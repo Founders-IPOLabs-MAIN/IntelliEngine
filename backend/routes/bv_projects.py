@@ -77,21 +77,27 @@ async def create_bv_project(
     project_id = f"bvp_{uuid.uuid4().hex[:12]}"
     now = datetime.now(timezone.utc).isoformat()
 
-    company_name = (payload or {}).get("company_name", "").strip() or "Untitled BV Project"
-    fy_labels = (payload or {}).get("fy_labels") or ["FY 2024", "FY 2025", "FY 2026"]
+    payload = payload or {}
+    company_name = (payload.get("company_name") or "").strip() or "Untitled BV Project"
+    fy_labels = payload.get("fy_labels") or ["FY 2023-24", "FY 2024-25", "FY 2025-26"]
+
+    # The frontend may pass an engine_config (e.g. sector_id picked at create time).
+    # Merge it into the defaults.
+    engine_config = _default_engine_config()
+    engine_config.update(payload.get("engine_config") or {})
 
     doc = {
         "project_id": project_id,
         "user_id": user.user_id,
         "company_name": company_name,
-        "website": (payload or {}).get("website", "").strip(),
-        "plan_for_ipo": (payload or {}).get("plan_for_ipo"),     # "yes" | "no" | None
-        "ipo_timeline": (payload or {}).get("ipo_timeline"),     # "12m" | "18m" | "beyond"
+        "website": payload.get("website", "").strip(),
+        "plan_for_ipo": payload.get("plan_for_ipo"),
+        "ipo_timeline": payload.get("ipo_timeline"),
         "fy_labels": fy_labels,
         "pl": {},
         "bs": {},
         "assumptions": _default_assumptions(),
-        "engine_config": _default_engine_config(),
+        "engine_config": engine_config,
         "created_at": now,
         "updated_at": now,
     }

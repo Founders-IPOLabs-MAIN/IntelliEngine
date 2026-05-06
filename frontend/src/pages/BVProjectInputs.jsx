@@ -51,9 +51,9 @@ const FinancialTable = ({ rows, raw, computed, onChange, fyLabels, testidPrefix 
         <thead className="text-white/45 uppercase tracking-[0.1em] text-[10px]">
           <tr>
             <th className="text-left py-2 pr-4 w-1/2">Line Item</th>
-            <th className="text-right py-2 px-2">{fyLabels[0]}</th>
-            <th className="text-right py-2 px-2">{fyLabels[1]}</th>
             <th className="text-right py-2 px-2">{fyLabels[2]}</th>
+            <th className="text-right py-2 px-2">{fyLabels[1]}</th>
+            <th className="text-right py-2 px-2">{fyLabels[0]}</th>
           </tr>
         </thead>
         <tbody className="text-white/85">
@@ -74,9 +74,9 @@ const FinancialTable = ({ rows, raw, computed, onChange, fyLabels, testidPrefix 
                   {row.label}
                   {row.type === "computed" && <span className="ml-1.5 text-[9px] text-violet-300/60 uppercase">auto</span>}
                 </td>
-                <td className="px-1 py-1">{renderCell(row, "fy0")}</td>
-                <td className="px-1 py-1">{renderCell(row, "fy1")}</td>
                 <td className="px-1 py-1">{renderCell(row, "fy2")}</td>
+                <td className="px-1 py-1">{renderCell(row, "fy1")}</td>
+                <td className="px-1 py-1">{renderCell(row, "fy0")}</td>
               </tr>
             );
           })}
@@ -138,7 +138,7 @@ const BVProjectInputs = ({ user, apiClient }) => {
 
   const setField = (key, val) => setProject((p) => ({ ...p, [key]: val }));
   const setFy = (idx, val) => setProject((p) => {
-    const arr = [...(p.fy_labels || ["FY 2024", "FY 2025", "FY 2026"])];
+    const arr = [...(p.fy_labels || ["FY 2023-24", "FY 2024-25", "FY 2025-26"])];
     arr[idx] = val;
     return { ...p, fy_labels: arr };
   });
@@ -181,7 +181,7 @@ const BVProjectInputs = ({ user, apiClient }) => {
     );
   }
 
-  const fyLabels = project.fy_labels || ["FY 2024", "FY 2025", "FY 2026"];
+  const fyLabels = project.fy_labels || ["FY 2023-24", "FY 2024-25", "FY 2025-26"];
 
   return (
     <div className="flex min-h-screen bg-black" data-testid="bv-input-page">
@@ -203,7 +203,7 @@ const BVProjectInputs = ({ user, apiClient }) => {
                 {project.company_name || "Untitled BV Project"}
               </h1>
               <p className="text-sm text-white/55 mt-2 max-w-2xl">
-                All figures in <strong className="text-white/75">INR Lakhs</strong>. Auto-saves as you type. Computed rows are auto-derived from the spreadsheet formulas.
+                All figures in <strong className="text-white/75">INR Lacs</strong>. Auto-saves as you type. Computed rows are auto-derived from the spreadsheet formulas.
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs text-white/45">
@@ -260,10 +260,11 @@ const BVProjectInputs = ({ user, apiClient }) => {
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-violet-300" />
                 <h3 className="text-[13px] font-semibold text-white tracking-tight">Financial Year Labels</h3>
-                <span className="text-[10px] text-white/45 ml-2">(oldest → latest)</span>
+                <span className="text-[10px] text-white/45 ml-2">(latest → oldest, left to right)</span>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                {[0, 1, 2].map((idx) => (
+                {/* Display order is reversed (newest left) but storage stays oldest → latest */}
+                {[2, 1, 0].map((idx) => (
                   <Input key={idx} value={fyLabels[idx]} onChange={(e) => setFy(idx, e.target.value)}
                     className="bg-white/[0.03] border-white/10 text-white text-sm h-9"
                     data-testid={`bv-fy-${idx}`} />
@@ -285,7 +286,7 @@ const BVProjectInputs = ({ user, apiClient }) => {
                 <CardContent className="p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <BarChart3 className="w-4 h-4 text-violet-300" />
-                    <h3 className="text-[13px] font-semibold text-white">Income Statement (₹ Lakhs)</h3>
+                    <h3 className="text-[13px] font-semibold text-white">Income Statement (₹ Lacs)</h3>
                   </div>
                   <FinancialTable rows={PL_ROWS} raw={project.pl} computed={plComputed} onChange={setPlCell} fyLabels={fyLabels} testidPrefix="bv-pl" />
                 </CardContent>
@@ -297,7 +298,7 @@ const BVProjectInputs = ({ user, apiClient }) => {
                 <CardContent className="p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <Layers className="w-4 h-4 text-violet-300" />
-                    <h3 className="text-[13px] font-semibold text-white">Balance Sheet (₹ Lakhs)</h3>
+                    <h3 className="text-[13px] font-semibold text-white">Balance Sheet (₹ Lacs)</h3>
                   </div>
                   <FinancialTable rows={BS_ROWS} raw={project.bs} computed={bsComputed} onChange={setBsCell} fyLabels={fyLabels} testidPrefix="bv-bs" />
                 </CardContent>

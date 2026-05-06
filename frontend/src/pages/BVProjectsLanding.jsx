@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
+import { SECTOR_PEER_MULTIPLES } from "@/data/sector_peer_multiples";
 
 const BVProjectsLanding = ({ user, apiClient }) => {
   const navigate = useNavigate();
@@ -21,6 +22,10 @@ const BVProjectsLanding = ({ user, apiClient }) => {
   const [creating, setCreating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [showAudit, setShowAudit] = useState(false);
+  // New project capture (sector chosen up-front)
+  const [showCreate, setShowCreate] = useState(false);
+  const [newSectorId, setNewSectorId] = useState(SECTOR_PEER_MULTIPLES[0].id);
+  const [newCompanyName, setNewCompanyName] = useState("");
 
   const fetchAll = async () => {
     try {
@@ -39,10 +44,26 @@ const BVProjectsLanding = ({ user, apiClient }) => {
 
   useEffect(() => { fetchAll(); }, []);  // eslint-disable-line
 
+  const openCreate = () => {
+    setNewCompanyName("");
+    setNewSectorId(SECTOR_PEER_MULTIPLES[0].id);
+    setShowCreate(true);
+  };
+
   const handleCreate = async () => {
     setCreating(true);
     try {
-      const res = await apiClient.post("/bv-projects", {});
+      const sector = SECTOR_PEER_MULTIPLES.find((s) => s.id === newSectorId) || SECTOR_PEER_MULTIPLES[0];
+      const res = await apiClient.post("/bv-projects", {
+        company_name: newCompanyName.trim() || "Untitled BV Project",
+        engine_config: {
+          sector_id: sector.id,
+          ev_ebitda_multiple: sector.ev_ebitda,
+          ev_revenue_multiple: sector.ev_revenue,
+          pe_multiple: sector.pe,
+        },
+      });
+      setShowCreate(false);
       navigate(`/valuation-2/${res.data.project_id}/inputs`);
     } catch (e) {
       toast.error("Could not create project");
@@ -153,7 +174,7 @@ const BVProjectsLanding = ({ user, apiClient }) => {
               <div className="col-span-2 grid grid-cols-2 gap-4">
                 {/* Create New card — always visible, styled like a module tile */}
                 <Card
-                  onClick={handleCreate}
+                  onClick={openCreate}
                   className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = ACCENT_VIOLET;
@@ -307,7 +328,7 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                     </p>
                     <Button
                       size="sm"
-                      onClick={handleCreate}
+                      onClick={openCreate}
                       disabled={creating}
                       className="w-full bg-white text-violet-700 hover:bg-violet-50 gap-1.5 h-8 text-xs"
                       data-testid="bv-quickstart-btn"
@@ -369,6 +390,67 @@ const BVProjectsLanding = ({ user, apiClient }) => {
             <DialogFooter>
               <Button variant="outline" onClick={() => setConfirmDelete(null)} className="bg-transparent border-white/15 text-white/70">Cancel</Button>
               <Button onClick={handleDelete} className="bg-rose-500 hover:bg-rose-400 text-white" data-testid="bv-confirm-delete">Delete</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Sector picker — shown when starting a New BV Project */}
+        <Dialog open={showCreate} onOpenChange={(o) => !creating && setShowCreate(o)}>
+          <DialogContent className="bg-[#0d0d0d] border border-white/10 text-white max-w-md">
+            <DialogHeader>
+              <DialogTitle>Start a new Business Valuation</DialogTitle>
+              <DialogDescription className="text-white/60">
+                Pick the sector that best matches your company. We'll pre-load the
+                comparable peer set (3 Large Cap + 1 Mid Cap + Broad NIFTY-500 sector
+                median) and the corresponding multiples. You can change everything later.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <div>
+                <label className="text-[11px] text-white/55 uppercase tracking-[0.12em]">Company name (optional)</label>
+                <input
+                  value={newCompanyName}
+                  onChange={(e) => setNewCompanyName(e.target.value)}
+                  placeholder="e.g., Acme Industries Pvt Ltd"
+                  className="mt-1 w-full bg-white/[0.04] border border-white/10 rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/30"
+                  data-testid="bv-create-company-name"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-white/55 uppercase tracking-[0.12em]">Sector</label>
+                <select
+                  value={newSectorId}
+                  onChange={(e) => setNewSectorId(e.target.value)}
+                  className="mt-1 w-full bg-white/[0.04] border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
+                  data-testid="bv-create-sector"
+                >
+                  {SECTOR_PEER_MULTIPLES.map((s) => (
+                    <option key={s.id} value={s.id} className="bg-[#111]">{s.label}</option>
+                  ))}
+                </select>
+                {/* Peer preview */}
+                {(() => {
+                  const s = SECTOR_PEER_MULTIPLES.find((x) => x.id === newSectorId);
+                  if (!s) return null;
+                  return (
+                    <div className="mt-2 text-[10px] text-white/45 leading-relaxed">
+                      <strong className="text-white/65">Peer set:</strong>{" "}
+                      <span className="text-emerald-300/70">{(s.large_caps || []).join(", ")}</span>
+                      <span className="text-white/40"> · </span>
+                      <span className="text-amber-300/70">{(s.mid_caps || []).join(", ")}</span>
+                      <span className="text-white/40"> · </span>
+                      <span className="text-violet-300/70">{s.nifty500_median_label}</span>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCreate(false)} disabled={creating} className="bg-transparent border-white/15 text-white/70">Cancel</Button>
+              <Button onClick={handleCreate} disabled={creating} className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-white gap-1.5" data-testid="bv-create-confirm">
+                {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                Create Project
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

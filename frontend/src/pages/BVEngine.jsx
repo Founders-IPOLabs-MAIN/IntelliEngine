@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Sparkles, RefreshCcw, Calculator, Layers, Building2, TrendingUp, Info, BarChart3, Edit3, Loader2 } from "lucide-react";
-import { SECTOR_PEER_MULTIPLES, UNLISTED_DISCOUNT } from "@/data/sector_peer_multiples";
+import { SECTOR_PEER_MULTIPLES, UNLISTED_DISCOUNT, buildPeerSet } from "@/data/sector_peer_multiples";
 import { calculateDCF, calculateNAV, calculateComparable, weightedSummary, fmtL } from "@/lib/bv_engine";
 import { bvProjectToEngineInputs } from "@/lib/bv_input_schema";
 
@@ -198,7 +198,7 @@ const BVEngine = ({ user, apiClient }) => {
               </h1>
               <p className="text-sm text-white/55 mt-2 max-w-2xl">
                 DCF · NAV · Comparable Company — three valuations running in parallel.
-                All figures in <strong className="text-white/75">₹ Lakhs</strong>.
+                All figures in <strong className="text-white/75">₹ Lacs</strong>.
                 {projectId && project && <span className="ml-2 text-violet-300/70">· loaded from input sheet</span>}
               </p>
             </div>
@@ -239,11 +239,6 @@ const BVEngine = ({ user, apiClient }) => {
             <TabsContent value="company">
               <Section title="Company Profile" icon={Building2}>
                 <div className="flex flex-col gap-1 col-span-2">
-                  <Label className="text-[11px] text-white/55">Company name</Label>
-                  <Input value={inp.company_name} onChange={(e) => set("company_name", e.target.value)} placeholder="e.g., OERC Group / XYZ Pvt Ltd"
-                    className="bg-white/[0.03] border-white/10 text-white text-sm h-9" data-testid="bv-company-name" />
-                </div>
-                <div className="flex flex-col gap-1">
                   <Label className="text-[11px] text-white/55">Sector (auto-selects peer multiples)</Label>
                   <select
                     value={inp.sector_id}
@@ -256,26 +251,26 @@ const BVEngine = ({ user, apiClient }) => {
                     ))}
                   </select>
                 </div>
-                <FieldNum label="No. of shares (lakhs)" value={inp.shares_lakhs} onChange={(v) => set("shares_lakhs", v)} testid="bv-shares" />
+                <FieldNum label="No. of shares (in Lacs)" value={inp.shares_lakhs} onChange={(v) => set("shares_lakhs", v)} testid="bv-shares" />
               </Section>
             </TabsContent>
 
             <TabsContent value="financials">
-              <Section title="Historical P&L (₹ Lakhs)" icon={TrendingUp}>
-                <FieldNum label="Revenue FY-3" value={inp.revenue.fy1} onChange={(v) => set("revenue.fy1", v)} testid="bv-rev-fy1" />
-                <FieldNum label="Revenue FY-2" value={inp.revenue.fy2} onChange={(v) => set("revenue.fy2", v)} testid="bv-rev-fy2" />
-                <FieldNum label="Revenue FY-1 (latest)" value={inp.revenue.fy3} onChange={(v) => set("revenue.fy3", v)} testid="bv-rev-fy3" />
-                <FieldNum label="EBITDA FY-3" value={inp.ebitda.fy1} onChange={(v) => set("ebitda.fy1", v)} testid="bv-eb-fy1" />
-                <FieldNum label="EBITDA FY-2" value={inp.ebitda.fy2} onChange={(v) => set("ebitda.fy2", v)} testid="bv-eb-fy2" />
-                <FieldNum label="EBITDA FY-1 (latest)" value={inp.ebitda.fy3} onChange={(v) => set("ebitda.fy3", v)} testid="bv-eb-fy3" />
-                <FieldNum label="PAT FY-1" value={inp.pat_fy3} onChange={(v) => set("pat_fy3", v)} testid="bv-pat" />
-                <FieldNum label="Total Assets FY-1" value={inp.total_assets_fy3} onChange={(v) => set("total_assets_fy3", v)} testid="bv-ta" />
-                <FieldNum label="Shareholders' Equity FY-1" value={inp.shareholders_equity_fy3} onChange={(v) => set("shareholders_equity_fy3", v)} testid="bv-se" />
+              <Section title="Historical P&L (₹ Lacs)" icon={TrendingUp}>
+                <FieldNum label="Revenue FY 2025-26" value={inp.revenue.fy3} onChange={(v) => set("revenue.fy3", v)} testid="bv-rev-fy3" />
+                <FieldNum label="Revenue FY 2024-25" value={inp.revenue.fy2} onChange={(v) => set("revenue.fy2", v)} testid="bv-rev-fy2" />
+                <FieldNum label="Revenue FY 2023-24" value={inp.revenue.fy1} onChange={(v) => set("revenue.fy1", v)} testid="bv-rev-fy1" />
+                <FieldNum label="EBITDA FY 2025-26" value={inp.ebitda.fy3} onChange={(v) => set("ebitda.fy3", v)} testid="bv-eb-fy3" />
+                <FieldNum label="EBITDA FY 2024-25" value={inp.ebitda.fy2} onChange={(v) => set("ebitda.fy2", v)} testid="bv-eb-fy2" />
+                <FieldNum label="EBITDA FY 2023-24" value={inp.ebitda.fy1} onChange={(v) => set("ebitda.fy1", v)} testid="bv-eb-fy1" />
+                <FieldNum label="PAT FY 2025-26" value={inp.pat_fy3} onChange={(v) => set("pat_fy3", v)} testid="bv-pat" />
+                <FieldNum label="Total Assets FY 2025-26" value={inp.total_assets_fy3} onChange={(v) => set("total_assets_fy3", v)} testid="bv-ta" />
+                <FieldNum label="Shareholders' Equity FY 2025-26" value={inp.shareholders_equity_fy3} onChange={(v) => set("shareholders_equity_fy3", v)} testid="bv-se" />
               </Section>
             </TabsContent>
 
             <TabsContent value="balance">
-              <Section title="Balance Sheet (₹ Lakhs) — used by NAV" icon={Layers}>
+              <Section title="Balance Sheet (₹ Lacs) — used by NAV" icon={Layers}>
                 <FieldNum label="Cash & Cash Equivalents" value={inp.cash_fy3} onChange={(v) => set("cash_fy3", v)} testid="bv-cash" />
                 <FieldNum label="Accounts Receivable" value={inp.accounts_receivable} onChange={(v) => set("accounts_receivable", v)} hint="5% recoverability haircut applied" testid="bv-ar" />
                 <FieldNum label="Other Current Assets" value={inp.other_current_assets} onChange={(v) => set("other_current_assets", v)} testid="bv-oca" />
@@ -304,7 +299,7 @@ const BVEngine = ({ user, apiClient }) => {
             </TabsContent>
 
             <TabsContent value="comp">
-              <Section title={`Comparable Multiples — peer set: ${sector.peers.slice(0, 3).join(", ")}…`} icon={BarChart3}>
+              <Section title={`Comparable Multiples — ${(sector.large_caps || []).slice(0, 2).join(", ")} + ${(sector.mid_caps || [])[0] || "Mid Cap"} + NIFTY-500`} icon={BarChart3}>
                 <FieldNum label="EV/EBITDA Multiple" value={inp.ev_ebitda_multiple} onChange={(v) => set("ev_ebitda_multiple", v)} suffix="x" testid="bv-evebitda" />
                 <FieldNum label="EV/Revenue Multiple" value={inp.ev_revenue_multiple} onChange={(v) => set("ev_revenue_multiple", v)} suffix="x" testid="bv-evrev" />
                 <FieldNum label="P/E Multiple" value={inp.pe_multiple} onChange={(v) => set("pe_multiple", v)} suffix="x" testid="bv-pe" />
@@ -422,8 +417,22 @@ const BVEngine = ({ user, apiClient }) => {
                     </div>
                   )}
                 </div>
+                {/* Explicit peer composition: 3 Large Cap + 1 Mid Cap + NIFTY-500 sector median */}
+                <div className="mt-3 pt-3 border-t border-amber-400/15 space-y-1">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-amber-300/70 font-semibold mb-1">Peer Set ({buildPeerSet(inp.sector_id).length})</div>
+                  {buildPeerSet(inp.sector_id).map((peer) => (
+                    <div key={peer.name} className="flex items-center justify-between text-[10px]">
+                      <span className="text-white/65 truncate">{peer.name}</span>
+                      <span className={
+                        peer.segment === "Large Cap" ? "text-emerald-300/75" :
+                        peer.segment === "Mid Cap" ? "text-amber-300/75" :
+                        "text-violet-300/75"
+                      }>{peer.segment}</span>
+                    </div>
+                  ))}
+                </div>
                 <p className="text-[10px] text-white/35 mt-3 italic leading-relaxed">
-                  Peer set: {sector.peers.join(", ")} (sector median, NSE/BSE-derived).
+                  3 Large Cap + 1 Mid Cap + Broad NIFTY-500 sector median (NSE/BSE-derived).
                 </p>
               </CardContent>
             </Card>
@@ -443,7 +452,7 @@ const BVEngine = ({ user, apiClient }) => {
                     ₹ {fmtL(summary.weighted_equity_value)}<span className="text-xl text-white/40 ml-1">L</span>
                   </div>
                   <div className="text-xs text-white/55 mt-1">
-                    Per share: ₹ {fmtL(summary.weighted_per_share)} L / lakh share
+                    Per share: ₹ {fmtL(summary.weighted_per_share)} L / Lac share
                   </div>
                 </div>
                 <div className="lg:col-span-2">
@@ -477,7 +486,7 @@ const BVEngine = ({ user, apiClient }) => {
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Calculator className="w-4 h-4 text-indigo-300" />
-                <h3 className="text-[13px] font-semibold text-white">DCF Projection (₹ Lakhs)</h3>
+                <h3 className="text-[13px] font-semibold text-white">DCF Projection (₹ Lacs)</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-[11px]" data-testid="bv-dcf-projection">

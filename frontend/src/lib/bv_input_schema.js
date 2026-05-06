@@ -63,7 +63,7 @@ export const PL_ROWS = [
   { id: "net_margin",      label: "Net Margin %",                                 type: "computed",
     format: "pct", compute: (g) => safeDiv(g("net_profit"), g("rev_ops")) },
   // Shares & EPS — # of shares is sourced from the BS sheet (A38)
-  { id: "shares_lakhs",    label: "Number of O/S Shares (in lakhs)",              type: "computed",
+  { id: "shares_lakhs",    label: "Number of O/S Shares (in Lacs)",              type: "computed",
     compute: (g, bsG) => bsG("shares_outstanding") },
   { id: "eps",             label: "EPS (₹/share)",                                type: "computed",
     format: "raw", compute: (g) => safeDiv(g("net_profit"), g("shares_lakhs")) },
@@ -121,7 +121,7 @@ export const BS_ROWS = [
     compute: (g) => g("total_se") + g("total_ncl") + g("total_cl") },
 
   { id: "_h_extras",        label: "Derived (used by DCF & Valuation)",   type: "subheader" },
-  { id: "shares_outstanding", label: "No. of shares outstanding (lakhs)", type: "input" },
+  { id: "shares_outstanding", label: "No. of shares outstanding (Lacs)", type: "input" },
   // Capex per FY = ΔTangible from prior FY. FY0 (oldest) = 0 by convention.
   { id: "capex",            label: "Capital Expenditure (= ΔTangible)",   type: "computed",
     compute: (g, _, prior) => prior ? g("tangible_nca") - prior("tangible_nca") : 0 },
