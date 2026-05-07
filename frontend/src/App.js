@@ -68,7 +68,6 @@ import Payments from "@/pages/Payments";
 import MarketAnalytics from "@/pages/MarketAnalytics";
 
 // Components
-import Footer from "@/components/Footer";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -177,13 +176,12 @@ const ProtectedRoute = ({ children, showFooter = true }) => {
     return <Navigate to="/login" />;
   }
 
-  // Pass user and apiClient to children, with global footer
+  // Pass user and apiClient to children
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1">
         {children({ user, apiClient })}
       </div>
-      {showFooter && <Footer />}
     </div>
   );
 };
