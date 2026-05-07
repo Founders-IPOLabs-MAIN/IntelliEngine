@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter,
@@ -13,6 +12,7 @@ import {
 import {
   ArrowLeft, ShieldCheck, Loader2, CheckCircle2,
   Download, Sparkles, AlertCircle, IndianRupee,
+  Check, Rocket, Layers, Crown,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -310,9 +310,9 @@ const Payments = ({ user, apiClient }) => {
 
   // ============ CHECKOUT FORM ============
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100" data-testid="payments-page">
+    <div className="min-h-screen bg-[#F5F7FA]" data-testid="payments-page">
       {/* Top nav */}
-      <nav className="flex items-center justify-between px-8 lg:px-16 py-5 border-b bg-white sticky top-0 z-30">
+      <nav className="flex items-center justify-between px-8 lg:px-16 py-5 bg-white border-b border-gray-100 sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} data-testid="payments-back">
             <ArrowLeft className="w-5 h-5" />
@@ -325,189 +325,226 @@ const Payments = ({ user, apiClient }) => {
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10 grid lg:grid-cols-[1.4fr_1fr] gap-10">
-        {/* LEFT — Form */}
-        <div className="space-y-8">
-          {/* Plan selection */}
-          <section data-testid="plan-section">
-            <h2 className="text-2xl font-bold text-[#003366] mb-1">Choose your plan</h2>
-            <p className="text-sm text-gray-600 mb-5">Predefined plans below or pay any custom amount.</p>
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 lg:py-16">
+        <div className="grid lg:grid-cols-[1.55fr_1fr] gap-10 lg:gap-14 items-start">
+          {/* ─────────── LEFT — Plan Modules ─────────── */}
+          <div data-testid="plan-section">
+            <h1 className="text-4xl lg:text-5xl font-bold text-[#0E1E3A] tracking-tight mb-3">
+              Choose your plan
+            </h1>
+            <p className="text-base text-gray-600 mb-10 max-w-lg">
+              Start with the tier that fits today, scale tomorrow. Or pay any custom amount for advisory & consulting services.
+            </p>
 
             {loadingPlans ? (
-              <div className="flex items-center gap-2 text-gray-500"><Loader2 className="w-4 h-4 animate-spin" /> Loading plans…</div>
+              <div className="flex items-center gap-2 text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin" /> Loading plans…
+              </div>
             ) : (
-              <div className="grid sm:grid-cols-2 gap-4">
-                {plans.map((p) => {
-                  const active = selectedPlanId === p.plan_id;
-                  return (
-                    <button
-                      key={p.plan_id}
-                      type="button"
-                      onClick={() => setSelectedPlanId(p.plan_id)}
-                      className={`text-left rounded-xl p-5 border-2 transition-all relative ${
-                        active ? "border-[#00D1FF] bg-cyan-50/60 shadow-lg" : "border-gray-200 bg-white hover:border-[#003366]/40"
-                      }`}
-                      data-testid={`plan-card-${p.plan_id}`}
-                    >
-                      {p.highlight && (
-                        <Badge className="absolute -top-2 right-3 bg-[#FF6B1A] hover:bg-[#FF6B1A] text-white text-[10px]">
-                          <Sparkles className="w-3 h-3 mr-1" /> POPULAR
-                        </Badge>
-                      )}
-                      <div className="font-semibold text-[#003366] mb-1">{p.name}</div>
-                      <div className="text-xs text-gray-600 mb-3 leading-relaxed">{p.description}</div>
-                      <div className="text-2xl font-bold text-[#003366]">
-                        ₹{Number(p.price).toLocaleString("en-IN")}
-                        <span className="text-xs font-normal text-gray-500 ml-1">+ 18% GST</span>
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {plans.map((p, idx) => (
+                  <PlanCard
+                    key={p.plan_id}
+                    plan={p}
+                    index={idx}
+                    active={selectedPlanId === p.plan_id}
+                    onSelect={() => setSelectedPlanId(p.plan_id)}
+                  />
+                ))}
 
                 {/* Custom amount card */}
                 <button
                   type="button"
                   onClick={() => setSelectedPlanId("__custom__")}
-                  className={`text-left rounded-xl p-5 border-2 border-dashed transition-all ${
-                    selectedPlanId === "__custom__" ? "border-[#00D1FF] bg-cyan-50/60" : "border-gray-300 bg-white hover:border-[#003366]/40"
+                  className={`text-left rounded-2xl p-7 border-2 border-dashed transition-all bg-white flex flex-col ${
+                    selectedPlanId === "__custom__"
+                      ? "border-[#4361EE] shadow-lg ring-4 ring-[#4361EE]/10"
+                      : "border-gray-300 hover:border-[#4361EE]/60 hover:shadow-md"
                   }`}
                   data-testid="plan-card-custom"
                 >
-                  <div className="font-semibold text-[#003366] mb-1">Custom Amount</div>
-                  <div className="text-xs text-gray-600 mb-3">Pay any amount for advisory, consulting or services.</div>
-                  <div className="flex items-center gap-2">
-                    <IndianRupee className="w-4 h-4 text-gray-500" />
+                  <div className="w-12 h-12 mb-5 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                    <IndianRupee className="w-6 h-6 text-[#FF6B1A]" strokeWidth={2.4} />
+                  </div>
+                  <div className="text-lg font-bold text-[#0E1E3A] mb-1">Custom</div>
+                  <div className="text-xs text-gray-500 mb-5 leading-relaxed">
+                    Pay any amount for advisory, consulting or services
+                  </div>
+                  <div className="flex items-center gap-2 mb-4">
                     <Input
                       type="number"
                       placeholder="Amount in INR"
                       value={customAmount}
                       onChange={(e) => { setCustomAmount(e.target.value); setSelectedPlanId("__custom__"); }}
                       onClick={(e) => e.stopPropagation()}
-                      className="bg-white"
+                      className="bg-white border-gray-200"
                       data-testid="custom-amount-input"
                     />
                   </div>
-                  {errors.customAmount && <p className="text-xs text-red-600 mt-1">{errors.customAmount}</p>}
+                  {errors.customAmount && <p className="text-xs text-red-600 mb-2">{errors.customAmount}</p>}
+                  <div className="mt-auto">
+                    <span className={`block w-full text-center py-2.5 rounded-lg text-sm font-semibold transition ${
+                      selectedPlanId === "__custom__"
+                        ? "bg-[#4361EE] text-white"
+                        : "bg-gray-100 text-gray-700"
+                    }`}>
+                      {selectedPlanId === "__custom__" ? "Selected" : "Choose Custom"}
+                    </span>
+                  </div>
                 </button>
               </div>
             )}
-            {errors.plan && <p className="text-xs text-red-600 mt-2">{errors.plan}</p>}
-          </section>
+            {errors.plan && <p className="text-xs text-red-600 mt-3">{errors.plan}</p>}
 
-          {/* Customer / KYC */}
-          <section data-testid="kyc-section">
-            <h2 className="text-2xl font-bold text-[#003366] mb-1">Billing details</h2>
-            <p className="text-sm text-gray-600 mb-5">Required for GST-compliant invoice generation.</p>
-
-            <Card className="p-6 bg-white border border-gray-200 grid sm:grid-cols-2 gap-4">
-              <Field label="Full Name *" error={errors.name}>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  data-testid="kyc-name" />
-              </Field>
-              <Field label="Email *" error={errors.email}>
-                <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  data-testid="kyc-email" />
-              </Field>
-              <Field label="Mobile (10 digits) *" error={errors.phone}>
-                <Input value={form.phone} maxLength={10} onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "") })}
-                  data-testid="kyc-phone" />
-              </Field>
-              <Field label="Company name (optional)">
-                <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })}
-                  data-testid="kyc-company" />
-              </Field>
-              <Field label="GSTIN (optional, for B2B invoice)" error={errors.gstin}>
-                <Input value={form.gstin} maxLength={15}
-                  onChange={(e) => setForm({ ...form, gstin: e.target.value.toUpperCase() })}
-                  placeholder="22AAAAA0000A1Z5"
-                  data-testid="kyc-gstin" />
-              </Field>
-              <Field label="Pincode *" error={errors.pincode}>
-                <Input value={form.pincode} maxLength={6}
-                  onChange={(e) => setForm({ ...form, pincode: e.target.value.replace(/\D/g, "") })}
-                  data-testid="kyc-pincode" />
-              </Field>
-              <div className="sm:col-span-2">
-                <Field label="Address *" error={errors.address_line1}>
-                  <Input value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })}
-                    data-testid="kyc-address" />
-                </Field>
+            {/* Enterprise CTA strip — Maze-inspired */}
+            <div className="mt-10 flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-6 py-5">
+              <div>
+                <div className="text-sm font-semibold text-[#0E1E3A]">Need more than this?</div>
+                <div className="text-xs text-gray-500 mt-0.5">Get a tailored enterprise quote with dedicated support.</div>
               </div>
-              <Field label="City *" error={errors.city}>
-                <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}
-                  data-testid="kyc-city" />
-              </Field>
-              <Field label="State *">
-                <select
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#003366]/30"
-                  value={form.state_code}
-                  onChange={(e) => {
-                    const found = INDIAN_STATES.find(([c]) => c === e.target.value);
-                    setForm({ ...form, state_code: e.target.value, state: found ? found[1] : form.state });
-                  }}
-                  data-testid="kyc-state"
+              <button
+                type="button"
+                onClick={() => navigate("/contact")}
+                className="text-sm font-semibold text-[#4361EE] hover:underline"
+                data-testid="enterprise-talk-to-sales"
+              >
+                Talk to sales →
+              </button>
+            </div>
+          </div>
+
+          {/* ─────────── RIGHT — Order Summary + Billing Details ─────────── */}
+          <aside className="self-start" data-testid="payment-summary">
+            <Card className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              {/* Order Summary */}
+              <div className="p-7 bg-gradient-to-br from-[#0E1E3A] to-[#1a2e54] text-white">
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="w-4 h-4 text-[#00D1FF]" />
+                  <span className="text-[11px] font-semibold tracking-wider uppercase text-[#00D1FF]">Order Summary</span>
+                </div>
+                <div className="text-2xl font-bold mt-2 mb-5" data-testid="summary-plan-name">
+                  {selectedPlanId === "__custom__"
+                    ? "Custom Payment"
+                    : plans.find((p) => p.plan_id === selectedPlanId)?.name || "—"}
+                </div>
+
+                <div className="space-y-2.5 text-sm">
+                  <SummaryRow label="Subtotal" light>{fmt(breakdown.subtotal)}</SummaryRow>
+                  {breakdown.sameState ? (
+                    <>
+                      <SummaryRow label="CGST (9%)" light>{fmt(breakdown.cgst)}</SummaryRow>
+                      <SummaryRow label="SGST (9%)" light>{fmt(breakdown.sgst)}</SummaryRow>
+                    </>
+                  ) : (
+                    <SummaryRow label="IGST (18%)" light>{fmt(breakdown.igst)}</SummaryRow>
+                  )}
+                  <div className="border-t border-white/15 pt-3 mt-3 flex justify-between items-center">
+                    <span className="font-semibold text-white/90">Total</span>
+                    <span className="text-3xl font-bold" data-testid="summary-total">{fmt(breakdown.total)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Billing Details */}
+              <div className="p-7">
+                <div className="text-[11px] font-semibold tracking-wider uppercase text-gray-500 mb-1">Billing Details</div>
+                <div className="text-sm text-gray-500 mb-5">Required for GST-compliant invoice generation.</div>
+
+                <div className="grid grid-cols-2 gap-3.5">
+                  <Field label="Full Name *" error={errors.name}>
+                    <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className="bg-gray-50 border-gray-200 focus-visible:ring-[#4361EE]/40"
+                      data-testid="kyc-name" />
+                  </Field>
+                  <Field label="Email *" error={errors.email}>
+                    <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      className="bg-gray-50 border-gray-200 focus-visible:ring-[#4361EE]/40"
+                      data-testid="kyc-email" />
+                  </Field>
+                  <Field label="Mobile *" error={errors.phone}>
+                    <Input value={form.phone} maxLength={10} onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "") })}
+                      className="bg-gray-50 border-gray-200 focus-visible:ring-[#4361EE]/40"
+                      data-testid="kyc-phone" />
+                  </Field>
+                  <Field label="Pincode *" error={errors.pincode}>
+                    <Input value={form.pincode} maxLength={6}
+                      onChange={(e) => setForm({ ...form, pincode: e.target.value.replace(/\D/g, "") })}
+                      className="bg-gray-50 border-gray-200 focus-visible:ring-[#4361EE]/40"
+                      data-testid="kyc-pincode" />
+                  </Field>
+                  <div className="col-span-2">
+                    <Field label="Company name (optional)">
+                      <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })}
+                        className="bg-gray-50 border-gray-200 focus-visible:ring-[#4361EE]/40"
+                        data-testid="kyc-company" />
+                    </Field>
+                  </div>
+                  <div className="col-span-2">
+                    <Field label="GSTIN (optional, for B2B invoice)" error={errors.gstin}>
+                      <Input value={form.gstin} maxLength={15}
+                        onChange={(e) => setForm({ ...form, gstin: e.target.value.toUpperCase() })}
+                        placeholder="22AAAAA0000A1Z5"
+                        className="bg-gray-50 border-gray-200 focus-visible:ring-[#4361EE]/40"
+                        data-testid="kyc-gstin" />
+                    </Field>
+                  </div>
+                  <div className="col-span-2">
+                    <Field label="Address *" error={errors.address_line1}>
+                      <Input value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })}
+                        className="bg-gray-50 border-gray-200 focus-visible:ring-[#4361EE]/40"
+                        data-testid="kyc-address" />
+                    </Field>
+                  </div>
+                  <Field label="City *" error={errors.city}>
+                    <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}
+                      className="bg-gray-50 border-gray-200 focus-visible:ring-[#4361EE]/40"
+                      data-testid="kyc-city" />
+                  </Field>
+                  <Field label="State *">
+                    <select
+                      className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4361EE]/40"
+                      value={form.state_code}
+                      onChange={(e) => {
+                        const found = INDIAN_STATES.find(([c]) => c === e.target.value);
+                        setForm({ ...form, state_code: e.target.value, state: found ? found[1] : form.state });
+                      }}
+                      data-testid="kyc-state"
+                    >
+                      {INDIAN_STATES.map(([code, name]) => (
+                        <option key={code} value={code}>{name} ({code})</option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+
+                {globalError && (
+                  <div className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 flex items-start gap-2" data-testid="payment-error">
+                    <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs text-red-800">{globalError}</div>
+                  </div>
+                )}
+
+                <Button
+                  onClick={onProceed}
+                  disabled={processing || baseAmount <= 0}
+                  className="w-full mt-6 bg-[#4361EE] hover:bg-[#3651d1] text-white font-semibold py-6 text-base rounded-xl disabled:opacity-50 shadow-md hover:shadow-lg transition-all"
+                  data-testid="proceed-pay-btn"
                 >
-                  {INDIAN_STATES.map(([code, name]) => (
-                    <option key={code} value={code}>{name} ({code})</option>
-                  ))}
-                </select>
-              </Field>
-            </Card>
-          </section>
+                  {processing ? (
+                    <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing…</>
+                  ) : (
+                    <>Review &amp; Pay {fmt(breakdown.total)}</>
+                  )}
+                </Button>
 
-          {globalError && (
-            <div className="rounded-lg border-2 border-red-300 bg-red-50 p-4 flex items-start gap-3" data-testid="payment-error">
-              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-red-800">{globalError}</div>
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT — Sticky summary */}
-        <aside className="lg:sticky lg:top-24 self-start" data-testid="payment-summary">
-          <Card className="p-6 bg-white border-2 border-[#003366]/10 shadow-xl">
-            <h3 className="text-lg font-bold text-[#003366] mb-4">Order Summary</h3>
-
-            <div className="space-y-3 text-sm">
-              <SummaryRow label="Item">
-                {selectedPlanId === "__custom__"
-                  ? "Custom Payment"
-                  : plans.find((p) => p.plan_id === selectedPlanId)?.name || "—"}
-              </SummaryRow>
-              <SummaryRow label="Subtotal">{fmt(breakdown.subtotal)}</SummaryRow>
-              {breakdown.sameState ? (
-                <>
-                  <SummaryRow label="CGST (9%)">{fmt(breakdown.cgst)}</SummaryRow>
-                  <SummaryRow label="SGST (9%)">{fmt(breakdown.sgst)}</SummaryRow>
-                </>
-              ) : (
-                <SummaryRow label="IGST (18%)">{fmt(breakdown.igst)}</SummaryRow>
-              )}
-              <div className="border-t pt-3 mt-3 flex justify-between items-center">
-                <span className="font-semibold text-[#003366]">Total</span>
-                <span className="text-2xl font-bold text-[#003366]" data-testid="summary-total">{fmt(breakdown.total)}</span>
+                <p className="text-[11px] text-gray-500 mt-4 leading-relaxed text-center">
+                  By continuing you agree to our Terms. Powered by <strong>Razorpay</strong>.
+                  Pay via <strong>UPI</strong>, <strong>Cards</strong>, <strong>Netbanking</strong>, <strong>Wallets</strong>, EMI &amp; PayLater.
+                </p>
               </div>
-            </div>
-
-            <Button
-              onClick={onProceed}
-              disabled={processing || baseAmount <= 0}
-              className="w-full mt-6 bg-[#00D1FF] hover:bg-[#00b8e6] text-[#003366] font-semibold py-6 text-base disabled:opacity-50"
-              data-testid="proceed-pay-btn"
-            >
-              {processing ? (
-                <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing…</>
-              ) : (
-                <>Review & Pay {fmt(breakdown.total)}</>
-              )}
-            </Button>
-
-            <p className="text-[11px] text-gray-500 mt-4 leading-relaxed text-center">
-              By continuing you agree to our Terms. Powered by <strong>Razorpay</strong>.
-              Pay via <strong>UPI</strong>, <strong>Cards</strong>, <strong>Netbanking</strong>, <strong>Wallets</strong>, EMI &amp; PayLater.
-            </p>
-          </Card>
-        </aside>
+            </Card>
+          </aside>
+        </div>
       </div>
 
       {/* CONFIRM DIALOG */}
@@ -573,11 +610,84 @@ const Field = ({ label, error, children }) => (
   </div>
 );
 
-const SummaryRow = ({ label, children }) => (
-  <div className="flex justify-between text-gray-700">
-    <span>{label}</span><span className="font-medium">{children}</span>
+const SummaryRow = ({ label, children, light }) => (
+  <div className={`flex justify-between ${light ? "text-white/70" : "text-gray-700"}`}>
+    <span>{label}</span>
+    <span className={`font-medium ${light ? "text-white" : ""}`}>{children}</span>
   </div>
 );
+
+// ── Maze-inspired plan card ────────────────────────────────────────────────
+const PLAN_ICONS = [Rocket, Layers, Crown];
+const PLAN_ACCENTS = [
+  { bg: "from-blue-100 to-blue-200",   fg: "text-[#4361EE]" },
+  { bg: "from-violet-100 to-violet-200", fg: "text-[#7C3AED]" },
+  { bg: "from-amber-100 to-amber-200", fg: "text-[#D97706]" },
+];
+
+const PlanCard = ({ plan, index, active, onSelect }) => {
+  const Icon = PLAN_ICONS[index % PLAN_ICONS.length];
+  const accent = PLAN_ACCENTS[index % PLAN_ACCENTS.length];
+  const features = Array.isArray(plan.features) && plan.features.length
+    ? plan.features.slice(0, 4)
+    : ["GST-compliant invoice", "Email + chat support", "Cancel anytime"];
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      data-testid={`plan-card-${plan.plan_id}`}
+      className={`relative text-left bg-white rounded-2xl p-7 border transition-all flex flex-col ${
+        active
+          ? "border-[#4361EE] shadow-xl ring-4 ring-[#4361EE]/10 -translate-y-0.5"
+          : plan.highlight
+            ? "border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+            : "border-gray-100 hover:shadow-md hover:-translate-y-0.5"
+      }`}
+    >
+      {plan.highlight && (
+        <span className="absolute -top-2.5 right-5 bg-[#FF6B1A] text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full uppercase shadow-sm">
+          Popular
+        </span>
+      )}
+
+      <div className={`w-12 h-12 mb-5 rounded-xl bg-gradient-to-br ${accent.bg} flex items-center justify-center`}>
+        <Icon className={`w-6 h-6 ${accent.fg}`} strokeWidth={2.2} />
+      </div>
+
+      <div className="text-lg font-bold text-[#0E1E3A] mb-1">{plan.name}</div>
+      <p className="text-xs text-gray-500 mb-5 leading-relaxed min-h-[32px]">{plan.description}</p>
+
+      <div className="mb-5">
+        <div className="flex items-baseline gap-1">
+          <span className="text-3xl font-bold text-[#0E1E3A]">
+            ₹{Number(plan.price).toLocaleString("en-IN")}
+          </span>
+        </div>
+        <div className="text-[11px] text-gray-500 mt-0.5">+ 18% GST · one-time</div>
+      </div>
+
+      <ul className="space-y-2 mb-6">
+        {features.map((f, i) => (
+          <li key={i} className="flex items-start gap-2 text-xs text-gray-700 leading-snug">
+            <Check className="w-3.5 h-3.5 text-[#4361EE] mt-0.5 flex-shrink-0" strokeWidth={3} />
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+
+      <span className={`mt-auto block w-full text-center py-2.5 rounded-lg text-sm font-semibold transition ${
+        active
+          ? "bg-[#4361EE] text-white"
+          : plan.highlight
+            ? "bg-[#0E1E3A] text-white hover:bg-[#1a2e54]"
+            : "bg-gray-100 text-[#0E1E3A] hover:bg-gray-200"
+      }`}>
+        {active ? "Selected" : `Choose ${plan.name}`}
+      </span>
+    </button>
+  );
+};
 
 const Row = ({ label, value, mono, testid }) => (
   <div className="flex justify-between text-sm">
