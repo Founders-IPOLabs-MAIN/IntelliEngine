@@ -25,6 +25,31 @@ def _default_template_path(board_type: str) -> str:
     return os.path.join(_DEFAULT_TEMPLATE_DIR, f"{board_type}_board_default.docx")
 
 
+@router.get("/drhp/default-template/docx")
+async def get_default_template_docx(
+    board: str = "sme",
+    user: User = Depends(get_current_user),
+):
+    """Return the raw .docx bytes for the default DRHP template. The frontend
+    pipes this through Syncfusion's /Import service so the rendering matches
+    the manual upload flow exactly."""
+    if board not in ("sme", "mainboard"):
+        raise HTTPException(status_code=400, detail="board must be 'sme' or 'mainboard'")
+    path = _default_template_path(board)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail=f"No default template configured for {board}")
+    with open(path, "rb") as f:
+        data = f.read()
+    return Response(
+        content=data,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={
+            "Content-Disposition": f'inline; filename="{board}_board_default.docx"',
+            "Cache-Control": "no-cache",
+        },
+    )
+
+
 @router.get("/drhp/default-template/sfdt")
 async def get_default_template_sfdt(
     board: str = "sme",

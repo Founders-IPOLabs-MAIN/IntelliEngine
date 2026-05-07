@@ -77,7 +77,7 @@ All responses now include:
 ### 5. CORS Locked Down
 
 ```python
-CORS_ORIGINS="https://ipo-command-center.preview.emergentagent.com"
+CORS_ORIGINS="https://setu-ipo-ready.preview.emergentagent.com"
 ```
 
 ### 6. Dependencies Updated
