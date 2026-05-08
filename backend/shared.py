@@ -354,6 +354,15 @@ async def get_current_user(request: Request) -> User:
     return User(**user_doc)
 
 
+async def get_optional_user(request: Request) -> Optional["User"]:
+    """Like get_current_user, but returns None instead of raising 401.
+    Use for endpoints that work for both anonymous & authenticated visitors."""
+    try:
+        return await get_current_user(request)
+    except HTTPException:
+        return None
+
+
 async def promote_new_user(user_id: str):
     user_doc = await db.users.find_one({"user_id": user_id, "user_type": "new_user"})
     if user_doc:

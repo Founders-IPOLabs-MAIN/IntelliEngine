@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import CookieConsent from "@/components/CookieConsent";
 import { Toaster } from "@/components/ui/sonner";
 
 // Pages
@@ -182,6 +183,7 @@ const ProtectedRoute = ({ children, showFooter = true }) => {
       <div className="flex-1">
         {children({ user, apiClient })}
       </div>
+      <CookieConsent user={user} />
     </div>
   );
 };

@@ -2,50 +2,93 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Cookie, X, ScrollText, ShieldCheck, ChevronDown, ChevronUp } from "lucide-react";
+import axios from "axios";
 
 const STORAGE_KEY = "setu_cookie_consent_v2";
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 /**
  * Cookie + Terms consent banner.
- * Acceptance ("Accept all & I agree") binds the user to:
- *   • Cookie usage (analytics, preferences, session)
- *   • Terms & Conditions of IPO Labs AI Private Limited
- *   • Indemnification / Limitation of Liability / "As-Is" disclaimers
- * Persists once per browser; choice & timestamp stored in localStorage.
+ * Server-backed:
+ *   • On mount, asks the backend whether the visitor (by IP and/or logged-in user)
+ *     has already accepted at the current clause version. If yes, banner stays hidden.
+ *   • "Accept all & agree" POSTs the consent payload to /api/consent which
+ *     records IP + user_id + user_email + UA + timestamp, and stamps a "skip"
+ *     ledger so future visits/logins from the same IP or user skip the banner.
+ *   • "Essential only" is NOT recorded as skip → the banner re-appears on the
+ *     next login / new session (per requirement).
  */
-const CookieConsent = () => {
+const CookieConsent = ({ user }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
+  // Decide whether to show the banner. We re-run when login state changes
+  // so that a logged-in user who previously dismissed as "essential" sees
+  // the banner again post-login.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) {
-        const t = setTimeout(() => setOpen(true), 600);
+    let cancelled = false;
+    const decide = async () => {
+      try {
+        const res = await axios.get(`${BACKEND_URL}/api/consent/status`, { withCredentials: true });
+        if (cancelled) return;
+        const shouldShow = res.data?.should_show !== false;
+        if (!shouldShow) {
+          setOpen(false);
+          // Mirror backend decision into local cache so subsequent navigations
+          // don't even hit the network.
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ choice: "all", server_skip: true, ts: new Date().toISOString(), v: 2 })); } catch {}
+          return;
+        }
+        // Server says show → defer 600 ms so the banner doesn't compete with hero animations
+        const t = setTimeout(() => !cancelled && setOpen(true), 600);
         return () => clearTimeout(t);
+      } catch {
+        // Backend unreachable — fall back to local localStorage flag
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          const parsed = saved ? JSON.parse(saved) : null;
+          if (!parsed || parsed.choice !== "all") {
+            const t = setTimeout(() => !cancelled && setOpen(true), 600);
+            return () => clearTimeout(t);
+          }
+        } catch {
+          if (!cancelled) setOpen(true);
+        }
       }
-    } catch {
-      setOpen(true);
-    }
-  }, []);
+    };
+    decide();
+    return () => { cancelled = true; };
+  }, [user?.user_id]);
 
-  const persist = (choice) => {
+  const persist = async (choice) => {
+    setSubmitting(true);
+    const accepted = choice === "all";
+    const payload = {
+      choice,
+      accepted_terms: accepted,
+      accepted_indemnity: accepted,
+      accepted_liability_cap: accepted,
+      accepted_as_is: accepted,
+    };
+
+    // Local cache (so the banner doesn't flash on next nav within the same session)
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          choice,
-          accepted_terms: choice === "all",
-          accepted_indemnity: choice === "all",
-          accepted_liability_cap: choice === "all",
-          accepted_as_is: choice === "all",
-          ts: new Date().toISOString(),
-          v: 2,
-        })
-      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...payload, ts: new Date().toISOString(), v: 2 }));
     } catch { /* storage may be blocked */ }
-    setOpen(false);
+
+    // Server-side ledger (records IP, user_id if logged in, user-agent, timestamp)
+    try {
+      await axios.post(`${BACKEND_URL}/api/consent`, payload, { withCredentials: true });
+    } catch (err) {
+      // Best-effort: even if the server call fails, dismiss the banner so we
+      // don't trap the user. Local cache will still hide it for this session.
+      console.warn("[consent] server log failed, kept local-only:", err?.message || err);
+    } finally {
+      setSubmitting(false);
+      setOpen(false);
+    }
   };
 
   if (!open) return null;
@@ -62,7 +105,8 @@ const CookieConsent = () => {
         <button
           type="button"
           onClick={() => persist("essential")}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
+          disabled={submitting}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
           aria-label="Dismiss (essential only)"
           data-testid="cookie-close"
         >
@@ -99,7 +143,6 @@ const CookieConsent = () => {
           </div>
         </div>
 
-        {/* Expand to view full legal clauses */}
         <button
           type="button"
           onClick={() => setShowTerms((v) => !v)}
@@ -116,34 +159,20 @@ const CookieConsent = () => {
             className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-3 text-[10.5px] leading-relaxed text-gray-700"
             data-testid="cookie-legal-clauses"
           >
-            <Clause
-              icon={<ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />}
-              title="1. Indemnification"
-              testid="clause-indemnity"
-            >
+            <Clause icon={<ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />} title="1. Indemnification" testid="clause-indemnity">
               To the maximum extent permitted by applicable law, the User agrees to indemnify, defend, and hold harmless
               <strong> IPO Labs AI Private Limited</strong>, its employees, its Directors, its subsidiaries and owners from
               and against any and all claims, damages, losses, liabilities, costs, or expenses (including attorney fees)
               arising from, or related to, their use of the platform, including but not limited to any delays, fines, or
               court cases, regardless of whether such claims arise before, during, or after the period of use.
             </Clause>
-
-            <Clause
-              icon={<ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />}
-              title="2. Limitation of Liability"
-              testid="clause-liability"
-            >
+            <Clause icon={<ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />} title="2. Limitation of Liability" testid="clause-liability">
               Under no circumstances shall <strong>IPO Labs AI Private Limited</strong>, its employees, its Directors,
               its subsidiaries and owners be held liable for any indirect, incidental, consequential, special, or
               exemplary damages, including but not limited to financial losses, delays, or legal proceedings, arising
               out of or in connection with the use or inability to use the platform.
             </Clause>
-
-            <Clause
-              icon={<ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />}
-              title="3. 'As-Is' &amp; User-Risk Disclaimer"
-              testid="clause-as-is"
-            >
+            <Clause icon={<ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />} title="3. 'As-Is' &amp; User-Risk Disclaimer" testid="clause-as-is">
               The platform is provided on an <strong>'as-is'</strong> and <strong>'as-available'</strong> basis. You agree
               that your use of the platform is at your sole risk, and we (<strong>IPO Labs AI Private Limited</strong>,
               its employees, its Directors, its subsidiaries and owners) assume no responsibility for any outcome,
@@ -156,6 +185,7 @@ const CookieConsent = () => {
           <Button
             onClick={() => persist("essential")}
             variant="outline"
+            disabled={submitting}
             className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full text-xs h-9"
             data-testid="cookie-reject"
           >
@@ -163,15 +193,16 @@ const CookieConsent = () => {
           </Button>
           <Button
             onClick={() => persist("all")}
+            disabled={submitting}
             className="flex-1 bg-[#003366] hover:bg-[#002244] text-white rounded-full text-xs h-9 shadow-md"
             data-testid="cookie-accept"
           >
-            Accept all &amp; agree
+            {submitting ? "Saving…" : "Accept all & agree"}
           </Button>
         </div>
 
         <p className="mt-2 text-[10px] text-gray-400 leading-snug text-center">
-          Choosing "Essential only" will keep the site working but you will not be able to use the full platform. Full use requires acceptance.
+          Choosing "Essential only" will keep the site working — but the banner will reappear at your next login. Full use requires acceptance.
         </p>
       </div>
     </div>
