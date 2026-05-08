@@ -113,10 +113,10 @@ const BVProjectsLanding = ({ user, apiClient }) => {
         {/* Black background with subtle gradient — exact /assessment treatment */}
         <div className="relative z-10 min-h-screen flex flex-col">
           {/* Sticky Header */}
-          <header className="sticky top-0 z-20 bg-white/85 backdrop-blur-md border-b border-gray-200 px-8 lg:px-12 py-4 flex items-center justify-between">
+          <header className="sticky top-0 z-20 bg-white/85 backdrop-blur-md border-b border-gray-200 px-8 lg:px-12 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h1
-                className="text-2xl lg:text-3xl font-extrabold tracking-tight text-gray-900"
+                className="text-lg lg:text-xl font-semibold tracking-tight text-gray-900"
                 style={{ letterSpacing: "-0.02em" }}
               >
                 BV Engine — Business Valuation
@@ -138,17 +138,17 @@ const BVProjectsLanding = ({ user, apiClient }) => {
             </div>
             <div className="flex items-center gap-5 text-xs text-gray-600">
               <div className="text-center">
-                <p className="text-lg font-bold text-gray-900">{projects.length}</p>
+                <p className="text-base font-bold text-gray-900">{projects.length}</p>
                 <p>Projects</p>
               </div>
               <div className="w-px h-8 bg-gray-100" />
               <div className="text-center">
-                <p className="text-lg font-bold text-gray-900">3</p>
+                <p className="text-base font-bold text-gray-900">3</p>
                 <p>Methods</p>
               </div>
               <div className="w-px h-8 bg-gray-100" />
               <div className="text-center">
-                <p className="text-lg font-bold text-gray-900">30d</p>
+                <p className="text-base font-bold text-gray-900">30d</p>
                 <p>Audit</p>
               </div>
             </div>
@@ -168,18 +168,18 @@ const BVProjectsLanding = ({ user, apiClient }) => {
           </div>
 
           {/* Hero */}
-          <section className="px-8 lg:px-12 pt-10 pb-6 max-w-5xl">
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08]">
+          <section className="px-8 lg:px-12 pt-5 pb-3 max-w-5xl">
+            <h2 className="text-2xl sm:text-3xl lg:text-[32px] font-semibold tracking-tight text-gray-900 leading-[1.08]">
               Three Valuations.{" "}
               <span style={{ color: ACCENT_VIOLET }}>One Engine.</span>
             </h2>
-            <p className="mt-4 text-gray-600 text-base lg:text-lg leading-relaxed max-w-2xl">
+            <p className="mt-4 text-gray-600 text-[13px] lg:text-sm leading-relaxed max-w-2xl">
               Capture your P&amp;L, Balance Sheet and DCF assumptions once — the BV Engine runs DCF, NAV and Comparable Company valuations in parallel, with a sector-aware peer set.
             </p>
           </section>
 
           {/* Content Grid: Projects + Sidebar */}
-          <section className="px-8 lg:px-12 pb-8 flex-1">
+          <section className="px-8 lg:px-12 pb-4 flex-1">
             <div className="grid grid-cols-3 gap-5">
               {/* LEFT — Projects column (2/3) */}
               <div className="col-span-2 grid grid-cols-2 gap-4">
@@ -193,12 +193,12 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                   }}
                   data-testid="bv-create-btn"
                 >
-                  <CardContent className="p-5 flex flex-col h-full">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
+                  <CardContent className="p-4 flex flex-col h-full">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
                       {creating ? <Loader2 className="w-6 h-6 text-gray-900 animate-spin" /> : <Plus className="w-6 h-6 text-gray-900" />}
                     </div>
-                    <h3 className="text-base font-bold text-gray-900 mb-1.5">Create New BV Project</h3>
-                    <p className="text-xs text-gray-600 leading-relaxed mb-4 flex-1">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-1">Create New BV Project</h3>
+                    <p className="text-xs text-gray-600 leading-relaxed mb-3 flex-1">
                       Start a fresh business valuation. We'll create a blank input sheet for your P&amp;L, Balance Sheet and DCF assumptions.
                     </p>
                     <div className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all" style={{ color: ACCENT_VIOLET }}>
@@ -236,10 +236,10 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                         }}
                         data-testid={`bv-card-${p.project_id}`}
                       >
-                        <CardContent className="p-5 flex flex-col h-full">
+                        <CardContent className="p-4 flex flex-col h-full">
                           {/* Top row: icon tile + delete button */}
                           <div className="flex items-start justify-between mb-4">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                               <Building2 className="w-6 h-6 text-gray-900" />
                             </div>
                             <button
@@ -253,7 +253,7 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                           </div>
                           {/* Title + meta */}
                           <h3
-                            className="text-base font-bold text-gray-900 mb-1.5 line-clamp-2"
+                            className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2"
                             data-testid={`bv-proj-title-${p.project_id}`}
                           >
                             {p.company_name || "Untitled BV Project"}
@@ -304,8 +304,8 @@ const BVProjectsLanding = ({ user, apiClient }) => {
               {/* RIGHT — How It Works + Quick Start + Audit Log + Disclaimer */}
               <div className="space-y-4">
                 <Card className="bg-white border border-gray-200 backdrop-blur-xl border border-gray-200">
-                  <CardContent className="p-5">
-                    <h3 className="text-sm font-bold text-gray-900 mb-4">How It Works</h3>
+                  <CardContent className="p-4">
+                    <h3 className="text-xs font-semibold text-gray-900 mb-3">How It Works</h3>
                     <div className="space-y-3">
                       {[
                         { label: "New Project",    sub: "Create a workspace for your company" },
@@ -329,7 +329,7 @@ const BVProjectsLanding = ({ user, apiClient }) => {
 
                 {/* Quick Start — gradient violet/indigo to lean into BV Engine accent */}
                 <Card className="bg-gradient-to-br from-violet-600/80 to-indigo-700/80 backdrop-blur-xl border border-violet-400/30">
-                  <CardContent className="p-5">
+                  <CardContent className="p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-4 h-4 text-yellow-300" />
                       <span className="text-xs font-medium text-gray-900">Quick Start</span>
@@ -353,7 +353,7 @@ const BVProjectsLanding = ({ user, apiClient }) => {
 
                 {/* Audit Log card */}
                 <Card className="bg-white border border-gray-200 backdrop-blur-xl border border-gray-200">
-                  <CardContent className="p-5">
+                  <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <Clock className="w-3.5 h-3.5 text-amber-300" />

@@ -44,12 +44,12 @@ const MatchMakingLanding = ({ user, apiClient }) => {
         <div className="relative z-10 min-h-screen flex flex-col">
           {/* Sticky Header */}
           <header
-            className="sticky top-0 z-20 bg-white/85 backdrop-blur-md border-b border-gray-200 px-8 lg:px-12 py-4 flex items-center justify-between"
+            className="sticky top-0 z-20 bg-white/85 backdrop-blur-md border-b border-gray-200 px-8 lg:px-12 py-3 flex items-center justify-between"
             data-testid="matchmaker-top-header"
           >
             <div className="flex items-center gap-3">
               <h1
-                className="text-2xl lg:text-3xl font-extrabold tracking-tight text-gray-900"
+                className="text-lg lg:text-xl font-semibold tracking-tight text-gray-900"
                 style={{ letterSpacing: "-0.02em" }}
                 data-testid="matchmaker-header-title"
               >
@@ -61,9 +61,9 @@ const MatchMakingLanding = ({ user, apiClient }) => {
               </div>
             </div>
             <div className="flex items-center gap-5 text-xs text-gray-600">
-              <div className="text-center"><p className="text-lg font-bold text-gray-900">50+</p><p>Experts</p></div>
+              <div className="text-center"><p className="text-base font-bold text-gray-900">50+</p><p>Experts</p></div>
               <div className="w-px h-8 bg-gray-100" />
-              <div className="text-center"><p className="text-lg font-bold text-gray-900">15</p><p>Categories</p></div>
+              <div className="text-center"><p className="text-base font-bold text-gray-900">15</p><p>Categories</p></div>
             </div>
           </header>
 
@@ -81,21 +81,21 @@ const MatchMakingLanding = ({ user, apiClient }) => {
           </div>
 
           {/* Hero */}
-          <section className="px-8 lg:px-12 pt-10 pb-6 max-w-5xl" data-testid="matchmaker-hero">
+          <section className="px-8 lg:px-12 pt-5 pb-3 max-w-5xl" data-testid="matchmaker-hero">
             <h2
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08]"
+              className="text-2xl sm:text-3xl lg:text-[32px] font-semibold tracking-tight text-gray-900 leading-[1.08]"
               data-testid="matchmaker-hero-h1"
             >
               Connect with IPO Companies &amp;{" "}
               <span className="text-[#00D1FF]">Subject-Matter Experts.</span>
             </h2>
-            <p className="mt-4 text-gray-600 text-base lg:text-lg leading-relaxed max-w-2xl">
-              Setu, by IPO Labs, connects Corporates with India's most trusted IPO Advisors, Directors, Compliance Experts and Legal counsel &mdash; all under one roof.
+            <p className="mt-4 text-gray-600 text-[13px] lg:text-sm leading-relaxed max-w-3xl">
+              SETU connects IPO Ready Businesses to India's most experienced and trusted IPO Advisors, Directors, Compliance Experts and Legal Counsels.
             </p>
           </section>
 
           {/* Content Grid: Cards + Sidebar */}
-          <section className="px-8 lg:px-12 pb-8 flex-1">
+          <section className="px-8 lg:px-12 pb-4 flex-1">
             <div className="grid grid-cols-3 gap-5">
               {/* Left — Action Cards */}
               <div className="col-span-2 grid grid-cols-2 gap-4">
@@ -109,12 +109,12 @@ const MatchMakingLanding = ({ user, apiClient }) => {
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = c.accent; e.currentTarget.style.boxShadow = `0 20px 40px -10px ${c.accent}40`; }}
                       data-testid={c.testid}
                     >
-                      <CardContent className="p-5 flex flex-col h-full">
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                      <CardContent className="p-4 flex flex-col h-full">
+                        <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${c.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
                           <Icon className="w-6 h-6 text-gray-900" />
                         </div>
-                        <h3 className="text-base font-bold text-gray-900 mb-1.5">{c.title}</h3>
-                        <p className="text-xs text-gray-600 leading-relaxed mb-4 flex-1">{c.desc}</p>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-1">{c.title}</h3>
+                        <p className="text-xs text-gray-600 leading-relaxed mb-3 flex-1">{c.desc}</p>
                         <div className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all" style={{ color: c.accent }}>
                           {c.cta} <ArrowRight className="w-3.5 h-3.5" />
                         </div>
@@ -127,8 +127,8 @@ const MatchMakingLanding = ({ user, apiClient }) => {
               {/* Right — How It Works + Quick Start + Disclaimer */}
               <div className="space-y-4">
                 <Card className="bg-white border border-gray-200 backdrop-blur-xl border border-gray-200">
-                  <CardContent className="p-5">
-                    <h3 className="text-sm font-bold text-gray-900 mb-4">How It Works</h3>
+                  <CardContent className="p-4">
+                    <h3 className="text-xs font-semibold text-gray-900 mb-3">How It Works</h3>
                     <div className="space-y-3">
                       {["Choose Your Role", "Create Profile", "Get Matched", "Start Working"].map((step, i) => (
                         <div key={i} className="flex items-start gap-3">
@@ -152,7 +152,7 @@ const MatchMakingLanding = ({ user, apiClient }) => {
 
                 {/* Quick Start */}
                 <Card className="bg-gradient-to-br from-emerald-600/80 to-teal-700/80 backdrop-blur-xl border border-emerald-400/30">
-                  <CardContent className="p-5">
+                  <CardContent className="p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-4 h-4 text-yellow-300" />
                       <span className="text-xs font-medium text-gray-900">Quick Start</span>
