@@ -497,85 +497,88 @@ const AdminCenter = ({ user, apiClient }) => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50" data-testid="admin-center-page">
+    <div className="flex min-h-screen bg-white" data-testid="admin-center-page">
       <Sidebar user={user} apiClient={apiClient} />
       
       <main className="flex-1 ml-64">
-        {/* Header */}
-        <header className="bg-white border-b border-border px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-black">Admin Center</h1>
-                <p className="text-muted-foreground">Role-Based Access Control & User Management</p>
-              </div>
+        {/* Header — SaaSFrame-style: title + description + actions inline */}
+        <div className="px-8 pt-6 pb-3 border-b border-gray-100">
+          <div className="flex items-start justify-between gap-6">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight leading-tight">Admin Center</h1>
+              <p className="text-[13px] text-gray-500 mt-0.5">
+                Role-Based Access Control &amp; User Management.{" "}
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="text-[#1DA1F2] font-medium hover:underline"
+                >
+                  Learn more about Admin Center
+                </button>
+              </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Button
                 onClick={() => setShowAddUserDialog(true)}
                 variant="outline"
-                className="gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+                className="h-8 px-3 gap-1.5 text-[12px] border-gray-200 text-gray-700 hover:bg-gray-50"
                 data-testid="add-user-btn"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
                 Add User
               </Button>
               <Button
                 onClick={() => setShowAssignDialog(true)}
-                className="bg-purple-600 hover:bg-purple-700 gap-2"
+                className="h-8 px-3 gap-1.5 text-[12px] bg-[#1DA1F2] hover:bg-[#0C7ABF] text-white"
                 data-testid="assign-role-btn"
               >
-                <UserPlus className="w-4 h-4" />
-                Assign Role
+                <UserPlus className="w-3.5 h-3.5" />
+                New User
               </Button>
             </div>
           </div>
-        </header>
+        </div>
 
-        {/* Tabs */}
-        <div className="max-w-7xl mx-auto px-8 py-6">
+        {/* Tabs — underline style matching SaaSFrame reference */}
+        <div className="px-8 py-4">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="flex w-full max-w-4xl mb-6 ml-[76px]">
-              <TabsTrigger value="operations" className="gap-1.5 flex-1 text-xs">
+            <TabsList className="flex w-full mb-5 bg-transparent border-b border-gray-200 rounded-none h-auto p-0 justify-start overflow-x-auto">
+              <TabsTrigger value="operations" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors">
                 <Star className="w-3.5 h-3.5" />
                 Operations
               </TabsTrigger>
-              <TabsTrigger value="access" className="gap-1.5 flex-1 text-xs" data-testid="module-access-tab">
+              <TabsTrigger value="access" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors" data-testid="module-access-tab">
                 <ToggleRight className="w-3.5 h-3.5" />
                 Module Access
               </TabsTrigger>
-              <TabsTrigger value="users" className="gap-1.5 flex-1 text-xs" data-testid="internal-users-tab">
+              <TabsTrigger value="users" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors" data-testid="internal-users-tab">
                 <Home className="w-3.5 h-3.5" />
                 Admin
               </TabsTrigger>
-              <TabsTrigger value="employees" className="gap-1.5 flex-1 text-xs" data-testid="employees-tab">
+              <TabsTrigger value="employees" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors" data-testid="employees-tab">
                 <Users className="w-3.5 h-3.5" />
                 Employees
               </TabsTrigger>
-              <TabsTrigger value="external" className="gap-1.5 flex-1 text-xs" data-testid="external-users-tab">
+              <TabsTrigger value="external" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors" data-testid="external-users-tab">
                 <Globe className="w-3.5 h-3.5" />
                 Registered Users
               </TabsTrigger>
-              <TabsTrigger value="newusers" className="gap-1.5 flex-1 text-xs" data-testid="new-users-tab">
+              <TabsTrigger value="newusers" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors" data-testid="new-users-tab">
                 <Plus className="w-3.5 h-3.5" />
                 New Users
               </TabsTrigger>
-              <TabsTrigger value="leads" className="gap-1.5 flex-1 text-xs" data-testid="contact-leads-tab">
+              <TabsTrigger value="leads" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors" data-testid="contact-leads-tab">
                 <MessageSquare className="w-3.5 h-3.5" />
                 Contact Leads
               </TabsTrigger>
-              <TabsTrigger value="roles" className="gap-1.5 flex-1 text-xs">
+              <TabsTrigger value="roles" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors">
                 <Shield className="w-3.5 h-3.5" />
                 Roles
               </TabsTrigger>
-              <TabsTrigger value="matrix" className="gap-1.5 flex-1 text-xs">
+              <TabsTrigger value="matrix" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors">
                 <Settings className="w-3.5 h-3.5" />
                 Permissions
               </TabsTrigger>
-              <TabsTrigger value="audit" className="gap-1.5 flex-1 text-xs">
+              <TabsTrigger value="audit" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors">
                 <FileText className="w-3.5 h-3.5" />
                 Audit Log
               </TabsTrigger>

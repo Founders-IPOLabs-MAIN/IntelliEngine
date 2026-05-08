@@ -203,34 +203,34 @@ const AccountDetails = ({ user, apiClient }) => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50" data-testid="account-details-page">
+    <div className="flex min-h-screen bg-white" data-testid="account-details-page">
       <Sidebar user={user} apiClient={apiClient} />
       
       <main className="flex-1 ml-64">
-        {/* Header */}
-        <header className="bg-white border-b border-border px-8 py-6">
+        {/* Header — SaaSFrame-style: avatar + name + role inline */}
+        <div className="px-8 pt-6 pb-3 border-b border-gray-100">
           <div className="flex items-center gap-4">
             <div className="relative">
               {profile?.picture ? (
                 <img 
                   src={profile.picture.startsWith('/api') ? profile.picture : profile.picture} 
                   alt={profile.name} 
-                  className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-lg"
+                  className="w-12 h-12 rounded-full object-cover border border-gray-200"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                <div className="w-12 h-12 rounded-full bg-[#1DA1F2] flex items-center justify-center text-white text-base font-semibold">
                   {profile?.name?.charAt(0) || "U"}
                 </div>
               )}
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingPicture}
-                className="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors"
+                className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-[#1DA1F2] rounded-full flex items-center justify-center text-white hover:bg-[#0C7ABF] transition-colors border-2 border-white"
               >
                 {uploadingPicture ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <Loader2 className="w-2.5 h-2.5 animate-spin" />
                 ) : (
-                  <Camera className="w-3 h-3" />
+                  <Camera className="w-2.5 h-2.5" />
                 )}
               </button>
               <input
@@ -241,32 +241,32 @@ const AccountDetails = ({ user, apiClient }) => {
                 className="hidden"
               />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-black">{profile?.name}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <p className="text-muted-foreground">{profile?.email}</p>
-                <Badge className={getRoleBadgeColor(profile?.role)}>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-[20px] font-semibold text-gray-900 tracking-tight leading-tight">{profile?.name}</h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-[13px] text-gray-500 truncate">{profile?.email}</p>
+                <Badge className={`${getRoleBadgeColor(profile?.role)} text-[10px] px-2 py-0`}>
                   {profile?.role || "Viewer"}
                 </Badge>
               </div>
             </div>
           </div>
-        </header>
+        </div>
 
-        {/* Tabs */}
-        <div className="max-w-4xl mx-auto px-8 py-6">
+        {/* Tabs — underline style matching the SaaSFrame reference */}
+        <div className="max-w-4xl mx-auto px-8 py-4">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-3 w-full max-w-md mb-6">
-              <TabsTrigger value="profile" className="gap-2">
-                <User className="w-4 h-4" />
+            <TabsList className="flex w-full mb-5 bg-transparent border-b border-gray-200 rounded-none h-auto p-0 justify-start">
+              <TabsTrigger value="profile" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors">
+                <User className="w-3.5 h-3.5" />
                 Profile
               </TabsTrigger>
-              <TabsTrigger value="security" className="gap-2">
-                <Shield className="w-4 h-4" />
+              <TabsTrigger value="security" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors">
+                <Shield className="w-3.5 h-3.5" />
                 Security
               </TabsTrigger>
-              <TabsTrigger value="billing" className="gap-2">
-                <CreditCard className="w-4 h-4" />
+              <TabsTrigger value="billing" className="gap-1.5 text-[12px] rounded-none border-b-2 border-transparent data-[state=active]:border-[#1DA1F2] data-[state=active]:bg-transparent data-[state=active]:text-[#1DA1F2] data-[state=active]:shadow-none px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors">
+                <CreditCard className="w-3.5 h-3.5" />
                 Billing
               </TabsTrigger>
             </TabsList>
