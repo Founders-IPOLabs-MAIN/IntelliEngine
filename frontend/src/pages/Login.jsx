@@ -253,7 +253,7 @@ const Login = ({ apiClient }) => {
 
       {/* ─── Cartoon illustration spans the divide between left & right panes ─── */}
       <div
-        className="hidden lg:block absolute bottom-[76px] left-1/2 -translate-x-1/2 -ml-[140px] w-[48vw] max-w-[820px] pointer-events-none z-10"
+        className="hidden lg:block absolute bottom-[116px] left-1/2 -translate-x-1/2 -ml-[240px] w-[48vw] max-w-[820px] pointer-events-none z-10"
         data-testid="login-illustration-wrapper"
       >
         <img
