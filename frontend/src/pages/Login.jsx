@@ -214,7 +214,7 @@ const Login = ({ apiClient }) => {
       {/* ────────────── LEFT PANE (marketing / branding) ────────────── */}
       <aside className="hidden lg:flex w-1/2 bg-[#EAF4FB] relative overflow-hidden flex-col p-12">
         <div className="flex items-center gap-2 z-10">
-          <img src="/setu-logo.svg" alt="SETU" className="h-10 w-auto" />
+          <img src="/setu-logo.svg" alt="SETU" className="h-[240px] w-auto" />
         </div>
 
         <div className="flex-1 flex flex-col justify-center max-w-lg z-10">
