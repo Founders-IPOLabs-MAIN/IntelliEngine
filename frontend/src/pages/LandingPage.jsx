@@ -130,7 +130,7 @@ const LandingPage = () => {
       {/* HEADER — glassmorphism sticky nav, logo left, links centered */}
       {/* ════════════════════════════════════════════════════════════ */}
       <header
-        className={`sticky top-0 z-40 -mt-5 transition-all duration-300 ${
+        className={`sticky top-0 z-40 -mt-[28px] transition-all duration-300 ${
           scrolled
             ? "bg-black/60 backdrop-blur-2xl border-b border-white/10"
             : "bg-transparent"
