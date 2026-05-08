@@ -191,7 +191,7 @@ const Payments = ({ user, apiClient }) => {
       order_id: order.order_id,
       name: "IPO Labs AI Pvt Ltd",
       description: order.plan_name,
-      image: "/setu-logo.png",
+      image: "/setu-logo.svg",
       prefill: {
         name: form.name,
         email: form.email,

@@ -30,7 +30,7 @@ const COMPANY_INFO = {
   name: "IPO Labs AI Pvt Ltd",
   email: "founders@ipo-labs.com",
   mobile: "+91 9967816957",
-  logoPath: "/setu-logo.png",
+  logoPath: "/setu-logo.svg",
 };
 
 const BOARD_NUMBERS = {
