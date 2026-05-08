@@ -14,7 +14,7 @@ import {
   User,
   Scale,
   CreditCard,
-  BarChart3
+  BarChart3,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -54,17 +54,28 @@ const Sidebar = ({ user, apiClient }) => {
   const isActive = (itemId) => {
     const path = location.pathname;
     switch (itemId) {
-      case 'dashboard': return path === '/dashboard';
-      case 'assessment': return path.startsWith('/assessment');
-      case 'drhp': return path === '/drhp' || path.startsWith('/drhp/') || path.includes('drhp-builder') || path.includes('command-center');
-      case 'funding': return path.startsWith('/funding');
-      case 'matchmaker': return path.startsWith('/matchmaker');
-      case 'valuation': return path === '/valuation' || (path.startsWith('/valuation/') && !path.startsWith('/valuation-2'));
-      case 'valuation2': return path === '/valuation-2' || path.startsWith('/valuation-2/');
-      case 'admin': return path.startsWith('/admin');
-      case 'account': return path.startsWith('/account');
-      case 'payments': return path.startsWith('/payments');
-      case 'market-analytics': return path.startsWith('/market-analytics');
+      case "dashboard": return path === "/dashboard";
+      case "assessment": return path.startsWith("/assessment");
+      case "drhp":
+        return (
+          path === "/drhp" ||
+          path.startsWith("/drhp/") ||
+          path.includes("drhp-builder") ||
+          path.includes("command-center")
+        );
+      case "funding": return path.startsWith("/funding");
+      case "matchmaker": return path.startsWith("/matchmaker");
+      case "valuation":
+        return (
+          path === "/valuation" ||
+          (path.startsWith("/valuation/") && !path.startsWith("/valuation-2"))
+        );
+      case "valuation2":
+        return path === "/valuation-2" || path.startsWith("/valuation-2/");
+      case "admin": return path.startsWith("/admin");
+      case "account": return path.startsWith("/account");
+      case "payments": return path.startsWith("/payments");
+      case "market-analytics": return path.startsWith("/market-analytics");
       default: return false;
     }
   };
@@ -73,54 +84,75 @@ const Sidebar = ({ user, apiClient }) => {
   const loginRole = user?.login_role || user?.user_type || "existing_user";
   const isEmployee = loginRole === "employee";
 
-  const moduleItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-    { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: "/assessment" },
-    { id: "drhp", label: "DRHP Builder", icon: FileText, path: null, onClick: handleDRHPClick },
-    { id: "funding", label: "IPO Funding", icon: TrendingUp, path: null, onClick: handleFundingClick },
-    { id: "matchmaker", label: "The Match-Making Platform", icon: Users, path: "/matchmaker" },
-    { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation" },
-    { id: "valuation2", label: "Valuations 2", icon: BarChart3, path: "/valuation-2" },
+  // ── Grouped navigation (Remote-style sections) ──────────────────────
+  const sections = [
+    {
+      id: "workspace",
+      label: null,
+      items: [
+        { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+      ],
+    },
+    {
+      id: "modules",
+      label: "Modules",
+      items: [
+        { id: "assessment", label: "IPO Assessment", icon: CheckCircle2, path: "/assessment" },
+        { id: "drhp", label: "DRHP Builder", icon: FileText, path: null, onClick: handleDRHPClick },
+        { id: "funding", label: "IPO Funding", icon: TrendingUp, path: null, onClick: handleFundingClick },
+        { id: "matchmaker", label: "Match-Making", icon: Users, path: "/matchmaker" },
+        { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation" },
+        { id: "valuation2", label: "Valuations 2", icon: BarChart3, path: "/valuation-2" },
+      ],
+    },
+    {
+      id: "company",
+      label: "Company",
+      items: [
+        ...(isAdmin
+          ? [
+              { id: "admin", label: "Admin Center", icon: Shield, path: "/admin" },
+              { id: "account", label: "Account Details", icon: User, path: "/account" },
+            ]
+          : isEmployee
+          ? [
+              { id: "admin", label: "Admin Center", icon: Shield, path: "/admin", disabled: true },
+              { id: "account", label: "Account Details", icon: User, path: "/account", disabled: true },
+            ]
+          : []),
+        { id: "payments", label: "Payment Gateway", icon: CreditCard, path: "/payments" },
+        { id: "market-analytics", label: "Market Analytics", icon: BarChart3, path: "/market-analytics" },
+      ],
+    },
   ];
-
-  let navItems = [...moduleItems];
-
-  if (isAdmin) {
-    navItems.push({ id: "admin", label: "Admin Center", icon: Shield, path: "/admin" });
-    navItems.push({ id: "account", label: "Account Details", icon: User, path: "/account" });
-  } else if (isEmployee) {
-    navItems.push({ id: "admin", label: "Admin Center", icon: Shield, path: "/admin", disabled: true });
-    navItems.push({ id: "account", label: "Account Details", icon: User, path: "/account", disabled: true });
-  }
-
-  // Payment Gateway — visible to ALL login types, sits below Account Details
-  navItems.push({ id: "payments", label: "Payment Gateway", icon: CreditCard, path: "/payments" });
-
-  // Market Analytics — visible to ALL login types
-  navItems.push({ id: "market-analytics", label: "Market Analytics", icon: BarChart3, path: "/market-analytics" });
 
   const renderNavItem = (item) => {
     const active = isActive(item.id);
     const Icon = item.icon;
 
-    const activeStyle = active
-      ? "bg-[#1DA1F2] text-white shadow-md shadow-[#1DA1F2]/25"
-      : "bg-[#E8F5FE] text-[#0C7ABF] hover:bg-[#D0ECFC] hover:shadow-sm";
+    const base =
+      "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-colors text-left";
+    const stateCls = item.disabled
+      ? "text-gray-300 cursor-not-allowed"
+      : active
+      ? "bg-[#1DA1F2]/10 text-[#0C7ABF]"
+      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900";
 
-    const disabledStyle = "bg-gray-50 text-gray-300 cursor-not-allowed";
-
-    const base = `w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 text-left`;
-
-    const cls = item.disabled ? `${base} ${disabledStyle}` : `${base} ${activeStyle}`;
+    const cls = `${base} ${stateCls}`;
 
     const inner = (
       <>
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${active ? "bg-white/20" : "bg-[#1DA1F2]/10"} ${item.disabled ? "bg-gray-100" : ""}`}>
-          <Icon className={`w-4 h-4 ${active ? "text-white" : item.disabled ? "text-gray-300" : "text-[#1DA1F2]"}`} />
-        </div>
+        <Icon
+          className={`w-4 h-4 flex-shrink-0 ${
+            active ? "text-[#1DA1F2]" : item.disabled ? "text-gray-300" : "text-gray-500"
+          }`}
+          strokeWidth={2}
+        />
         <span className="flex-1 truncate">{item.label}</span>
         {item.disabled && (
-          <span className="text-[9px] px-1.5 py-0.5 bg-gray-100 text-gray-400 rounded-full font-medium">Soon</span>
+          <span className="text-[9px] px-1 py-0.5 bg-gray-100 text-gray-400 rounded font-medium">
+            Soon
+          </span>
         )}
       </>
     );
@@ -132,7 +164,6 @@ const Sidebar = ({ user, apiClient }) => {
         </button>
       );
     }
-
     if (item.onClick) {
       return (
         <button key={item.id} type="button" onClick={item.onClick} className={cls} data-testid={`nav-${item.id}`}>
@@ -140,7 +171,6 @@ const Sidebar = ({ user, apiClient }) => {
         </button>
       );
     }
-
     return (
       <Link key={item.id} to={item.path} className={cls} data-testid={`nav-${item.id}`}>
         {inner}
@@ -149,35 +179,55 @@ const Sidebar = ({ user, apiClient }) => {
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100 flex flex-col z-20" data-testid="sidebar">
+    <aside
+      className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100 flex flex-col z-20"
+      data-testid="sidebar"
+    >
       {/* Logo */}
-      <div className="-mt-3 border-b border-gray-100">
-        <div className="flex items-center justify-center">
-          <img src="/setu-logo.png" alt="SETU Labs" className="h-[150px] w-auto object-contain p-3" data-testid="sidebar-logo" />
-        </div>
+      <div className="px-4 py-4 border-b border-gray-100 flex items-center">
+        <img
+          src="/setu-logo.png"
+          alt="SETU Labs"
+          className="h-8 w-auto object-contain"
+          data-testid="sidebar-logo"
+        />
       </div>
 
-      {/* Navigation — SaaS module buttons */}
-      <nav className="flex-1 -mt-7 p-4 space-y-2 overflow-y-auto">
-        {navItems.map(renderNavItem)}
+      {/* Navigation — Remote-style grouped sections */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+        {sections.map((sec) => (
+          <div key={sec.id} className="space-y-0.5">
+            {sec.label && (
+              <div className="px-2.5 pb-1.5 text-[10px] font-semibold tracking-[0.12em] uppercase text-gray-400">
+                {sec.label}
+              </div>
+            )}
+            {sec.items.map(renderNavItem)}
+          </div>
+        ))}
       </nav>
 
       {/* User Section */}
-      <div className="p-4 border-t border-gray-100">
+      <div className="p-3 border-t border-gray-100">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#E8F5FE] transition-colors" data-testid="user-menu-trigger">
-              <Avatar className="h-8 w-8">
+            <button
+              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-gray-50 transition-colors"
+              data-testid="user-menu-trigger"
+            >
+              <Avatar className="h-7 w-7">
                 <AvatarImage src={user?.picture} alt={user?.name} />
-                <AvatarFallback className="bg-[#1DA1F2] text-white text-sm">
+                <AvatarFallback className="bg-[#1DA1F2] text-white text-xs">
                   {user?.name?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 text-left min-w-0">
-                <p className="text-sm font-semibold text-black truncate">{user?.name || "User"}</p>
-                <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
+                <p className="text-[12.5px] font-semibold text-gray-900 truncate leading-tight">
+                  {user?.name || "User"}
+                </p>
+                <p className="text-[10.5px] text-gray-400 truncate leading-tight">{user?.email}</p>
               </div>
-              <ChevronDown className="w-4 h-4 text-gray-300" />
+              <ChevronDown className="w-3.5 h-3.5 text-gray-300" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">

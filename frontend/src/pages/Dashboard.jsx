@@ -188,31 +188,30 @@ const Dashboard = ({ user, apiClient }) => {
       <Sidebar user={user} apiClient={apiClient} />
 
       <main className="flex-1 ml-64 relative">
-        <div className="px-10 py-10 max-w-[1280px] mx-auto">
+        <div className="px-8 py-6 max-w-[1280px] mx-auto">
           {/* ── Welcome strip (merged with former header) ─────────── */}
-          <section data-testid="welcome-strip" className="mb-10 flex items-start justify-between gap-6">
+          <section data-testid="welcome-strip" className="mb-6 flex items-start justify-between gap-6">
             <div>
-              <div className="text-[11px] uppercase tracking-[0.18em] text-gray-500 font-semibold mb-3">Dashboard</div>
-              <h2 className="text-4xl lg:text-5xl font-bold text-[#1A2235] tracking-tight" style={{ letterSpacing: "-0.025em" }}>
+              <h2 className="text-[28px] font-semibold text-gray-900 tracking-tight leading-tight">
                 {greeting}, {firstName} <span className="inline-block">👋</span>
               </h2>
-              <p className="mt-2 text-[15px] text-[#6B7280]">
+              <p className="mt-1 text-[14px] text-gray-500">
                 Here's what's happening across your IPO workspace today.
               </p>
             </div>
-            <div className="flex items-center gap-4 flex-shrink-0 pt-2">
+            <div className="flex items-center gap-3 flex-shrink-0 pt-1">
               <button
                 onClick={handleTour}
-                className="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-[#4F46E5] hover:text-[#3730a3] transition"
+                className="hidden md:inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#4F46E5] hover:text-[#3730a3] transition"
                 data-testid="header-take-tour"
               >
                 <PlayCircle className="w-3.5 h-3.5" /> Take the tour
               </button>
-              <div className="w-9 h-9 rounded-full bg-[#1A2235] text-white flex items-center justify-center overflow-hidden shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center overflow-hidden">
                 {user?.picture ? (
                   <img src={user.picture} alt={user?.name} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-sm font-semibold">{user?.name?.charAt(0)?.toUpperCase() || "U"}</span>
+                  <span className="text-[12px] font-semibold">{user?.name?.charAt(0)?.toUpperCase() || "U"}</span>
                 )}
               </div>
             </div>
@@ -221,22 +220,22 @@ const Dashboard = ({ user, apiClient }) => {
           {/* ── Alert banner ──────────────────────────────────────── */}
           {!bannerDismissed && (
             <div
-              className="mb-8 rounded-xl border border-[#F0D784] bg-[#FFF8DD] px-5 py-4 flex items-start gap-3 shadow-sm"
+              className="mb-6 rounded-lg border border-[#F0D784] bg-[#FFF8DD] px-4 py-3 flex items-start gap-3"
               data-testid="dashboard-alert-banner"
             >
-              <div className="w-8 h-8 rounded-full bg-[#F0B428] flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-4 h-4 text-white" strokeWidth={2.4} />
+              <div className="w-7 h-7 rounded-full bg-[#F0B428] flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-3.5 h-3.5 text-white" strokeWidth={2.4} />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-[#7A5A11]">
+                <p className="text-[13px] font-semibold text-[#7A5A11] leading-tight">
                   Finish setting up your IPO Readiness profile
                 </p>
-                <p className="text-xs text-[#8A6C2C] mt-0.5">
+                <p className="text-[11.5px] text-[#8A6C2C] mt-0.5 leading-snug">
                   Add a few company details and you'll unlock tailored DRHP drafts, peer benchmarks and matchmaking shortlists.
                 </p>
                 <button
                   onClick={() => navigate("/account-details")}
-                  className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#7A5A11] hover:underline"
+                  className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#7A5A11] hover:underline"
                   data-testid="alert-add-details"
                 >
                   Add missing details <ArrowRight className="w-3 h-3" />
@@ -248,39 +247,39 @@ const Dashboard = ({ user, apiClient }) => {
                 aria-label="Dismiss"
                 data-testid="alert-dismiss"
               >
-                <XIcon className="w-4 h-4" />
+                <XIcon className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
 
           {/* ── Things to do ──────────────────────────────────────── */}
-          <section className="mb-10" data-testid="things-to-do">
-            <div className="flex items-end justify-between mb-4">
+          <section className="mb-7" data-testid="things-to-do">
+            <div className="flex items-end justify-between mb-3">
               <div>
-                <h3 className="text-[15px] font-bold text-[#1A2235]">Things to do</h3>
-                <p className="text-xs text-[#6B7280] mt-0.5">A quick pre-flight before you dive into the modules.</p>
+                <h3 className="text-[13px] font-bold text-gray-900">Things to do</h3>
+                <p className="text-[11px] text-gray-500 mt-0.5">A quick pre-flight before you dive into the modules.</p>
               </div>
             </div>
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-3 gap-3">
               {TASKS.map((t) => {
                 const Icon = t.icon;
                 return (
                   <div
                     key={t.id}
-                    className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col"
+                    className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-all flex flex-col"
                     data-testid={`task-${t.id}`}
                   >
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
+                      className="w-8 h-8 rounded-md flex items-center justify-center mb-2.5"
                       style={{ backgroundColor: `${t.accent}14`, color: t.accent }}
                     >
-                      <Icon className="w-5 h-5" strokeWidth={2.2} />
+                      <Icon className="w-4 h-4" strokeWidth={2.2} />
                     </div>
-                    <div className="text-sm font-bold text-[#1A2235]">{t.title}</div>
-                    <p className="text-xs text-[#6B7280] mt-1.5 leading-relaxed flex-1">{t.desc}</p>
+                    <div className="text-[13px] font-bold text-gray-900 leading-tight">{t.title}</div>
+                    <p className="text-[11.5px] text-gray-500 mt-1 leading-relaxed flex-1">{t.desc}</p>
                     <button
                       onClick={() => (t.id === "tour" ? handleTour() : t.path && navigate(t.path))}
-                      className="mt-4 inline-flex items-center gap-1 text-xs font-semibold transition self-start"
+                      className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-semibold transition self-start"
                       style={{ color: t.accent }}
                       data-testid={`task-${t.id}-cta`}
                     >
@@ -294,15 +293,15 @@ const Dashboard = ({ user, apiClient }) => {
 
           {/* ── Modules grid ──────────────────────────────────────── */}
           <section data-testid="dashboard-modules">
-            <div className="flex items-end justify-between mb-4">
+            <div className="flex items-end justify-between mb-3">
               <div>
-                <h3 className="text-[15px] font-bold text-[#1A2235]">Your IPO toolkit</h3>
-                <p className="text-xs text-[#6B7280] mt-0.5">Five modules. One end-to-end workspace.</p>
+                <h3 className="text-[13px] font-bold text-gray-900">Your IPO toolkit</h3>
+                <p className="text-[11px] text-gray-500 mt-0.5">Five modules. One end-to-end workspace.</p>
               </div>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">5 modules</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">5 modules</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {MODULES.map((mod) => {
                 const Icon = mod.icon;
                 return (
@@ -310,61 +309,61 @@ const Dashboard = ({ user, apiClient }) => {
                     key={mod.id}
                     type="button"
                     onClick={() => handleModuleClick(mod)}
-                    className="group text-left bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all flex flex-col relative overflow-hidden"
+                    className="group text-left bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col relative overflow-hidden"
                     data-testid={mod.testid}
                   >
                     {/* Soft top wash matching accent */}
                     <div
-                      className="absolute inset-x-0 top-0 h-1 rounded-t-2xl"
+                      className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl"
                       style={{ backgroundColor: mod.accent }}
                     />
 
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-start justify-between mb-2.5">
                       <div
-                        className="w-11 h-11 rounded-xl flex items-center justify-center"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center"
                         style={{ backgroundColor: `${mod.accent}1A`, color: mod.accent }}
                       >
-                        <Icon className="w-5 h-5" strokeWidth={2.2} />
+                        <Icon className="w-4 h-4" strokeWidth={2.2} />
                       </div>
                       <span
-                        className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full ${mod.accentSoft} ${mod.accentText}`}
+                        className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${mod.accentSoft} ${mod.accentText}`}
                       >
                         {mod.short}
                       </span>
                     </div>
 
-                    <h4 className="text-base font-bold text-[#1A2235] mb-1.5 leading-snug">
+                    <h4 className="text-[13.5px] font-bold text-gray-900 mb-1 leading-snug">
                       {mod.title}
                     </h4>
-                    <p className="text-xs text-[#6B7280] leading-relaxed mb-5 flex-1">
+                    <p className="text-[11.5px] text-gray-500 leading-relaxed mb-3 flex-1">
                       {mod.desc}
                     </p>
 
                     <div
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold group-hover:gap-2 transition-all"
                       style={{ color: mod.accent }}
                     >
-                      Explore module <ArrowUpRight className="w-3.5 h-3.5" />
+                      Explore module <ArrowUpRight className="w-3 h-3" />
                     </div>
                   </button>
                 );
               })}
 
               {/* "Need more" footer card matching Maze enterprise CTA tone */}
-              <div className="bg-gradient-to-br from-[#1A2235] to-[#0F172A] rounded-2xl p-6 text-white flex flex-col" data-testid="module-enterprise">
-                <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center mb-4">
-                  <Rocket className="w-5 h-5 text-white" strokeWidth={2.2} />
+              <div className="bg-gradient-to-br from-[#1A2235] to-[#0F172A] rounded-xl p-4 text-white flex flex-col" data-testid="module-enterprise">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center mb-2.5">
+                  <Rocket className="w-4 h-4 text-white" strokeWidth={2.2} />
                 </div>
-                <h4 className="text-base font-bold mb-1.5">Going public soon?</h4>
-                <p className="text-xs text-white/70 leading-relaxed mb-5 flex-1">
+                <h4 className="text-[13.5px] font-bold mb-1 leading-snug">Going public soon?</h4>
+                <p className="text-[11.5px] text-white/70 leading-relaxed mb-3 flex-1">
                   Talk to our IPO desk for white-glove onboarding, custom workflows and dedicated relationship support.
                 </p>
                 <button
                   onClick={() => navigate("/contact")}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#FFD580] hover:gap-2.5 transition-all self-start"
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#FFD580] hover:gap-2 transition-all self-start"
                   data-testid="module-enterprise-cta"
                 >
-                  Talk to IPO desk <ArrowUpRight className="w-3.5 h-3.5" />
+                  Talk to IPO desk <ArrowUpRight className="w-3 h-3" />
                 </button>
               </div>
             </div>
