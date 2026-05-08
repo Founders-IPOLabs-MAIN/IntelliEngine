@@ -210,18 +210,21 @@ const Login = ({ apiClient }) => {
   // Render
   // ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex bg-white" data-testid="login-page">
+    <div className="min-h-screen flex bg-white relative" data-testid="login-page">
       {/* ────────────── LEFT PANE (marketing / branding) ────────────── */}
       <aside className="hidden lg:flex w-1/2 bg-[#EAF4FB] relative overflow-hidden flex-col p-12">
-        <div className="flex items-center gap-2 z-10 -mt-[50px]">
+        <div className="flex items-center gap-2 z-10 -mt-[90px] -ml-[10px]">
           <img src="/setu-logo.svg" alt="SETU" className="h-[270px] w-auto" />
         </div>
 
-        <div className="flex flex-col max-w-lg z-10 -mt-[55px]">
-          <h2 className="text-[32px] font-semibold tracking-tight text-[#0F1B3A] leading-[1.1]">
-            Take any company<br/>public — together.
+        <div className="flex flex-col max-w-[640px] z-10 -mt-[55px]">
+          <h2
+            className="text-[30px] tracking-tight text-[#0F1B3A] leading-[1.05] whitespace-nowrap"
+            style={{ fontFamily: '"Plus Jakarta Sans", "Bricolage Grotesque", "Inter", system-ui, sans-serif', fontWeight: 700 }}
+          >
+            Take any company public — together.
           </h2>
-          <p className="mt-4 text-[13px] text-[#3E4B6A] leading-relaxed">
+          <p className="mt-4 text-[13px] text-[#3E4B6A] leading-relaxed max-w-md">
             One workspace for IPO readiness, DRHP drafting, valuations, funding and matchmaking — built for India's mainboard &amp; SME issuers.
           </p>
 
@@ -241,26 +244,29 @@ const Login = ({ apiClient }) => {
           </ul>
         </div>
 
-        {/* Cartoon illustration — Overflow-style two-character scene */}
-        <div className="flex-1 flex items-center justify-center z-10 mt-2 -mb-6">
-          <img
-            src="/login-illustration.svg"
-            alt="Two collaborators discussing an IPO journey"
-            className="w-full max-w-md h-auto select-none pointer-events-none"
-            draggable={false}
-            data-testid="login-illustration"
-          />
-        </div>
-
         {/* Decorative shapes (Overflow-style) */}
         <div className="absolute -bottom-24 -right-24 w-[480px] h-[480px] rounded-full bg-[#1DA1F2]/10 blur-3xl pointer-events-none" />
         <div className="absolute top-32 -right-16 w-[260px] h-[260px] rounded-full bg-orange-300/15 blur-3xl pointer-events-none" />
 
-        <p className="text-[11px] text-[#7A88A8] z-10">© {new Date().getFullYear()} IPO Labs AI Private Limited</p>
+        <p className="text-[11px] text-[#7A88A8] z-10 mt-auto">© {new Date().getFullYear()} IPO Labs AI Private Limited</p>
       </aside>
 
+      {/* ─── Cartoon illustration spans the divide between left & right panes ─── */}
+      <div
+        className="hidden lg:block absolute bottom-4 left-1/2 -translate-x-1/2 w-[48vw] max-w-[820px] pointer-events-none z-10"
+        data-testid="login-illustration-wrapper"
+      >
+        <img
+          src="/login-illustration.svg"
+          alt="Two collaborators reviewing the SETU IPO workspace on a laptop"
+          className="w-full h-auto select-none"
+          draggable={false}
+          data-testid="login-illustration"
+        />
+      </div>
+
       {/* ────────────── RIGHT PANE (form) ────────────── */}
-      <main className="flex-1 flex flex-col px-6 sm:px-10 lg:px-16 py-10">
+      <main className="flex-1 flex flex-col px-6 sm:px-10 lg:px-16 py-10 relative z-20">
         <div className="lg:hidden mb-6 flex items-center gap-2">
           <img src="/setu-logo.svg" alt="SETU" className="h-7 w-auto" />
         </div>
