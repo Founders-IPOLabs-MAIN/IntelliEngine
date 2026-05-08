@@ -106,25 +106,22 @@ const BVProjectsLanding = ({ user, apiClient }) => {
   const ROTATING_ACCENTS = [ACCENT_VIOLET, ACCENT_EMERALD, ACCENT_BLUE, ACCENT_AMBER];
 
   return (
-    <div className="flex min-h-screen bg-black" data-testid="bv-projects-landing">
+    <div className="flex min-h-screen bg-white" data-testid="bv-projects-landing">
       <Sidebar user={user} apiClient={apiClient} />
 
       <main className="flex-1 ml-64 relative overflow-hidden">
         {/* Black background with subtle gradient — exact /assessment treatment */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a0a0a] to-[#111] pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 pointer-events-none" />
-
         <div className="relative z-10 min-h-screen flex flex-col">
           {/* Sticky Header */}
-          <header className="sticky top-0 z-20 backdrop-blur-md bg-black/35 border-b border-white/10 px-8 lg:px-12 py-4 flex items-center justify-between">
+          <header className="sticky top-0 z-20 bg-white/85 backdrop-blur-md border-b border-gray-200 px-8 lg:px-12 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h1
-                className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white"
+                className="text-2xl lg:text-3xl font-extrabold tracking-tight text-gray-900"
                 style={{ letterSpacing: "-0.02em" }}
               >
                 BV Engine — Business Valuation
               </h1>
-              <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs text-white/80">
+              <div className="inline-flex items-center gap-1.5 bg-gray-100 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs text-gray-700">
                 <Brain className="w-3 h-3 text-yellow-300" />
                 <span className="font-medium">AI Powered</span>
               </div>
@@ -139,44 +136,44 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-5 text-xs text-white/70">
+            <div className="flex items-center gap-5 text-xs text-gray-600">
               <div className="text-center">
-                <p className="text-lg font-bold text-white">{projects.length}</p>
+                <p className="text-lg font-bold text-gray-900">{projects.length}</p>
                 <p>Projects</p>
               </div>
-              <div className="w-px h-8 bg-white/20" />
+              <div className="w-px h-8 bg-gray-100" />
               <div className="text-center">
-                <p className="text-lg font-bold text-white">3</p>
+                <p className="text-lg font-bold text-gray-900">3</p>
                 <p>Methods</p>
               </div>
-              <div className="w-px h-8 bg-white/20" />
+              <div className="w-px h-8 bg-gray-100" />
               <div className="text-center">
-                <p className="text-lg font-bold text-white">30d</p>
+                <p className="text-lg font-bold text-gray-900">30d</p>
                 <p>Audit</p>
               </div>
             </div>
           </header>
 
           {/* Features Bar */}
-          <div className="backdrop-blur-sm bg-white/5 border-b border-white/10">
-            <div className="px-8 lg:px-12 py-2.5 flex items-center justify-center gap-6 text-xs text-white/60">
+          <div className="backdrop-blur-sm bg-gray-50 border-b border-gray-200">
+            <div className="px-8 lg:px-12 py-2.5 flex items-center justify-center gap-6 text-xs text-gray-500">
               <span className="flex items-center gap-1.5"><Calculator className="w-3.5 h-3.5 text-emerald-400" /> DCF Valuation</span>
-              <span className="w-px h-3 bg-white/20" />
+              <span className="w-px h-3 bg-gray-100" />
               <span className="flex items-center gap-1.5"><Layers className="w-3.5 h-3.5 text-emerald-400" /> NAV Method</span>
-              <span className="w-px h-3 bg-white/20" />
+              <span className="w-px h-3 bg-gray-100" />
               <span className="flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5 text-emerald-400" /> Comparable Co.</span>
-              <span className="w-px h-3 bg-white/20" />
+              <span className="w-px h-3 bg-gray-100" />
               <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-emerald-400" /> 30-Day Audit</span>
             </div>
           </div>
 
           {/* Hero */}
           <section className="px-8 lg:px-12 pt-10 pb-6 max-w-5xl">
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08]">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08]">
               Three Valuations.{" "}
               <span style={{ color: ACCENT_VIOLET }}>One Engine.</span>
             </h2>
-            <p className="mt-4 text-white/70 text-base lg:text-lg leading-relaxed max-w-2xl">
+            <p className="mt-4 text-gray-600 text-base lg:text-lg leading-relaxed max-w-2xl">
               Capture your P&amp;L, Balance Sheet and DCF assumptions once — the BV Engine runs DCF, NAV and Comparable Company valuations in parallel, with a sector-aware peer set.
             </p>
           </section>
@@ -189,23 +186,19 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                 {/* Create New card — always visible, styled like a module tile */}
                 <Card
                   onClick={openCreate}
-                  className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                  className="bg-white border border-gray-200 backdrop-blur-xl border-2 border-gray-200 hover:bg-blue-50 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = ACCENT_VIOLET;
                     e.currentTarget.style.boxShadow = `0 20px 40px -10px ${ACCENT_VIOLET}40`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "";
-                    e.currentTarget.style.boxShadow = "";
                   }}
                   data-testid="bv-create-btn"
                 >
                   <CardContent className="p-5 flex flex-col h-full">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
-                      {creating ? <Loader2 className="w-6 h-6 text-white animate-spin" /> : <Plus className="w-6 h-6 text-white" />}
+                      {creating ? <Loader2 className="w-6 h-6 text-gray-900 animate-spin" /> : <Plus className="w-6 h-6 text-gray-900" />}
                     </div>
-                    <h3 className="text-base font-bold text-white mb-1.5 drop-shadow">Create New BV Project</h3>
-                    <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1 drop-shadow">
+                    <h3 className="text-base font-bold text-gray-900 mb-1.5">Create New BV Project</h3>
+                    <p className="text-xs text-gray-600 leading-relaxed mb-4 flex-1">
                       Start a fresh business valuation. We'll create a blank input sheet for your P&amp;L, Balance Sheet and DCF assumptions.
                     </p>
                     <div className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all" style={{ color: ACCENT_VIOLET }}>
@@ -216,17 +209,17 @@ const BVProjectsLanding = ({ user, apiClient }) => {
 
                 {/* Existing project cards */}
                 {loading ? (
-                  <Card className="bg-white/10 backdrop-blur-xl border-2 border-white/20 shadow-2xl">
-                    <CardContent className="p-5 flex flex-col items-center justify-center h-full text-white/55 text-sm gap-2">
+                  <Card className="bg-white border border-gray-200 backdrop-blur-xl border-2 border-gray-200 shadow-2xl">
+                    <CardContent className="p-5 flex flex-col items-center justify-center h-full text-gray-500 text-sm gap-2">
                       <Loader2 className="w-5 h-5 animate-spin" /> Loading projects…
                     </CardContent>
                   </Card>
                 ) : projects.length === 0 ? (
-                  <Card className="bg-white/5 backdrop-blur-xl border border-dashed border-white/20 shadow-2xl">
+                  <Card className="bg-gray-50 backdrop-blur-xl border border-dashed border-gray-200 shadow-2xl">
                     <CardContent className="p-5 flex flex-col items-center justify-center h-full text-center">
-                      <BarChart3 className="w-8 h-8 text-white/30 mb-2" />
-                      <p className="text-xs text-white/55">
-                        No projects yet. Click <strong className="text-white/75">Create New BV Project</strong> to begin.
+                      <BarChart3 className="w-8 h-8 text-gray-300 mb-2" />
+                      <p className="text-xs text-gray-500">
+                        No projects yet. Click <strong className="text-gray-900/75">Create New BV Project</strong> to begin.
                       </p>
                     </CardContent>
                   </Card>
@@ -236,14 +229,10 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                     return (
                       <Card
                         key={p.project_id}
-                        className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 group shadow-2xl transition-all duration-300 hover:-translate-y-1 relative"
+                        className="bg-white border border-gray-200 backdrop-blur-xl border-2 border-gray-200 hover:bg-blue-50 group shadow-2xl transition-all duration-300 hover:-translate-y-1 relative"
                         onMouseEnter={(e) => {
                           e.currentTarget.style.borderColor = accent;
                           e.currentTarget.style.boxShadow = `0 20px 40px -10px ${accent}40`;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = "";
-                          e.currentTarget.style.boxShadow = "";
                         }}
                         data-testid={`bv-card-${p.project_id}`}
                       >
@@ -251,11 +240,11 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                           {/* Top row: icon tile + delete button */}
                           <div className="flex items-start justify-between mb-4">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                              <Building2 className="w-6 h-6 text-white" />
+                              <Building2 className="w-6 h-6 text-gray-900" />
                             </div>
                             <button
                               onClick={(e) => { e.stopPropagation(); setConfirmDelete(p); }}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-white/55 hover:text-rose-300 hover:bg-rose-500/15"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-gray-500 hover:text-rose-300 hover:bg-rose-500/15"
                               data-testid={`bv-delete-${p.project_id}`}
                               aria-label="Delete project"
                             >
@@ -264,17 +253,17 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                           </div>
                           {/* Title + meta */}
                           <h3
-                            className="text-base font-bold text-white mb-1.5 drop-shadow line-clamp-2"
+                            className="text-base font-bold text-gray-900 mb-1.5 line-clamp-2"
                             data-testid={`bv-proj-title-${p.project_id}`}
                           >
                             {p.company_name || "Untitled BV Project"}
                           </h3>
-                          <div className="text-[10px] text-white/55 leading-relaxed mb-3 flex flex-wrap gap-2">
+                          <div className="text-[10px] text-gray-500 leading-relaxed mb-3 flex flex-wrap gap-2">
                             {p.website && <span className="truncate max-w-[140px]">{p.website}</span>}
                             {p.plan_for_ipo === "yes" && (
                               <span className="text-emerald-300/85">IPO {p.ipo_timeline ? `· ${p.ipo_timeline}` : ""}</span>
                             )}
-                            <span className="text-white/35">
+                            <span className="text-gray-900/35">
                               Updated {new Date(p.updated_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
                             </span>
                             {p.owner_email && (
@@ -291,7 +280,7 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                           <div className="mt-auto flex items-center justify-between gap-2">
                             <button
                               onClick={() => navigate(`/valuation-2/${p.project_id}/inputs`)}
-                              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-white/65 hover:text-white"
+                              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-gray-600 hover:text-gray-900"
                               data-testid={`bv-open-inputs-${p.project_id}`}
                             >
                               Edit Inputs
@@ -314,9 +303,9 @@ const BVProjectsLanding = ({ user, apiClient }) => {
 
               {/* RIGHT — How It Works + Quick Start + Audit Log + Disclaimer */}
               <div className="space-y-4">
-                <Card className="bg-white/10 backdrop-blur-xl border border-white/20">
+                <Card className="bg-white border border-gray-200 backdrop-blur-xl border border-gray-200">
                   <CardContent className="p-5">
-                    <h3 className="text-sm font-bold text-white mb-4">How It Works</h3>
+                    <h3 className="text-sm font-bold text-gray-900 mb-4">How It Works</h3>
                     <div className="space-y-3">
                       {[
                         { label: "New Project",    sub: "Create a workspace for your company" },
@@ -329,8 +318,8 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                             <span className="text-xs font-bold text-emerald-400">{i + 1}</span>
                           </div>
                           <div>
-                            <h4 className="font-medium text-white text-xs">{step.label}</h4>
-                            <p className="text-[10px] text-white/50">{step.sub}</p>
+                            <h4 className="font-medium text-gray-900 text-xs">{step.label}</h4>
+                            <p className="text-[10px] text-gray-400">{step.sub}</p>
                           </div>
                         </div>
                       ))}
@@ -343,9 +332,9 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-4 h-4 text-yellow-300" />
-                      <span className="text-xs font-medium text-white">Quick Start</span>
+                      <span className="text-xs font-medium text-gray-900">Quick Start</span>
                     </div>
-                    <h3 className="font-semibold text-sm text-white mb-2">Run your first valuation in minutes.</h3>
+                    <h3 className="font-semibold text-sm text-gray-900 mb-2">Run your first valuation in minutes.</h3>
                     <p className="text-[10px] text-violet-100 mb-3">
                       Three valuation methods. Sector-aware peers. SEBI &amp; RBI-aligned outputs.
                     </p>
@@ -363,23 +352,23 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                 </Card>
 
                 {/* Audit Log card */}
-                <Card className="bg-white/10 backdrop-blur-xl border border-white/20">
+                <Card className="bg-white border border-gray-200 backdrop-blur-xl border border-gray-200">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <Clock className="w-3.5 h-3.5 text-amber-300" />
-                        <h3 className="text-xs font-bold text-white">Audit Log</h3>
+                        <h3 className="text-xs font-bold text-gray-900">Audit Log</h3>
                       </div>
-                      <span className="text-[10px] text-white/45">{archives.length} item{archives.length !== 1 && "s"}</span>
+                      <span className="text-[10px] text-gray-400">{archives.length} item{archives.length !== 1 && "s"}</span>
                     </div>
-                    <p className="text-[10px] text-white/55 mb-3">
-                      Deleted projects stay recoverable for <strong className="text-white/75">30 days</strong>, then are permanently purged.
+                    <p className="text-[10px] text-gray-500 mb-3">
+                      Deleted projects stay recoverable for <strong className="text-gray-900/75">30 days</strong>, then are permanently purged.
                     </p>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => setShowAudit(true)}
-                      className="w-full bg-white/5 border-white/15 text-white/80 hover:bg-white/10 h-8 text-xs"
+                      className="w-full bg-gray-50 border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-400 hover:shadow-[0_4px_18px_-4px_rgba(59,130,246,0.25)] h-8 text-xs"
                       data-testid="bv-audit-btn"
                     >
                       Open Audit Log
@@ -388,10 +377,10 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                 </Card>
 
                 {/* Disclaimer */}
-                <div className="bg-amber-500/10 backdrop-blur-sm rounded-lg p-3 border border-amber-400/20">
+                <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
                   <div className="flex items-start gap-2">
-                    <Shield className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-[10px] text-amber-200/80">
+                    <Shield className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-amber-800">
                       <strong>Disclaimer:</strong> Outputs are indicative. Validate with your CA / merchant banker before any transaction.
                     </p>
                   </div>
@@ -403,26 +392,26 @@ const BVProjectsLanding = ({ user, apiClient }) => {
 
         {/* Delete confirm */}
         <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
-          <DialogContent className="bg-[#0d0d0d] border border-white/10 text-white">
+          <DialogContent className="bg-[#0d0d0d] border border-gray-200 text-gray-900">
             <DialogHeader>
               <DialogTitle>Delete project?</DialogTitle>
-              <DialogDescription className="text-white/60">
-                <strong className="text-white/80">{confirmDelete?.company_name}</strong> moves to the audit log. Recoverable for <strong className="text-white/80">30 days</strong>, then permanently deleted.
+              <DialogDescription className="text-gray-500">
+                <strong className="text-gray-700">{confirmDelete?.company_name}</strong> moves to the audit log. Recoverable for <strong className="text-gray-700">30 days</strong>, then permanently deleted.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setConfirmDelete(null)} className="bg-transparent border-white/15 text-white/70">Cancel</Button>
-              <Button onClick={handleDelete} className="bg-rose-500 hover:bg-rose-400 text-white" data-testid="bv-confirm-delete">Delete</Button>
+              <Button variant="outline" onClick={() => setConfirmDelete(null)} className="bg-transparent border-gray-200 text-gray-600">Cancel</Button>
+              <Button onClick={handleDelete} className="bg-rose-500 hover:bg-rose-400 text-gray-900" data-testid="bv-confirm-delete">Delete</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         {/* Sector picker — shown when starting a New BV Project */}
         <Dialog open={showCreate} onOpenChange={(o) => !creating && setShowCreate(o)}>
-          <DialogContent className="bg-[#0d0d0d] border border-white/10 text-white max-w-md">
+          <DialogContent className="bg-[#0d0d0d] border border-gray-200 text-gray-900 max-w-md">
             <DialogHeader>
               <DialogTitle>Start a new Business Valuation</DialogTitle>
-              <DialogDescription className="text-white/60">
+              <DialogDescription className="text-gray-500">
                 Pick the sector that best matches your company. We'll pre-load the
                 comparable peer set (3 Large Cap + 1 Mid Cap + Broad NIFTY-500 sector
                 median) and the corresponding multiples. You can change everything later.
@@ -430,21 +419,21 @@ const BVProjectsLanding = ({ user, apiClient }) => {
             </DialogHeader>
             <div className="space-y-3 py-2">
               <div>
-                <label className="text-[11px] text-white/55 uppercase tracking-[0.12em]">Company name (optional)</label>
+                <label className="text-[11px] text-gray-500 uppercase tracking-[0.12em]">Company name (optional)</label>
                 <input
                   value={newCompanyName}
                   onChange={(e) => setNewCompanyName(e.target.value)}
                   placeholder="e.g., Acme Industries Pvt Ltd"
-                  className="mt-1 w-full bg-white/[0.04] border border-white/10 rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/30"
+                  className="mt-1 w-full bg-white/[0.04] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:border-white/30"
                   data-testid="bv-create-company-name"
                 />
               </div>
               <div>
-                <label className="text-[11px] text-white/55 uppercase tracking-[0.12em]">Sector</label>
+                <label className="text-[11px] text-gray-500 uppercase tracking-[0.12em]">Sector</label>
                 <select
                   value={newSectorId}
                   onChange={(e) => setNewSectorId(e.target.value)}
-                  className="mt-1 w-full bg-white/[0.04] border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30"
+                  className="mt-1 w-full bg-white/[0.04] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-white/30"
                   data-testid="bv-create-sector"
                 >
                   {SECTOR_PEER_MULTIPLES.map((s) => (
@@ -456,12 +445,12 @@ const BVProjectsLanding = ({ user, apiClient }) => {
                   const s = SECTOR_PEER_MULTIPLES.find((x) => x.id === newSectorId);
                   if (!s) return null;
                   return (
-                    <div className="mt-2 text-[10px] text-white/45 leading-relaxed">
-                      <strong className="text-white/65">Peer set:</strong>{" "}
+                    <div className="mt-2 text-[10px] text-gray-400 leading-relaxed">
+                      <strong className="text-gray-600">Peer set:</strong>{" "}
                       <span className="text-emerald-300/70">{(s.large_caps || []).join(", ")}</span>
-                      <span className="text-white/40"> · </span>
+                      <span className="text-gray-400"> · </span>
                       <span className="text-amber-300/70">{(s.mid_caps || []).join(", ")}</span>
-                      <span className="text-white/40"> · </span>
+                      <span className="text-gray-400"> · </span>
                       <span className="text-violet-300/70">{s.nifty500_median_label}</span>
                     </div>
                   );
@@ -469,8 +458,8 @@ const BVProjectsLanding = ({ user, apiClient }) => {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCreate(false)} disabled={creating} className="bg-transparent border-white/15 text-white/70">Cancel</Button>
-              <Button onClick={handleCreate} disabled={creating} className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-white gap-1.5" data-testid="bv-create-confirm">
+              <Button variant="outline" onClick={() => setShowCreate(false)} disabled={creating} className="bg-transparent border-gray-200 text-gray-600">Cancel</Button>
+              <Button onClick={handleCreate} disabled={creating} className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-gray-900 gap-1.5" data-testid="bv-create-confirm">
                 {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                 Create Project
               </Button>
@@ -480,23 +469,23 @@ const BVProjectsLanding = ({ user, apiClient }) => {
 
         {/* Audit log dialog */}
         <Dialog open={showAudit} onOpenChange={setShowAudit}>
-          <DialogContent className="bg-[#0d0d0d] border border-white/10 text-white max-w-2xl">
+          <DialogContent className="bg-[#0d0d0d] border border-gray-200 text-gray-900 max-w-2xl">
             <DialogHeader>
               <DialogTitle>Audit Log — Deleted BV Projects (30-day retention)</DialogTitle>
             </DialogHeader>
             {archives.length === 0 ? (
-              <p className="text-white/55 text-sm">No deleted projects.</p>
+              <p className="text-gray-500 text-sm">No deleted projects.</p>
             ) : (
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {archives.map((a) => (
-                  <div key={a.archive_id} className="flex items-center justify-between p-3 bg-white/[0.04] border border-white/10 rounded-md">
+                  <div key={a.archive_id} className="flex items-center justify-between p-3 bg-white/[0.04] border border-gray-200 rounded-md">
                     <div>
-                      <div className="text-sm text-white/85">{a.company_name || "Untitled"}</div>
-                      <div className="text-[10px] text-white/45">
+                      <div className="text-sm text-gray-700">{a.company_name || "Untitled"}</div>
+                      <div className="text-[10px] text-gray-400">
                         Deleted {new Date(a.deleted_at).toLocaleString("en-IN")} · purges {new Date(a.purge_after).toLocaleDateString("en-IN")}
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => handleRestore(a.archive_id)} className="bg-transparent border-white/15 text-white/75 hover:bg-white/5 rounded-full text-xs gap-1">
+                    <Button size="sm" variant="outline" onClick={() => handleRestore(a.archive_id)} className="bg-transparent border-gray-200 text-gray-900/75 hover:bg-gray-50 rounded-full text-xs gap-1">
                       <RefreshCcw className="w-3 h-3" /> Restore
                     </Button>
                   </div>

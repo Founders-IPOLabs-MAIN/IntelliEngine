@@ -94,53 +94,50 @@ const Funding = ({ user, apiClient }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-black" data-testid="funding-page">
+    <div className="flex min-h-screen bg-white" data-testid="funding-page">
       <Sidebar user={user} apiClient={apiClient} />
 
       <main className="flex-1 ml-64 relative overflow-hidden">
         {/* Black background with subtle gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a0a0a] to-[#111] pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 pointer-events-none" />
-
         <div className="relative z-10 min-h-screen flex flex-col">
           {/* Sticky Header */}
-          <header className="sticky top-0 z-20 backdrop-blur-md bg-black/35 border-b border-white/10 px-8 lg:px-12 py-4 flex items-center justify-between">
+          <header className="sticky top-0 z-20 bg-white/85 backdrop-blur-md border-b border-gray-200 px-8 lg:px-12 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white" style={{ letterSpacing: "-0.02em" }}>
+              <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-gray-900" style={{ letterSpacing: "-0.02em" }}>
                 IPO Funding Engine
               </h1>
-              <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs text-white/80">
+              <div className="inline-flex items-center gap-1.5 bg-gray-100 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs text-gray-700">
                 <Brain className="w-3 h-3 text-yellow-300" />
                 <span className="font-medium">Human + AI Powered</span>
               </div>
             </div>
-            <div className="flex items-center gap-5 text-xs text-white/70">
-              <div className="text-center"><p className="text-lg font-bold text-white">50+</p><p>Partners</p></div>
-              <div className="w-px h-8 bg-white/20" />
-              <div className="text-center"><p className="text-lg font-bold text-white">11</p><p>Options</p></div>
+            <div className="flex items-center gap-5 text-xs text-gray-600">
+              <div className="text-center"><p className="text-lg font-bold text-gray-900">50+</p><p>Partners</p></div>
+              <div className="w-px h-8 bg-gray-100" />
+              <div className="text-center"><p className="text-lg font-bold text-gray-900">11</p><p>Options</p></div>
             </div>
           </header>
 
           {/* Features Bar */}
-          <div className="backdrop-blur-sm bg-white/5 border-b border-white/10">
-            <div className="px-8 lg:px-12 py-2.5 flex items-center justify-center gap-6 text-xs text-white/60">
+          <div className="backdrop-blur-sm bg-gray-50 border-b border-gray-200">
+            <div className="px-8 lg:px-12 py-2.5 flex items-center justify-center gap-6 text-xs text-gray-500">
               <span className="flex items-center gap-1.5"><Brain className="w-3.5 h-3.5 text-emerald-400" /> AI Eligibility Analysis</span>
-              <span className="w-px h-3 bg-white/20" />
+              <span className="w-px h-3 bg-gray-100" />
               <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-emerald-400" /> Expert Consultations</span>
-              <span className="w-px h-3 bg-white/20" />
+              <span className="w-px h-3 bg-gray-100" />
               <span className="flex items-center gap-1.5"><Landmark className="w-3.5 h-3.5 text-emerald-400" /> Vetted Partners</span>
-              <span className="w-px h-3 bg-white/20" />
+              <span className="w-px h-3 bg-gray-100" />
               <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-emerald-400" /> SEBI Compliant</span>
             </div>
           </div>
 
           {/* Hero */}
           <section className="px-8 lg:px-12 pt-10 pb-6 max-w-5xl">
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08]">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08]">
               The Intelligent Capital Bridge for Every Stage of{" "}
               <span className="text-[#34D399]">Your IPO.</span>
             </h2>
-            <p className="mt-4 text-white/70 text-base lg:text-lg leading-relaxed max-w-2xl">
+            <p className="mt-4 text-gray-600 text-base lg:text-lg leading-relaxed max-w-2xl">
               Pre-Listing to Post-IPO Growth Fund. Come talk to us!
             </p>
           </section>
@@ -156,17 +153,16 @@ const Funding = ({ user, apiClient }) => {
                     <Card
                       key={mod.id}
                       onClick={() => handleModuleClick(mod)}
-                      className={`bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1 ${!disclaimerAccepted ? "opacity-70" : ""}`}
+                      className={`bg-white border border-gray-200 backdrop-blur-xl border-2 border-gray-200 hover:bg-blue-50 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1 ${!disclaimerAccepted ? "opacity-70" : ""}`}
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = mod.accent; e.currentTarget.style.boxShadow = `0 20px 40px -10px ${mod.accent}40`; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.boxShadow = ""; }}
                       data-testid={mod.testid}
                     >
                       <CardContent className="p-5 flex flex-col h-full">
                         <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${mod.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
-                          <Icon className="w-6 h-6 text-white" />
+                          <Icon className="w-6 h-6 text-gray-900" />
                         </div>
-                        <h3 className="text-base font-bold text-white mb-1.5 drop-shadow">{mod.title}</h3>
-                        <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1 drop-shadow">{mod.desc}</p>
+                        <h3 className="text-base font-bold text-gray-900 mb-1.5">{mod.title}</h3>
+                        <p className="text-xs text-gray-600 leading-relaxed mb-4 flex-1">{mod.desc}</p>
                         <div className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all" style={{ color: mod.accent }}>
                           {mod.cta} <ArrowRight className="w-3.5 h-3.5" />
                         </div>
@@ -178,9 +174,9 @@ const Funding = ({ user, apiClient }) => {
 
               {/* Right — How It Works + Quick Start */}
               <div className="space-y-4">
-                <Card className="bg-white/10 backdrop-blur-xl border border-white/20">
+                <Card className="bg-white border border-gray-200 backdrop-blur-xl border border-gray-200">
                   <CardContent className="p-5">
-                    <h3 className="text-sm font-bold text-white mb-4">How It Works</h3>
+                    <h3 className="text-sm font-bold text-gray-900 mb-4">How It Works</h3>
                     <div className="space-y-3">
                       {["Choose Module", "AI Assessment", "Expert Review", "Get Funded"].map((step, i) => (
                         <div key={i} className="flex items-start gap-3">
@@ -188,8 +184,8 @@ const Funding = ({ user, apiClient }) => {
                             <span className="text-xs font-bold text-emerald-400">{i + 1}</span>
                           </div>
                           <div>
-                            <h4 className="font-medium text-white text-xs">{step}</h4>
-                            <p className="text-[10px] text-white/50">
+                            <h4 className="font-medium text-gray-900 text-xs">{step}</h4>
+                            <p className="text-[10px] text-gray-400">
                               {i === 0 && "Pre-IPO or Post-IPO based on your stage"}
                               {i === 1 && "Quick eligibility quiz for instant score"}
                               {i === 2 && "Consultation with funding experts"}
@@ -207,9 +203,9 @@ const Funding = ({ user, apiClient }) => {
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-4 h-4 text-yellow-300" />
-                      <span className="text-xs font-medium text-white">Quick Start</span>
+                      <span className="text-xs font-medium text-gray-900">Quick Start</span>
                     </div>
-                    <h3 className="font-semibold text-sm text-white mb-2">Not sure where to start?</h3>
+                    <h3 className="font-semibold text-sm text-gray-900 mb-2">Not sure where to start?</h3>
                     <p className="text-[10px] text-emerald-100 mb-3">
                       Take our AI-powered eligibility quiz to find the best funding options for you.
                     </p>
@@ -226,10 +222,10 @@ const Funding = ({ user, apiClient }) => {
                 </Card>
 
                 {/* Disclaimer Note */}
-                <div className="bg-amber-500/10 backdrop-blur-sm rounded-lg p-3 border border-amber-400/20">
+                <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
                   <div className="flex items-start gap-2">
-                    <Shield className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-[10px] text-amber-200/80">
+                    <Shield className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-amber-800">
                       We connect you with vetted partners. IPO Labs is not a SEBI registered funding agency.
                     </p>
                   </div>

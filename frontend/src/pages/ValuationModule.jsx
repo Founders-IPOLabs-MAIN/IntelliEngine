@@ -71,7 +71,7 @@ const ValuationModule = ({ user, apiClient }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50" data-testid="valuation-module-page">
+    <div className="flex min-h-screen bg-white" data-testid="valuation-module-page">
       <Sidebar user={user} apiClient={apiClient} />
       <main className="flex-1 ml-64">
         {/* Disclaimer Dialog */}
@@ -106,22 +106,22 @@ const ValuationModule = ({ user, apiClient }) => {
         </Dialog>
 
         {/* Header */}
-        <div className="bg-gradient-to-br from-[#003366] to-[#001a33] text-white">
+        <div className="bg-white border-b border-gray-200">
           <div className="max-w-6xl mx-auto px-6 py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                  <Scale className="w-6 h-6 text-[#00D1FF]" />
+                <div className="w-11 h-11 bg-blue-50 rounded-xl flex items-center justify-center">
+                  <Scale className="w-5 h-5 text-[#1DA1F2]" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold tracking-tight">Automated Business Valuation</h1>
-                  <p className="text-sm text-blue-200 mt-0.5">AI-powered valuation compliant with Indian regulatory frameworks</p>
+                  <h1 className="text-[22px] font-semibold tracking-tight text-gray-900">Automated Business Valuation</h1>
+                  <p className="text-[13px] text-gray-500 mt-0.5">AI-powered valuation compliant with Indian regulatory frameworks</p>
                 </div>
               </div>
               <Button
                 onClick={handleCreateNew}
                 disabled={creating}
-                className="bg-[#00D1FF] hover:bg-[#00b8e6] text-[#003366] font-semibold gap-2"
+                className="bg-[#1DA1F2] hover:bg-[#0C7ABF] text-white font-semibold gap-2"
                 data-testid="new-valuation-btn"
               >
                 {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}

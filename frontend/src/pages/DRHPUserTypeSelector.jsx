@@ -156,27 +156,24 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
 
   if (bootstrapping) {
     return (
-      <div className="flex min-h-screen bg-black items-center justify-center text-white/70">
+      <div className="flex min-h-screen bg-white items-center justify-center text-gray-600">
         <Loader2 className="w-5 h-5 animate-spin mr-2" /> Checking your profile…
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-black" data-testid="drhp-user-type-selector">
+    <div className="flex min-h-screen bg-white" data-testid="drhp-user-type-selector">
       <Sidebar user={user} apiClient={apiClient} />
 
       <main className="flex-1 ml-64 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a0a0a] to-[#111] pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 pointer-events-none" />
-
         <div className="relative z-10 min-h-screen flex flex-col">
           <header
-            className="sticky top-0 z-20 backdrop-blur-md bg-black/35 border-b border-white/10 px-8 lg:px-16 py-4 flex items-center justify-between"
+            className="sticky top-0 z-20 bg-white/85 backdrop-blur-md border-b border-gray-200 px-8 lg:px-16 py-4 flex items-center justify-between"
             data-testid="drhp-header"
           >
             <h1
-              className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white"
+              className="text-2xl lg:text-3xl font-extrabold tracking-tight text-gray-900"
               style={{ letterSpacing: "-0.02em" }}
             >
               DRHP Builder
@@ -184,11 +181,11 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
           </header>
 
           <section className="px-8 lg:px-16 pt-12 lg:pt-16 pb-8 max-w-5xl" data-testid="drhp-hero">
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.08]">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08]">
               Build Audit-Ready DRHPs with{" "}
               <span className="text-[#00D1FF]">SEBI-Grade Precision.</span>
             </h2>
-            <p className="mt-5 text-white/75 text-base lg:text-lg leading-relaxed max-w-2xl">
+            <p className="mt-5 text-gray-900/75 text-base lg:text-lg leading-relaxed max-w-2xl">
               Manage &quot;Multiple&quot; DRHP&apos;s through &quot;Multiple&quot; Project Teams remotely.
             </p>
           </section>
@@ -202,19 +199,18 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
                     <Card
                       key={c.id}
                       onClick={() => handleCardClick(c.id)}
-                      className="bg-white/10 backdrop-blur-xl border-2 border-white/20 hover:bg-white/18 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1 w-full"
+                      className="bg-white border border-gray-200 backdrop-blur-xl border-2 border-gray-200 hover:bg-blue-50 cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1 w-full"
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = c.accent; e.currentTarget.style.boxShadow = `0 20px 40px -10px ${c.accent}40`; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.boxShadow = ""; }}
                       data-testid={c.testid}
                     >
                       <CardContent className="p-5 flex flex-col h-full">
                         <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
-                          <Icon className="w-6 h-6 text-white" />
+                          <Icon className="w-6 h-6 text-gray-900" />
                         </div>
-                        <h3 className="text-base font-bold text-white leading-snug mb-1.5 drop-shadow">
+                        <h3 className="text-base font-bold text-gray-900 leading-snug mb-1.5">
                           {c.title}
                         </h3>
-                        <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1 drop-shadow">
+                        <p className="text-xs text-gray-600 leading-relaxed mb-4 flex-1">
                           {c.desc}
                         </p>
                         <div
@@ -230,9 +226,9 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
               </div>
 
               <div className="space-y-4">
-                <Card className="bg-white/10 backdrop-blur-xl border border-white/20">
+                <Card className="bg-white border border-gray-200 backdrop-blur-xl border border-gray-200">
                   <CardContent className="p-5">
-                    <h3 className="text-sm font-bold text-white mb-4">How It Works</h3>
+                    <h3 className="text-sm font-bold text-gray-900 mb-4">How It Works</h3>
                     <div className="space-y-3">
                       {["Choose Profile", "Create Workspace", "Upload Documents", "Build DRHP"].map((step, i) => (
                         <div key={i} className="flex items-start gap-3">
@@ -240,8 +236,8 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
                             <span className="text-xs font-bold text-cyan-400">{i + 1}</span>
                           </div>
                           <div>
-                            <h4 className="font-medium text-white text-xs">{step}</h4>
-                            <p className="text-[10px] text-white/50">
+                            <h4 className="font-medium text-gray-900 text-xs">{step}</h4>
+                            <p className="text-[10px] text-gray-400">
                               {i === 0 && "Merchant Banker, Company, or CA Firm"}
                               {i === 1 && "Secure, role-based project environment"}
                               {i === 2 && "Upload corporate documents & financials"}
@@ -258,9 +254,9 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
                   <CardContent className="p-5">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-4 h-4 text-yellow-300" />
-                      <span className="text-xs font-medium text-white">Quick Start</span>
+                      <span className="text-xs font-medium text-gray-900">Quick Start</span>
                     </div>
-                    <h3 className="font-semibold text-sm text-white mb-2">New to DRHP?</h3>
+                    <h3 className="font-semibold text-sm text-gray-900 mb-2">New to DRHP?</h3>
                     <p className="text-[10px] text-cyan-100 mb-3">
                       Select &quot;Company&quot; profile to start building your DRHP with guided templates.
                     </p>
@@ -275,10 +271,10 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
                   </CardContent>
                 </Card>
 
-                <div className="bg-amber-500/10 backdrop-blur-sm rounded-lg p-3 border border-amber-400/20">
+                <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
                   <div className="flex items-start gap-2">
-                    <Shield className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-[10px] text-amber-200/80">
+                    <Shield className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-amber-800">
                       All documents are encrypted and stored securely. SEBI compliance verified at every step.
                     </p>
                   </div>
@@ -296,7 +292,7 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
             <DialogTitle className="flex items-center gap-2">
               {pendingCard?.icon && (
                 <span className={`w-8 h-8 rounded-lg bg-gradient-to-br ${pendingCard.iconGrad} flex items-center justify-center`}>
-                  <pendingCard.icon className="w-4 h-4 text-white" />
+                  <pendingCard.icon className="w-4 h-4 text-gray-900" />
                 </span>
               )}
               Welcome — let&apos;s set up your {pendingCard?.title || "DRHP"} workspace
@@ -357,7 +353,7 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
               Not now
             </Button>
             <Button
-              className="bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white"
+              className="bg-[#1DA1F2] hover:bg-[#1a8cd8] text-gray-900"
               disabled={submitting}
               onClick={handleSubmit}
               data-testid="onboard-submit"
