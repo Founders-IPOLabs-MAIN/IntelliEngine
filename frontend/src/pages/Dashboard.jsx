@@ -1,219 +1,472 @@
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
 import Sidebar from "@/components/Sidebar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import {
   FileText,
   TrendingUp,
   Users,
   CheckCircle2,
   Scale,
-  ArrowRight
+  ArrowRight,
+  ArrowUpRight,
+  AlertTriangle,
+  X as XIcon,
+  Sparkles,
+  PlayCircle,
+  Compass,
+  Rocket,
 } from "lucide-react";
 
-const VIDEO_URL =
-  "https://customer-assets.emergentagent.com/job_d9168386-61cf-418c-af5b-b3de2eb2d725/artifacts/wf0d3afk_Illustration_of_flowing_202604242039.mp4";
-
+// ─── Module configuration ────────────────────────────────────────────────
 const MODULES = [
   {
     id: "assessment",
     title: "Free IPO Assessment",
-    desc: "AI-powered readiness check with comprehensive gap analysis and recommendations",
+    short: "Readiness check",
+    desc: "AI-powered readiness check with comprehensive gap analysis and SEBI alignment recommendations.",
+    longIntro:
+      "Run a 360° readiness scan across financials, governance, compliance and disclosures. SETU's AI benchmarks your company against the latest SEBI mainboard & SME thresholds, surfaces every gap, and hands you a prioritised remediation playbook — so you walk into your first banker meeting already shortlist-grade.",
     icon: CheckCircle2,
-    accent: "#34D399",
-    iconGrad: "from-emerald-500 to-green-600",
+    accent: "#10B981",
+    accentSoft: "bg-emerald-50",
+    accentText: "text-emerald-700",
+    accentBorder: "border-emerald-200",
+    snap: "/module-snaps/assessment.png",
     path: "/assessment",
-    cta: "Open Module",
     testid: "module-assessment",
   },
   {
     id: "drhp",
     title: "DRHP Builder",
-    desc: "End-to-end document generation with Centralised Corporate Repository",
+    short: "Document generation",
+    desc: "End-to-end document generation with a Centralised Corporate Repository and SEBI-aligned chapter modules.",
+    longIntro:
+      "Draft, redline and export a SEBI-grade DRHP without the 80-tab Word chaos. Auto-prefill chapters from a single Corporate Repository, collaborate with merchant bankers in real time on Syncfusion's native editor, and export filing-ready DOCX/PDFs whenever the syndicate calls for one.",
     icon: FileText,
-    accent: "#38BDF8",
-    iconGrad: "from-sky-500 to-blue-600",
+    accent: "#0EA5E9",
+    accentSoft: "bg-sky-50",
+    accentText: "text-sky-700",
+    accentBorder: "border-sky-200",
+    snap: "/module-snaps/drhp.png",
     path: "/drhp1",
     adminPath: "/drhp",
-    cta: "Open Module",
     testid: "module-drhp",
   },
   {
     id: "funding",
     title: "IPO Funding",
-    desc: "Human + AI powered capital orchestration platform for your IPO journey",
+    short: "Capital orchestration",
+    desc: "Human + AI powered capital orchestration platform tailored for every stage of your IPO journey.",
+    longIntro:
+      "From bridge rounds to anchor allocation, orchestrate every conversation with PE funds, family offices and HNIs in one dashboard. SETU's matching engine pairs your stage, sector and ticket-size with verified investors — and tracks every term sheet, SHA and SPA till it's signed.",
     icon: TrendingUp,
-    accent: "#A78BFA",
-    iconGrad: "from-violet-500 to-purple-600",
+    accent: "#7C3AED",
+    accentSoft: "bg-violet-50",
+    accentText: "text-violet-700",
+    accentBorder: "border-violet-200",
+    snap: "/module-snaps/funding.png",
     path: "/funding1",
     adminPath: "/funding",
-    cta: "Open Module",
     testid: "module-funding",
   },
   {
     id: "matchmaker",
     title: "The Match-Making Platform",
-    desc: "Connect with verified CAs, CS, CFOs, Lawyers, and industry experts across India",
+    short: "Expert network",
+    desc: "Connect with verified CAs, CS, CFOs, lawyers and IPO industry experts across India.",
+    longIntro:
+      "Browse a curated network of merchant bankers, peer reviewers, registrars, lawyers and tax counsel — each verified against past IPO mandates. Filter by sector, board (SME / Mainboard) and budget, request introductions in one click, and shortlist your IPO bench before your kickoff call.",
     icon: Users,
-    accent: "#FB923C",
-    iconGrad: "from-orange-500 to-amber-600",
+    accent: "#F97316",
+    accentSoft: "bg-orange-50",
+    accentText: "text-orange-700",
+    accentBorder: "border-orange-200",
+    snap: "/module-snaps/matchmaker.png",
     path: "/matchmaker",
-    cta: "Open Module",
     testid: "module-matchmaker",
   },
   {
     id: "valuation",
     title: "Business Valuation",
-    desc: "AI-powered DCF, NAV & Comparable analysis for accurate business valuation",
+    short: "Valuation engine",
+    desc: "AI-powered DCF, NAV & comparable analysis for accurate, board-ready business valuations.",
+    longIntro:
+      "Run rigorous DCF, NAV and Comparable Company analyses on the same dataset, with reversed FY columns matching your CFO's working file. Tweak peer sets, WACC and terminal growth on the fly, and export boardroom-ready PDF valuation reports SEBI-compliant down to the assumptions footnote.",
     icon: Scale,
-    accent: "#FBBF24",
-    iconGrad: "from-amber-500 to-yellow-600",
+    accent: "#D97706",
+    accentSoft: "bg-amber-50",
+    accentText: "text-amber-700",
+    accentBorder: "border-amber-200",
+    snap: "/module-snaps/valuation.png",
     path: "/valuation",
-    cta: "Open Module",
     testid: "module-valuation",
+  },
+];
+
+// ─── "Things to do" tasks (welcome / onboarding strip) ───────────────────
+const TASKS = [
+  {
+    id: "profile",
+    title: "Finish setting up your profile",
+    desc: "Add company details so we can tailor your IPO readiness journey.",
+    icon: Compass,
+    cta: "Add details",
+    accent: "#4F46E5",
+    path: "/account-details",
+  },
+  {
+    id: "assessment",
+    title: "Take your first IPO assessment",
+    desc: "5 minutes to a personalised gap analysis report.",
+    icon: Sparkles,
+    cta: "Start assessment",
+    accent: "#10B981",
+    path: "/assessment",
+  },
+  {
+    id: "tour",
+    title: "Take a quick tour",
+    desc: "See how SETU's 5 modules connect end-to-end.",
+    icon: PlayCircle,
+    cta: "Take the tour",
+    accent: "#7C3AED",
+    path: null,
   },
 ];
 
 const Dashboard = ({ user, apiClient }) => {
   const navigate = useNavigate();
-  const videoRef = useRef(null);
+  const [introModule, setIntroModule] = useState(null);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    const tryPlay = () => { v.play().catch(() => {}); };
-    v.addEventListener("loadedmetadata", tryPlay);
-    v.addEventListener("canplay", tryPlay);
-    tryPlay();
-    return () => {
-      v.removeEventListener("loadedmetadata", tryPlay);
-      v.removeEventListener("canplay", tryPlay);
-    };
-  }, []);
+  const firstName = (user?.name || "there").split(" ")[0];
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 17) return "Good afternoon";
+    return "Good evening";
+  })();
+
+  const targetPathFor = (mod) =>
+    mod.adminPath && user?.is_admin ? mod.adminPath : mod.path;
 
   const handleModuleClick = (mod) => {
-    if (mod.adminPath && user?.is_admin) {
-      navigate(mod.adminPath);
+    const seenKey = `setu_intro_seen_${mod.id}`;
+    if (typeof window !== "undefined" && localStorage.getItem(seenKey) === "1") {
+      navigate(targetPathFor(mod));
     } else {
-      navigate(mod.path);
+      setIntroModule(mod);
     }
   };
 
+  const handleIntroNext = () => {
+    if (!introModule) return;
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`setu_intro_seen_${introModule.id}`, "1");
+    }
+    const path = targetPathFor(introModule);
+    setIntroModule(null);
+    navigate(path);
+  };
+
+  const handleTour = () => {
+    if (typeof window !== "undefined") {
+      ["assessment", "drhp", "funding", "matchmaker", "valuation"].forEach((id) =>
+        localStorage.removeItem(`setu_intro_seen_${id}`)
+      );
+    }
+    setIntroModule(MODULES[0]);
+  };
+
   return (
-    <div className="flex min-h-screen bg-[#0a0a0a]" data-testid="dashboard-page">
+    <div className="flex min-h-screen bg-[#FBF8F1]" data-testid="dashboard-page">
       <Sidebar user={user} apiClient={apiClient} />
 
-      <main className="flex-1 ml-64 relative overflow-hidden">
-        {/* Mesh gradient backdrop — same palette as landing page */}
-        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div className="absolute top-1/4 left-[12%] w-[640px] h-[640px] rounded-full bg-indigo-500/15 blur-[150px]" />
-          <div className="absolute top-1/3 right-[10%] w-[520px] h-[520px] rounded-full bg-cyan-400/12 blur-[150px]" />
-          <div className="absolute bottom-1/4 left-1/3 w-[460px] h-[460px] rounded-full bg-fuchsia-500/10 blur-[140px]" />
-          <div className="absolute inset-0 opacity-[0.04]"
-               style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
-        </div>
-
-        {/* Background video kept for the subtle motion accent */}
-        <video
-          ref={videoRef}
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.10] mix-blend-screen"
-          src={VIDEO_URL}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-          data-testid="dashboard-bg-video"
-        />
-
-        <div className="relative z-10 min-h-screen flex flex-col">
-          {/* Glass header */}
-          <header
-            className="sticky top-0 z-20 backdrop-blur-md bg-black/40 border-b border-white/10 px-8 py-4 flex items-center justify-between"
-            data-testid="dashboard-header"
-          >
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-white" style={{ letterSpacing: "-0.02em" }}>
-                Dashboard
-              </h1>
-              <p className="text-xs text-white/55 mt-0.5">
-                Welcome back, {user?.name || "User"}
-              </p>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center overflow-hidden backdrop-blur-sm">
+      <main className="flex-1 ml-64 relative">
+        {/* ── Top bar ───────────────────────────────────────────────── */}
+        <header
+          className="sticky top-0 z-20 bg-[#FBF8F1]/85 backdrop-blur-md border-b border-[#ECE6D9] px-10 py-5 flex items-center justify-between"
+          data-testid="dashboard-header"
+        >
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.18em] text-[#9A8F78] font-semibold">Dashboard</div>
+            <h1 className="text-xl font-bold text-[#1A2235] mt-0.5" style={{ letterSpacing: "-0.01em" }}>
+              SETU Workspace
+            </h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleTour}
+              className="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-[#4F46E5] hover:text-[#3730a3] transition"
+              data-testid="header-take-tour"
+            >
+              <PlayCircle className="w-3.5 h-3.5" /> Take the tour
+            </button>
+            <div className="w-9 h-9 rounded-full bg-[#1A2235] text-white flex items-center justify-center overflow-hidden shadow-sm">
               {user?.picture ? (
                 <img src={user.picture} alt={user?.name} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-white/85 text-sm font-semibold">{user?.name?.charAt(0) || "U"}</span>
+                <span className="text-sm font-semibold">{user?.name?.charAt(0)?.toUpperCase() || "U"}</span>
               )}
             </div>
-          </header>
+          </div>
+        </header>
 
-          {/* Hero — left-aligned, dark, gradient accent */}
-          <section className="px-8 pt-10 pb-6" data-testid="dashboard-hero">
-            <h2
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08]"
-              data-testid="dashboard-hero-h1"
-            >
-              Build your IPO Journey<br /> with{" "}
-              <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                SETU, by IPO Labs.
-              </span>
+        <div className="px-10 py-10 max-w-[1280px] mx-auto">
+          {/* ── Welcome strip ─────────────────────────────────────── */}
+          <section data-testid="welcome-strip" className="mb-8">
+            <h2 className="text-4xl lg:text-5xl font-bold text-[#1A2235] tracking-tight" style={{ letterSpacing: "-0.025em" }}>
+              {greeting}, {firstName} <span className="inline-block">👋</span>
             </h2>
-            <p className="mt-4 text-white/70 text-lg lg:text-xl leading-relaxed max-w-2xl">
-              SETU has everything you need to go public.
+            <p className="mt-2 text-[15px] text-[#6B7280]">
+              Here's what's happening across your IPO workspace today.
             </p>
           </section>
 
-          {/* Module cards — glass-morph dark */}
-          <section className="px-8 pb-6 flex-1 flex flex-col" data-testid="dashboard-modules">
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl flex-1">
-              {MODULES.map((mod) => {
-                const Icon = mod.icon;
+          {/* ── Alert banner ──────────────────────────────────────── */}
+          {!bannerDismissed && (
+            <div
+              className="mb-8 rounded-xl border border-[#F0D784] bg-[#FFF8DD] px-5 py-4 flex items-start gap-3 shadow-sm"
+              data-testid="dashboard-alert-banner"
+            >
+              <div className="w-8 h-8 rounded-full bg-[#F0B428] flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-4 h-4 text-white" strokeWidth={2.4} />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-[#7A5A11]">
+                  Finish setting up your IPO Readiness profile
+                </p>
+                <p className="text-xs text-[#8A6C2C] mt-0.5">
+                  Add a few company details and you'll unlock tailored DRHP drafts, peer benchmarks and matchmaking shortlists.
+                </p>
+                <button
+                  onClick={() => navigate("/account-details")}
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#7A5A11] hover:underline"
+                  data-testid="alert-add-details"
+                >
+                  Add missing details <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+              <button
+                onClick={() => setBannerDismissed(true)}
+                className="text-[#9C7A2C] hover:text-[#7A5A11]"
+                aria-label="Dismiss"
+                data-testid="alert-dismiss"
+              >
+                <XIcon className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* ── Things to do ──────────────────────────────────────── */}
+          <section className="mb-10" data-testid="things-to-do">
+            <div className="flex items-end justify-between mb-4">
+              <div>
+                <h3 className="text-[15px] font-bold text-[#1A2235]">Things to do</h3>
+                <p className="text-xs text-[#6B7280] mt-0.5">A quick pre-flight before you dive into the modules.</p>
+              </div>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4">
+              {TASKS.map((t) => {
+                const Icon = t.icon;
                 return (
-                  <Card
-                    key={mod.id}
-                    onClick={() => handleModuleClick(mod)}
-                    className="bg-white/[0.05] backdrop-blur-xl border border-white/10 hover:bg-white/[0.08] cursor-pointer group shadow-2xl transition-all duration-300 hover:-translate-y-1"
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = mod.accent;
-                      e.currentTarget.style.boxShadow = `0 18px 40px -10px ${mod.accent}50`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = "";
-                      e.currentTarget.style.boxShadow = "";
-                    }}
-                    data-testid={mod.testid}
+                  <div
+                    key={t.id}
+                    className="bg-white border border-[#ECE6D9] rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col"
+                    data-testid={`task-${t.id}`}
                   >
-                    <CardContent className="p-5 flex flex-col h-full">
-                      <div
-                        className={`w-11 h-11 rounded-lg bg-gradient-to-br ${mod.iconGrad} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
-                      >
-                        <Icon className="w-5 h-5 text-white" />
-                      </div>
-                      <h3 className="text-sm font-bold text-white leading-snug mb-2 drop-shadow">
-                        {mod.title}
-                      </h3>
-                      <p className="text-xs text-white/65 leading-relaxed mb-4 flex-1">
-                        {mod.desc}
-                      </p>
-                      <div
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold group-hover:gap-2 transition-all"
-                        style={{ color: mod.accent }}
-                      >
-                        {mod.cta} <ArrowRight className="w-3 h-3" />
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
+                      style={{ backgroundColor: `${t.accent}14`, color: t.accent }}
+                    >
+                      <Icon className="w-5 h-5" strokeWidth={2.2} />
+                    </div>
+                    <div className="text-sm font-bold text-[#1A2235]">{t.title}</div>
+                    <p className="text-xs text-[#6B7280] mt-1.5 leading-relaxed flex-1">{t.desc}</p>
+                    <button
+                      onClick={() => (t.id === "tour" ? handleTour() : t.path && navigate(t.path))}
+                      className="mt-4 inline-flex items-center gap-1 text-xs font-semibold transition self-start"
+                      style={{ color: t.accent }}
+                      data-testid={`task-${t.id}-cta`}
+                    >
+                      {t.cta} <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
                 );
               })}
             </div>
           </section>
+
+          {/* ── Modules grid ──────────────────────────────────────── */}
+          <section data-testid="dashboard-modules">
+            <div className="flex items-end justify-between mb-4">
+              <div>
+                <h3 className="text-[15px] font-bold text-[#1A2235]">Your IPO toolkit</h3>
+                <p className="text-xs text-[#6B7280] mt-0.5">Five modules. One end-to-end workspace.</p>
+              </div>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9A8F78]">5 modules</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {MODULES.map((mod) => {
+                const Icon = mod.icon;
+                return (
+                  <button
+                    key={mod.id}
+                    type="button"
+                    onClick={() => handleModuleClick(mod)}
+                    className="group text-left bg-white border border-[#ECE6D9] rounded-2xl p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all flex flex-col relative overflow-hidden"
+                    data-testid={mod.testid}
+                  >
+                    {/* Soft top wash matching accent */}
+                    <div
+                      className="absolute inset-x-0 top-0 h-1 rounded-t-2xl"
+                      style={{ backgroundColor: mod.accent }}
+                    />
+
+                    <div className="flex items-start justify-between mb-4">
+                      <div
+                        className="w-11 h-11 rounded-xl flex items-center justify-center"
+                        style={{ backgroundColor: `${mod.accent}1A`, color: mod.accent }}
+                      >
+                        <Icon className="w-5 h-5" strokeWidth={2.2} />
+                      </div>
+                      <span
+                        className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full ${mod.accentSoft} ${mod.accentText}`}
+                      >
+                        {mod.short}
+                      </span>
+                    </div>
+
+                    <h4 className="text-base font-bold text-[#1A2235] mb-1.5 leading-snug">
+                      {mod.title}
+                    </h4>
+                    <p className="text-xs text-[#6B7280] leading-relaxed mb-5 flex-1">
+                      {mod.desc}
+                    </p>
+
+                    <div
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold group-hover:gap-2.5 transition-all"
+                      style={{ color: mod.accent }}
+                    >
+                      Explore module <ArrowUpRight className="w-3.5 h-3.5" />
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* "Need more" footer card matching Maze enterprise CTA tone */}
+              <div className="bg-gradient-to-br from-[#1A2235] to-[#0F172A] rounded-2xl p-6 text-white flex flex-col" data-testid="module-enterprise">
+                <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+                  <Rocket className="w-5 h-5 text-white" strokeWidth={2.2} />
+                </div>
+                <h4 className="text-base font-bold mb-1.5">Going public soon?</h4>
+                <p className="text-xs text-white/70 leading-relaxed mb-5 flex-1">
+                  Talk to our IPO desk for white-glove onboarding, custom workflows and dedicated relationship support.
+                </p>
+                <button
+                  onClick={() => navigate("/contact")}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#FFD580] hover:gap-2.5 transition-all self-start"
+                  data-testid="module-enterprise-cta"
+                >
+                  Talk to IPO desk <ArrowUpRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
+
+      {/* ── Module Intro Dialog ─────────────────────────────────── */}
+      <ModuleIntroDialog
+        module={introModule}
+        onClose={() => setIntroModule(null)}
+        onNext={handleIntroNext}
+      />
     </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// Module Intro Dialog — Pitch.com-inspired modal with feature snapshot,
+// short headline, intro paragraph, and a primary "Open module" CTA.
+// ─────────────────────────────────────────────────────────────────────────
+
+const ModuleIntroDialog = ({ module: mod, onClose, onNext }) => {
+  if (!mod) return null;
+  const Icon = mod.icon;
+
+  return (
+    <Dialog open={!!mod} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent
+        className="max-w-2xl p-0 overflow-hidden bg-white border border-[#ECE6D9] rounded-2xl"
+        data-testid={`intro-dialog-${mod.id}`}
+      >
+        {/* Snap of the 1st page */}
+        <div
+          className="relative w-full h-64 overflow-hidden border-b border-[#ECE6D9]"
+          style={{
+            background: `linear-gradient(135deg, ${mod.accent}1A 0%, ${mod.accent}05 100%)`,
+          }}
+        >
+          <img
+            src={mod.snap}
+            alt={`${mod.title} preview`}
+            className="absolute inset-0 w-full h-full object-cover object-top"
+            onError={(e) => {
+              // Fallback: hide broken img, gradient bg remains
+              e.currentTarget.style.display = "none";
+            }}
+            data-testid={`intro-snap-${mod.id}`}
+          />
+          {/* Soft top-left badge */}
+          <div className="absolute top-4 left-4 inline-flex items-center gap-2 bg-white/95 backdrop-blur px-3 py-1.5 rounded-full shadow-sm border border-white">
+            <div
+              className="w-5 h-5 rounded-md flex items-center justify-center"
+              style={{ backgroundColor: `${mod.accent}1A`, color: mod.accent }}
+            >
+              <Icon className="w-3 h-3" strokeWidth={2.4} />
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: mod.accent }}>
+              {mod.short}
+            </span>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="p-7">
+          <h3 className="text-2xl font-bold text-[#1A2235] tracking-tight" style={{ letterSpacing: "-0.015em" }}>
+            {mod.title}
+          </h3>
+          <p className="mt-3 text-sm text-[#4B5563] leading-relaxed">
+            {mod.longIntro}
+          </p>
+
+          <div className="mt-7 flex items-center justify-between gap-3">
+            <button
+              onClick={onClose}
+              className="text-sm font-semibold text-[#6B7280] hover:text-[#1A2235] transition"
+              data-testid={`intro-skip-${mod.id}`}
+            >
+              Skip for now
+            </button>
+            <Button
+              onClick={onNext}
+              className="text-white font-semibold rounded-lg px-6 py-5 shadow-md hover:shadow-lg transition-all"
+              style={{ backgroundColor: mod.accent }}
+              data-testid={`intro-next-${mod.id}`}
+            >
+              Open module <ArrowRight className="w-4 h-4 ml-1.5" />
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
