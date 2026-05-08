@@ -184,48 +184,38 @@ const Dashboard = ({ user, apiClient }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#FBF8F1]" data-testid="dashboard-page">
+    <div className="flex min-h-screen bg-white" data-testid="dashboard-page">
       <Sidebar user={user} apiClient={apiClient} />
 
       <main className="flex-1 ml-64 relative">
-        {/* ── Top bar ───────────────────────────────────────────────── */}
-        <header
-          className="sticky top-0 z-20 bg-[#FBF8F1]/85 backdrop-blur-md border-b border-[#ECE6D9] px-10 py-5 flex items-center justify-between"
-          data-testid="dashboard-header"
-        >
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.18em] text-[#9A8F78] font-semibold">Dashboard</div>
-            <h1 className="text-xl font-bold text-[#1A2235] mt-0.5" style={{ letterSpacing: "-0.01em" }}>
-              SETU Workspace
-            </h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleTour}
-              className="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-[#4F46E5] hover:text-[#3730a3] transition"
-              data-testid="header-take-tour"
-            >
-              <PlayCircle className="w-3.5 h-3.5" /> Take the tour
-            </button>
-            <div className="w-9 h-9 rounded-full bg-[#1A2235] text-white flex items-center justify-center overflow-hidden shadow-sm">
-              {user?.picture ? (
-                <img src={user.picture} alt={user?.name} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-sm font-semibold">{user?.name?.charAt(0)?.toUpperCase() || "U"}</span>
-              )}
-            </div>
-          </div>
-        </header>
-
         <div className="px-10 py-10 max-w-[1280px] mx-auto">
-          {/* ── Welcome strip ─────────────────────────────────────── */}
-          <section data-testid="welcome-strip" className="mb-8">
-            <h2 className="text-4xl lg:text-5xl font-bold text-[#1A2235] tracking-tight" style={{ letterSpacing: "-0.025em" }}>
-              {greeting}, {firstName} <span className="inline-block">👋</span>
-            </h2>
-            <p className="mt-2 text-[15px] text-[#6B7280]">
-              Here's what's happening across your IPO workspace today.
-            </p>
+          {/* ── Welcome strip (merged with former header) ─────────── */}
+          <section data-testid="welcome-strip" className="mb-10 flex items-start justify-between gap-6">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.18em] text-gray-500 font-semibold mb-3">Dashboard</div>
+              <h2 className="text-4xl lg:text-5xl font-bold text-[#1A2235] tracking-tight" style={{ letterSpacing: "-0.025em" }}>
+                {greeting}, {firstName} <span className="inline-block">👋</span>
+              </h2>
+              <p className="mt-2 text-[15px] text-[#6B7280]">
+                Here's what's happening across your IPO workspace today.
+              </p>
+            </div>
+            <div className="flex items-center gap-4 flex-shrink-0 pt-2">
+              <button
+                onClick={handleTour}
+                className="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-[#4F46E5] hover:text-[#3730a3] transition"
+                data-testid="header-take-tour"
+              >
+                <PlayCircle className="w-3.5 h-3.5" /> Take the tour
+              </button>
+              <div className="w-9 h-9 rounded-full bg-[#1A2235] text-white flex items-center justify-center overflow-hidden shadow-sm">
+                {user?.picture ? (
+                  <img src={user.picture} alt={user?.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-sm font-semibold">{user?.name?.charAt(0)?.toUpperCase() || "U"}</span>
+                )}
+              </div>
+            </div>
           </section>
 
           {/* ── Alert banner ──────────────────────────────────────── */}
@@ -277,7 +267,7 @@ const Dashboard = ({ user, apiClient }) => {
                 return (
                   <div
                     key={t.id}
-                    className="bg-white border border-[#ECE6D9] rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col"
+                    className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col"
                     data-testid={`task-${t.id}`}
                   >
                     <div
@@ -309,7 +299,7 @@ const Dashboard = ({ user, apiClient }) => {
                 <h3 className="text-[15px] font-bold text-[#1A2235]">Your IPO toolkit</h3>
                 <p className="text-xs text-[#6B7280] mt-0.5">Five modules. One end-to-end workspace.</p>
               </div>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9A8F78]">5 modules</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">5 modules</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -320,7 +310,7 @@ const Dashboard = ({ user, apiClient }) => {
                     key={mod.id}
                     type="button"
                     onClick={() => handleModuleClick(mod)}
-                    className="group text-left bg-white border border-[#ECE6D9] rounded-2xl p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all flex flex-col relative overflow-hidden"
+                    className="group text-left bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all flex flex-col relative overflow-hidden"
                     data-testid={mod.testid}
                   >
                     {/* Soft top wash matching accent */}
@@ -404,12 +394,12 @@ const ModuleIntroDialog = ({ module: mod, onClose, onNext }) => {
   return (
     <Dialog open={!!mod} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
-        className="max-w-2xl p-0 overflow-hidden bg-white border border-[#ECE6D9] rounded-2xl"
+        className="max-w-2xl p-0 overflow-hidden bg-white border border-gray-200 rounded-2xl"
         data-testid={`intro-dialog-${mod.id}`}
       >
         {/* Snap of the 1st page */}
         <div
-          className="relative w-full h-64 overflow-hidden border-b border-[#ECE6D9]"
+          className="relative w-full h-64 overflow-hidden border-b border-gray-200"
           style={{
             background: `linear-gradient(135deg, ${mod.accent}1A 0%, ${mod.accent}05 100%)`,
           }}
