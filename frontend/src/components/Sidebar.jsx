@@ -184,11 +184,11 @@ const Sidebar = ({ user, apiClient }) => {
       data-testid="sidebar"
     >
       {/* Logo */}
-      <div className="pl-[23px] pr-[11px] py-0 -mt-[55px] -mb-[65px] border-b border-gray-100 flex items-center">
+      <div className="pl-[23px] pr-[11px] py-0 -mt-[55px] -mb-[85px] border-b border-gray-100 flex items-center">
         <img
           src="/setu-logo.svg"
           alt="SETU Labs"
-          className="h-[197px] w-auto object-contain"
+          className="h-[217px] w-auto object-contain"
           data-testid="sidebar-logo"
         />
       </div>
