@@ -593,7 +593,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto py-10">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
             <div>
-              <div className="flex items-center gap-2 -mt-[50px] mb-[-24px]">
+              <div className="flex items-center gap-2 -mt-[100px] mb-[-94px]">
                 <img src="/setu-logo.svg" alt="SETU" className="h-[226px] w-auto brightness-0 invert" />
               </div>
               <p className="text-xs leading-relaxed text-white/45">
