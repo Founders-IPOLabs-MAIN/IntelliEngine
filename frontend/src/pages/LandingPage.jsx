@@ -145,7 +145,7 @@ const LandingPage = () => {
             data-testid="landing-logo-btn"
             aria-label="SETU home"
           >
-            <img src="/setu-logo.svg" alt="SETU Labs" className="h-[88px] w-auto object-contain brightness-0 invert" data-testid="landing-logo" />
+            <img src="/setu-logo.svg" alt="SETU Labs" className="h-[238px] w-auto object-contain brightness-0 invert" data-testid="landing-logo" />
           </button>
 
           {/* Centered nav links */}
@@ -594,7 +594,7 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/setu-logo.svg" alt="SETU" className="h-[76px] w-auto brightness-0 invert" />
+                <img src="/setu-logo.svg" alt="SETU" className="h-[226px] w-auto brightness-0 invert" />
               </div>
               <p className="text-xs leading-relaxed text-white/45">
                 India's first AI-powered IPO Operating System. End-to-end DRHP journey with privacy, expert marketplace, and funding solutions.
