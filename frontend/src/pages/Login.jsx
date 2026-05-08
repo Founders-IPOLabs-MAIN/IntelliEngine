@@ -213,27 +213,27 @@ const Login = ({ apiClient }) => {
     <div className="min-h-screen flex bg-white" data-testid="login-page">
       {/* ────────────── LEFT PANE (marketing / branding) ────────────── */}
       <aside className="hidden lg:flex w-1/2 bg-[#EAF4FB] relative overflow-hidden flex-col p-12">
-        <div className="flex items-center gap-2 z-10">
-          <img src="/setu-logo.svg" alt="SETU" className="h-[240px] w-auto" />
+        <div className="flex items-center gap-2 z-10 -mt-[50px]">
+          <img src="/setu-logo.svg" alt="SETU" className="h-[270px] w-auto" />
         </div>
 
-        <div className="flex-1 flex flex-col justify-center max-w-lg z-10">
-          <h2 className="text-[40px] font-semibold tracking-tight text-[#0F1B3A] leading-[1.1]">
+        <div className="flex flex-col max-w-lg z-10 -mt-[55px]">
+          <h2 className="text-[32px] font-semibold tracking-tight text-[#0F1B3A] leading-[1.1]">
             Take any company<br/>public — together.
           </h2>
-          <p className="mt-5 text-[15px] text-[#3E4B6A] leading-relaxed">
+          <p className="mt-4 text-[13px] text-[#3E4B6A] leading-relaxed">
             One workspace for IPO readiness, DRHP drafting, valuations, funding and matchmaking — built for India's mainboard &amp; SME issuers.
           </p>
 
-          <ul className="mt-8 space-y-3">
+          <ul className="mt-5 space-y-2.5">
             {[
               { icon: ShieldCheck, label: "SEBI-aligned compliance &amp; gap analysis" },
               { icon: BarChart3,   label: "Live market analytics &amp; peer benchmarks" },
               { icon: Sparkles,    label: "AI-drafted DRHP and board-ready valuations" },
             ].map((f, i) => (
-              <li key={i} className="flex items-center gap-3 text-[14px] text-[#3E4B6A]">
-                <span className="w-7 h-7 rounded-full bg-white border border-[#CFE3F2] flex items-center justify-center flex-shrink-0">
-                  <f.icon className="w-3.5 h-3.5 text-[#1DA1F2]" strokeWidth={2.2} />
+              <li key={i} className="flex items-center gap-3 text-[12.5px] text-[#3E4B6A]">
+                <span className="w-6 h-6 rounded-full bg-white border border-[#CFE3F2] flex items-center justify-center flex-shrink-0">
+                  <f.icon className="w-3 h-3 text-[#1DA1F2]" strokeWidth={2.2} />
                 </span>
                 <span dangerouslySetInnerHTML={{ __html: f.label }} />
               </li>
@@ -241,13 +241,20 @@ const Login = ({ apiClient }) => {
           </ul>
         </div>
 
+        {/* Cartoon illustration — Overflow-style two-character scene */}
+        <div className="flex-1 flex items-center justify-center z-10 mt-2 -mb-6">
+          <img
+            src="/login-illustration.svg"
+            alt="Two collaborators discussing an IPO journey"
+            className="w-full max-w-md h-auto select-none pointer-events-none"
+            draggable={false}
+            data-testid="login-illustration"
+          />
+        </div>
+
         {/* Decorative shapes (Overflow-style) */}
         <div className="absolute -bottom-24 -right-24 w-[480px] h-[480px] rounded-full bg-[#1DA1F2]/10 blur-3xl pointer-events-none" />
         <div className="absolute top-32 -right-16 w-[260px] h-[260px] rounded-full bg-orange-300/15 blur-3xl pointer-events-none" />
-        <div className="absolute top-44 right-24 w-3 h-3 rounded-full bg-[#1DA1F2]/40" />
-        <div className="absolute top-72 right-40 w-2 h-2 rounded-full bg-[#1DA1F2]/30" />
-        <div className="absolute bottom-44 right-56 w-2 h-2 rounded-full bg-orange-400/50" />
-        <div className="absolute bottom-32 left-48 w-2 h-2 rounded-full bg-[#1DA1F2]/30" />
 
         <p className="text-[11px] text-[#7A88A8] z-10">© {new Date().getFullYear()} IPO Labs AI Private Limited</p>
       </aside>

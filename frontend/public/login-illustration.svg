@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" fill="none" aria-hidden="true">
+  <!-- Decorative blue arc behind seated figure -->
+  <path d="M 120 240 Q 240 130 380 240 L 380 320 L 120 320 Z" fill="#6CB2DD" opacity="0.45"/>
+  <path d="M 100 260 Q 240 160 400 260" stroke="#93C5E8" stroke-width="3" fill="none" opacity="0.6" stroke-linecap="round"/>
+
+  <!-- Soft scattered dots -->
+  <g fill="#5F3B87" opacity="0.45">
+    <circle cx="60" cy="60" r="3"/>
+    <circle cx="80" cy="120" r="2.5"/>
+    <circle cx="430" cy="80" r="3"/>
+    <circle cx="410" cy="140" r="2"/>
+    <circle cx="50" cy="200" r="2.5"/>
+    <circle cx="440" cy="220" r="2"/>
+  </g>
+  <g fill="#1DA1F2" opacity="0.35">
+    <circle cx="100" cy="80" r="4"/>
+    <circle cx="380" cy="50" r="3.5"/>
+    <circle cx="420" cy="180" r="3"/>
+    <circle cx="40" cy="160" r="3.5"/>
+    <circle cx="240" cy="40" r="2.5"/>
+  </g>
+
+  <!-- Orange communication arc between heads -->
+  <path d="M 200 110 Q 240 70 280 110" stroke="#E3833B" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <circle cx="240" cy="80" r="4" fill="#E3833B"/>
+
+  <!-- ============== CHARACTER 1 (standing, left) ============== -->
+  <g>
+    <!-- Body / yellow trousers -->
+    <rect x="120" y="170" width="50" height="100" rx="6" fill="#E3B23C" stroke="#2D2D2D" stroke-width="2"/>
+    <rect x="120" y="265" width="22" height="14" rx="3" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="2"/>
+    <rect x="148" y="265" width="22" height="14" rx="3" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="2"/>
+    <line x1="120" y1="277" x2="170" y2="277" stroke="#333" stroke-width="2"/>
+
+    <!-- Shirt (light grey with subtle dots) -->
+    <path d="M 110 130 Q 110 115 145 115 Q 180 115 180 130 L 180 175 L 110 175 Z" fill="#D7DCE4" stroke="#2D2D2D" stroke-width="2"/>
+    <path d="M 145 115 L 137 175 L 153 175 Z" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="1.5"/>
+    <g fill="#333" opacity="0.6">
+      <circle cx="120" cy="140" r="1"/><circle cx="135" cy="148" r="1"/><circle cx="125" cy="160" r="1"/>
+      <circle cx="160" cy="138" r="1"/><circle cx="170" cy="155" r="1"/><circle cx="170" cy="170" r="1"/>
+    </g>
+
+    <!-- Right arm raised gesturing -->
+    <path d="M 170 135 Q 200 115 215 90" stroke="#D7DCE4" stroke-width="14" stroke-linecap="round"/>
+    <circle cx="218" cy="88" r="9" fill="#A2B3D2" stroke="#2D2D2D" stroke-width="1.5"/>
+    <!-- Left arm down -->
+    <path d="M 115 145 Q 105 170 110 195" stroke="#D7DCE4" stroke-width="13" stroke-linecap="round"/>
+
+    <!-- Head -->
+    <ellipse cx="145" cy="95" rx="22" ry="24" fill="#A2B3D2" stroke="#2D2D2D" stroke-width="2"/>
+    <!-- Spiky purple hair -->
+    <path d="M 124 88 L 128 70 L 132 80 L 138 65 L 144 78 L 152 66 L 156 82 L 162 72 L 168 90 Q 168 80 165 75 Q 145 60 130 70 Q 122 80 124 88 Z" fill="#5F3B87" stroke="#2D2D2D" stroke-width="1.5" stroke-linejoin="round"/>
+    <!-- Glasses -->
+    <circle cx="137" cy="98" r="4.5" fill="#FFFFFF" stroke="#4A72B2" stroke-width="2"/>
+    <circle cx="153" cy="98" r="4.5" fill="#FFFFFF" stroke="#4A72B2" stroke-width="2"/>
+    <line x1="141.5" y1="98" x2="148.5" y2="98" stroke="#4A72B2" stroke-width="2"/>
+    <!-- Blush -->
+    <circle cx="131" cy="106" r="2" fill="#ECCBCB" opacity="0.8"/>
+    <circle cx="159" cy="106" r="2" fill="#ECCBCB" opacity="0.8"/>
+  </g>
+
+  <!-- ============== CHARACTER 2 (seated on arc, right) ============== -->
+  <g>
+    <!-- Dark blue trousers, legs crossed -->
+    <path d="M 295 200 L 280 270 L 305 270 L 320 215 Z" fill="#3A5993" stroke="#2D2D2D" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M 320 215 L 320 270 L 348 270 L 348 220 Z" fill="#3A5993" stroke="#2D2D2D" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="276" y="265" width="32" height="12" rx="3" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="2"/>
+    <rect x="320" y="262" width="32" height="12" rx="3" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="2"/>
+
+    <!-- Hoodie body -->
+    <path d="M 270 145 Q 270 130 310 130 Q 350 130 350 150 L 350 210 L 270 210 Z" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="2"/>
+    <!-- Hood -->
+    <path d="M 280 138 Q 310 95 340 138 Q 330 130 310 130 Q 290 130 280 138 Z" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="2"/>
+    <!-- Subtle dots on hoodie -->
+    <g fill="#999" opacity="0.55">
+      <circle cx="285" cy="155" r="1"/><circle cx="295" cy="170" r="1"/><circle cx="280" cy="185" r="1"/>
+      <circle cx="335" cy="160" r="1"/><circle cx="325" cy="180" r="1"/><circle cx="340" cy="195" r="1"/>
+    </g>
+    <!-- Orange cuffs -->
+    <rect x="265" y="172" width="14" height="12" rx="2" fill="#E3833B" stroke="#2D2D2D" stroke-width="1.5"/>
+    <rect x="341" y="172" width="14" height="12" rx="2" fill="#E3833B" stroke="#2D2D2D" stroke-width="1.5"/>
+
+    <!-- Hands -->
+    <circle cx="276" cy="178" r="6" fill="#A2B3D2" stroke="#2D2D2D" stroke-width="1.5"/>
+    <circle cx="348" cy="178" r="6" fill="#A2B3D2" stroke="#2D2D2D" stroke-width="1.5"/>
+
+    <!-- Head -->
+    <ellipse cx="310" cy="115" rx="22" ry="24" fill="#A2B3D2" stroke="#2D2D2D" stroke-width="2"/>
+    <!-- Hair pulled back ponytail (dark blue) -->
+    <path d="M 290 100 Q 295 85 310 82 Q 325 85 332 102 Q 332 92 320 86 Q 310 82 305 80 L 285 95 Q 282 100 290 100 Z" fill="#4A72B2" stroke="#2D2D2D" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M 332 100 Q 348 95 350 88 Q 348 100 340 110 Z" fill="#4A72B2" stroke="#2D2D2D" stroke-width="1.5" stroke-linejoin="round"/>
+    <!-- Red hair tie -->
+    <circle cx="346" cy="98" r="3" fill="#D94F5A" stroke="#2D2D2D" stroke-width="1"/>
+    <!-- Glasses -->
+    <circle cx="302" cy="118" r="4.5" fill="#FFFFFF" stroke="#4A72B2" stroke-width="2"/>
+    <circle cx="318" cy="118" r="4.5" fill="#FFFFFF" stroke="#4A72B2" stroke-width="2"/>
+    <line x1="306.5" y1="118" x2="313.5" y2="118" stroke="#4A72B2" stroke-width="2"/>
+    <!-- Blush -->
+    <circle cx="296" cy="126" r="2" fill="#ECCBCB" opacity="0.8"/>
+    <circle cx="324" cy="126" r="2" fill="#ECCBCB" opacity="0.8"/>
+  </g>
+</svg>
