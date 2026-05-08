@@ -14,8 +14,6 @@ import {
   Scale,
   ArrowRight,
   ArrowUpRight,
-  AlertTriangle,
-  X as XIcon,
   Sparkles,
   PlayCircle,
   Compass,
@@ -142,7 +140,6 @@ const TASKS = [
 const Dashboard = ({ user, apiClient }) => {
   const navigate = useNavigate();
   const [introModule, setIntroModule] = useState(null);
-  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   const firstName = (user?.name || "there").split(" ")[0];
   const greeting = (() => {
@@ -217,43 +214,86 @@ const Dashboard = ({ user, apiClient }) => {
             </div>
           </section>
 
-          {/* ── Alert banner ──────────────────────────────────────── */}
-          {!bannerDismissed && (
-            <div
-              className="mb-6 rounded-lg border border-[#F0D784] bg-[#FFF8DD] px-4 py-3 flex items-start gap-3"
-              data-testid="dashboard-alert-banner"
-            >
-              <div className="w-7 h-7 rounded-full bg-[#F0B428] flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-3.5 h-3.5 text-white" strokeWidth={2.4} />
+          {/* ── Modules grid (Your IPO toolkit) ───────────────────── */}
+          <section data-testid="dashboard-modules" className="mb-7">
+            <div className="flex items-end justify-between mb-3">
+              <div>
+                <h3 className="text-[13px] font-bold text-gray-900">Your IPO toolkit</h3>
+                <p className="text-[11px] text-gray-500 mt-0.5">Five modules. One end-to-end workspace.</p>
               </div>
-              <div className="flex-1">
-                <p className="text-[13px] font-semibold text-[#7A5A11] leading-tight">
-                  Finish setting up your IPO Readiness profile
-                </p>
-                <p className="text-[11.5px] text-[#8A6C2C] mt-0.5 leading-snug">
-                  Add a few company details and you'll unlock tailored DRHP drafts, peer benchmarks and matchmaking shortlists.
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">5 modules</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {MODULES.map((mod) => {
+                const Icon = mod.icon;
+                return (
+                  <button
+                    key={mod.id}
+                    type="button"
+                    onClick={() => handleModuleClick(mod)}
+                    className="group text-left bg-white border border-gray-200 rounded-xl p-4 hover:bg-blue-50 hover:border-blue-400 hover:shadow-[0_4px_18px_-4px_rgba(59,130,246,0.25)] transition-all flex flex-col relative overflow-hidden"
+                    data-testid={mod.testid}
+                  >
+                    {/* Soft top wash matching accent (turns blue on hover) */}
+                    <div
+                      className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl group-hover:bg-blue-500 transition-colors"
+                      style={{ backgroundColor: mod.accent }}
+                    />
+
+                    <div className="flex items-start justify-between mb-2.5">
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors"
+                        style={{ backgroundColor: `${mod.accent}1A`, color: mod.accent }}
+                      >
+                        <Icon className="w-4 h-4" strokeWidth={2.2} />
+                      </div>
+                      <span
+                        className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${mod.accentSoft} ${mod.accentText} group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors`}
+                      >
+                        {mod.short}
+                      </span>
+                    </div>
+
+                    <h4 className="text-[13.5px] font-bold text-gray-900 mb-1 leading-snug group-hover:text-blue-900 transition-colors">
+                      {mod.title}
+                    </h4>
+                    <p className="text-[11.5px] text-gray-500 leading-relaxed mb-3 flex-1 group-hover:text-blue-900/70 transition-colors">
+                      {mod.desc}
+                    </p>
+
+                    <div
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold group-hover:gap-2 group-hover:text-blue-600 transition-all"
+                      style={{ color: mod.accent }}
+                    >
+                      Explore module <ArrowUpRight className="w-3 h-3" />
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* "Need more" footer card matching Maze enterprise CTA tone */}
+              <div className="bg-gradient-to-br from-[#1A2235] to-[#0F172A] rounded-xl p-4 text-white flex flex-col" data-testid="module-enterprise">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center mb-2.5">
+                  <Rocket className="w-4 h-4 text-white" strokeWidth={2.2} />
+                </div>
+                <h4 className="text-[13.5px] font-bold mb-1 leading-snug">Going public soon?</h4>
+                <p className="text-[11.5px] text-white/70 leading-relaxed mb-3 flex-1">
+                  Talk to our IPO desk for white-glove onboarding, custom workflows and dedicated relationship support.
                 </p>
                 <button
-                  onClick={() => navigate("/account-details")}
-                  className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#7A5A11] hover:underline"
-                  data-testid="alert-add-details"
+                  onClick={() => navigate("/contact")}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#FFD580] hover:gap-2 transition-all self-start"
+                  data-testid="module-enterprise-cta"
                 >
-                  Add missing details <ArrowRight className="w-3 h-3" />
+                  Talk to IPO desk <ArrowUpRight className="w-3 h-3" />
                 </button>
               </div>
-              <button
-                onClick={() => setBannerDismissed(true)}
-                className="text-[#9C7A2C] hover:text-[#7A5A11]"
-                aria-label="Dismiss"
-                data-testid="alert-dismiss"
-              >
-                <XIcon className="w-3.5 h-3.5" />
-              </button>
             </div>
-          )}
+          </section>
 
-          {/* ── Things to do ──────────────────────────────────────── */}
-          <section className="mb-7" data-testid="things-to-do">
+          {/* ── Things to do (now at the bottom) ───────────────────── */}
+          <section data-testid="things-to-do">
             <div className="flex items-end justify-between mb-3">
               <div>
                 <h3 className="text-[13px] font-bold text-gray-900">Things to do</h3>
@@ -288,84 +328,6 @@ const Dashboard = ({ user, apiClient }) => {
                   </div>
                 );
               })}
-            </div>
-          </section>
-
-          {/* ── Modules grid ──────────────────────────────────────── */}
-          <section data-testid="dashboard-modules">
-            <div className="flex items-end justify-between mb-3">
-              <div>
-                <h3 className="text-[13px] font-bold text-gray-900">Your IPO toolkit</h3>
-                <p className="text-[11px] text-gray-500 mt-0.5">Five modules. One end-to-end workspace.</p>
-              </div>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">5 modules</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {MODULES.map((mod) => {
-                const Icon = mod.icon;
-                return (
-                  <button
-                    key={mod.id}
-                    type="button"
-                    onClick={() => handleModuleClick(mod)}
-                    className="group text-left bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col relative overflow-hidden"
-                    data-testid={mod.testid}
-                  >
-                    {/* Soft top wash matching accent */}
-                    <div
-                      className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl"
-                      style={{ backgroundColor: mod.accent }}
-                    />
-
-                    <div className="flex items-start justify-between mb-2.5">
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center"
-                        style={{ backgroundColor: `${mod.accent}1A`, color: mod.accent }}
-                      >
-                        <Icon className="w-4 h-4" strokeWidth={2.2} />
-                      </div>
-                      <span
-                        className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${mod.accentSoft} ${mod.accentText}`}
-                      >
-                        {mod.short}
-                      </span>
-                    </div>
-
-                    <h4 className="text-[13.5px] font-bold text-gray-900 mb-1 leading-snug">
-                      {mod.title}
-                    </h4>
-                    <p className="text-[11.5px] text-gray-500 leading-relaxed mb-3 flex-1">
-                      {mod.desc}
-                    </p>
-
-                    <div
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold group-hover:gap-2 transition-all"
-                      style={{ color: mod.accent }}
-                    >
-                      Explore module <ArrowUpRight className="w-3 h-3" />
-                    </div>
-                  </button>
-                );
-              })}
-
-              {/* "Need more" footer card matching Maze enterprise CTA tone */}
-              <div className="bg-gradient-to-br from-[#1A2235] to-[#0F172A] rounded-xl p-4 text-white flex flex-col" data-testid="module-enterprise">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center mb-2.5">
-                  <Rocket className="w-4 h-4 text-white" strokeWidth={2.2} />
-                </div>
-                <h4 className="text-[13.5px] font-bold mb-1 leading-snug">Going public soon?</h4>
-                <p className="text-[11.5px] text-white/70 leading-relaxed mb-3 flex-1">
-                  Talk to our IPO desk for white-glove onboarding, custom workflows and dedicated relationship support.
-                </p>
-                <button
-                  onClick={() => navigate("/contact")}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#FFD580] hover:gap-2 transition-all self-start"
-                  data-testid="module-enterprise-cta"
-                >
-                  Talk to IPO desk <ArrowUpRight className="w-3 h-3" />
-                </button>
-              </div>
             </div>
           </section>
         </div>

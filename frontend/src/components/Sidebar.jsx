@@ -103,6 +103,7 @@ const Sidebar = ({ user, apiClient }) => {
         { id: "matchmaker", label: "Match-Making", icon: Users, path: "/matchmaker" },
         { id: "valuation", label: "Valuation", icon: Scale, path: "/valuation" },
         { id: "valuation2", label: "Valuations 2", icon: BarChart3, path: "/valuation-2" },
+        { id: "market-analytics", label: "Market Analytics", icon: BarChart3, path: "/market-analytics" },
       ],
     },
     {
@@ -121,7 +122,6 @@ const Sidebar = ({ user, apiClient }) => {
             ]
           : []),
         { id: "payments", label: "Payment Gateway", icon: CreditCard, path: "/payments" },
-        { id: "market-analytics", label: "Market Analytics", icon: BarChart3, path: "/market-analytics" },
       ],
     },
   ];
@@ -194,11 +194,11 @@ const Sidebar = ({ user, apiClient }) => {
       </div>
 
       {/* Navigation — Remote-style grouped sections */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-        {sections.map((sec) => (
-          <div key={sec.id} className="space-y-0.5">
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        {sections.map((sec, idx) => (
+          <div key={sec.id} className={`space-y-0.5 ${idx === 0 ? "" : "mt-6"}`}>
             {sec.label && (
-              <div className="px-2.5 pb-1.5 text-[10px] font-semibold tracking-[0.12em] uppercase text-gray-400">
+              <div className="px-2.5 pb-2 text-[12px] font-semibold tracking-[0.12em] uppercase text-gray-500">
                 {sec.label}
               </div>
             )}
