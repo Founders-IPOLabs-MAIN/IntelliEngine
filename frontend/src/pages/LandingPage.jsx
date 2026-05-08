@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -351,48 +351,7 @@ const LandingPage = () => {
           </p>
 
           <div className="mt-6 w-full max-w-3xl">
-            <div
-              className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#0d0d10] via-[#0e0d18] to-[#0a0a0a] cursor-pointer group shadow-[0_0_60px_rgba(99,102,241,0.12)]"
-              data-testid="landing-corporate-video-placeholder"
-              title="Corporate video — coming soon"
-            >
-              {/* Mesh accents */}
-              <div className="absolute -top-16 -right-16 w-56 h-56 bg-indigo-500/25 rounded-full blur-3xl" />
-              <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl" />
-              <div className="absolute inset-0 opacity-[0.06]"
-                   style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)', backgroundSize: '36px 36px' }} />
-
-              {/* Top-left meta */}
-              <div className="absolute top-4 left-4 flex items-center gap-2">
-                <span className="flex h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
-                <span className="text-[9px] tracking-[0.22em] uppercase text-white/60 font-semibold">Corporate Film</span>
-              </div>
-              <div className="absolute top-4 right-4 text-[9px] tracking-[0.18em] uppercase text-white/40 font-medium bg-white/5 border border-white/10 rounded-full px-2.5 py-0.5">
-                Coming Soon
-              </div>
-
-              {/* Centered play */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center px-6">
-                <div className="relative">
-                  <span className="absolute inset-0 rounded-full border border-white/20 animate-ping" />
-                  <div className="relative w-16 h-16 rounded-full bg-white/5 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
-                    <PlayCircle className="w-8 h-8 text-white" strokeWidth={1.4} />
-                  </div>
-                </div>
-                <h3 className="mt-5 text-lg lg:text-xl font-semibold text-white">The IPO Labs Story</h3>
-                <p className="mt-1 text-white/50 text-xs max-w-sm leading-relaxed">
-                  A 90-second film on how we&apos;re democratising India&apos;s IPO ecosystem.
-                </p>
-              </div>
-
-              {/* Bottom strip */}
-              <div className="absolute bottom-0 inset-x-0 px-4 py-2.5 flex items-center justify-between bg-gradient-to-t from-black/50 to-transparent">
-                <div className="flex items-center gap-1.5 text-white/70 text-[9px] uppercase tracking-[0.18em] font-semibold">
-                  <Globe className="w-3 h-3" /> IPO Labs
-                </div>
-                <div className="text-white/40 text-[9px] tracking-[0.18em]">1920 × 1080 · 16:9</div>
-              </div>
-            </div>
+            <CorporateFilmPlayer />
           </div>
         </div>
       </section>
@@ -683,6 +642,127 @@ const LandingPage = () => {
       />
 
       <CookieConsent />
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// Corporate Film Player
+// • Auto-plays once per browser session (sessionStorage flag)
+// • On finish: rewinds to 0, pauses, shows replay overlay until user clicks
+// ─────────────────────────────────────────────────────────────────────────
+const CorporateFilmPlayer = () => {
+  const videoRef = useRef(null);
+  const [ended, setEnded] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(true); // start muted to allow autoplay
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.load(); // force-init the source
+    // Auto-play once per session — wait until the video is ready
+    const seen = sessionStorage.getItem("setu_corp_film_played");
+    if (seen) return;
+
+    const tryPlay = () => {
+      v.muted = true;
+      const p = v.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => {
+          setPlaying(true);
+          sessionStorage.setItem("setu_corp_film_played", "1");
+        }).catch(() => { /* autoplay blocked, user will click */ });
+      }
+    };
+
+    if (v.readyState >= 2) tryPlay();
+    else {
+      v.addEventListener("canplay", tryPlay, { once: true });
+      v.addEventListener("loadeddata", tryPlay, { once: true });
+    }
+
+    return () => {
+      v.removeEventListener("canplay", tryPlay);
+      v.removeEventListener("loadeddata", tryPlay);
+    };
+  }, []);
+
+  const handlePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    setEnded(false);
+    v.currentTime = 0;
+    v.muted = false;
+    setMuted(false);
+    v.play().then(() => setPlaying(true)).catch(() => {});
+  };
+
+  const handleEnded = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.pause();
+    v.currentTime = 0;
+    setPlaying(false);
+    setEnded(true);
+  };
+
+  const handleVideoClick = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.muted = false;
+      setMuted(false);
+      v.play().then(() => setPlaying(true)).catch(() => {});
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
+  };
+
+  return (
+    <div
+      className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/10 bg-black shadow-[0_0_60px_rgba(99,102,241,0.18)] group"
+      data-testid="landing-corporate-video"
+    >
+      <video
+        ref={videoRef}
+        className="absolute inset-0 w-full h-full object-cover"
+        preload="auto"
+        playsInline
+        muted={muted}
+        onEnded={handleEnded}
+        onPlay={() => { setPlaying(true); setEnded(false); }}
+        onPause={() => setPlaying(false)}
+        onClick={handleVideoClick}
+        controls={playing}
+        data-testid="corporate-film-video"
+      >
+        <source src="/setu-corporate-film.webm" type="video/webm" />
+        <source src="/setu-corporate-film.mp4" type="video/mp4" />
+      </video>
+
+      {/* Replay / Initial overlay (visible when paused at start or finished) */}
+      {(!playing && (ended || (videoRef.current?.currentTime ?? 0) === 0)) && (
+        <button
+          type="button"
+          onClick={handlePlay}
+          className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-black/60 via-black/30 to-black/60 backdrop-blur-[1px] cursor-pointer transition-all"
+          data-testid="corporate-film-replay-btn"
+          aria-label={ended ? "Replay corporate film" : "Play corporate film"}
+        >
+          <div className="relative">
+            <span className="absolute inset-0 rounded-full border border-white/30 animate-ping" />
+            <div className="relative w-20 h-20 rounded-full bg-white/10 backdrop-blur-md border border-white/30 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/20 transition-all duration-300">
+              <PlayCircle className="w-10 h-10 text-white" strokeWidth={1.3} />
+            </div>
+          </div>
+          <h3 className="mt-5 text-base lg:text-lg font-semibold text-white">
+            {ended ? "Watch Again" : "The IPO Labs Story"}
+          </h3>
+          <p className="mt-1 text-white/70 text-xs">Click to play</p>
+        </button>
+      )}
     </div>
   );
 };
