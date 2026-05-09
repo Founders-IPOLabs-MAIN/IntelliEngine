@@ -166,9 +166,9 @@ const ExpertDashboard = ({ user, apiClient }) => {
   // edit, or click "Upgrade" before the rest of the dashboard becomes visible.
   if (profileGated && profile) {
     const goEdit = () => {
-      setEditing(true);
-      setActiveTab("profile");
-      setProfileGated(false);
+      // Take the user back to the same form they originally filled, in edit
+      // mode — they can change name, picture, mobile, areas of expertise, etc.
+      navigate("/matchmaker/experts/register?edit=1");
     };
     const upgrade = () => {
       setProfileGated(false);

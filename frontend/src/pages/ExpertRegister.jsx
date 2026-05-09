@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ import { toast } from "sonner";
 
 const ExpertRegister = ({ user, apiClient }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isEditMode = new URLSearchParams(location.search).get("edit") === "1";
   const [areas, setAreas] = useState([]);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,6 +23,7 @@ const ExpertRegister = ({ user, apiClient }) => {
   const [picPreview, setPicPreview] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
   const [payLoading, setPayLoading] = useState(false);
+  const [existingExpertId, setExistingExpertId] = useState(null);
 
   const [form, setForm] = useState({
     full_name: user?.name || "",
@@ -38,11 +41,34 @@ const ExpertRegister = ({ user, apiClient }) => {
   useEffect(() => {
     apiClient.get("/matchmaker/expert/expertise-areas").then(r => setAreas(r.data.areas)).catch(() => {});
     apiClient.get("/matchmaker/expert/major-cities").then(r => setCities(r.data.cities)).catch(() => {});
-    // Redirect to dashboard if already registered
     apiClient.get("/matchmaker/expert/my-profile").then(r => {
-      if (r.data.profile) navigate("/matchmaker/experts/dashboard");
+      const p = r.data.profile;
+      if (!p) return;
+      if (isEditMode) {
+        // Prefill form with the saved profile so the existing expert can edit
+        setExistingExpertId(p.expert_id);
+        setForm({
+          full_name: p.full_name || "",
+          mobile: p.mobile || "",
+          email: p.email || "",
+          city: p.city || "",
+          state: p.state || "",
+          address: p.address || "",
+          pincode: p.pincode || "",
+          ipo_experience: !!p.ipo_experience,
+          years_of_experience: p.years_of_experience || 0,
+          expertise_areas: p.expertise_areas || [],
+        });
+        if (p.profile_picture_id) {
+          const API_URL = process.env.REACT_APP_BACKEND_URL;
+          setPicPreview(`${API_URL}/api/matchmaker/expert/profile-picture/${p.expert_id}`);
+        }
+      } else {
+        // Default behaviour — registered users skip straight to dashboard
+        navigate("/matchmaker/experts/dashboard");
+      }
     }).catch(() => {});
-  }, []);
+  }, [isEditMode]);
 
   const handlePicChange = (e) => {
     const file = e.target.files?.[0];
@@ -82,16 +108,22 @@ const ExpertRegister = ({ user, apiClient }) => {
       fd.append("expertise_areas", JSON.stringify(form.expertise_areas));
       if (picFile) fd.append("profile_picture", picFile);
 
-      await apiClient.post("/matchmaker/expert/register", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      const endpoint = isEditMode
+        ? "/matchmaker/expert/update"
+        : "/matchmaker/expert/register";
+      await apiClient.post(endpoint, fd, { headers: { "Content-Type": "multipart/form-data" } });
 
       if (isPremium) {
         setShowPayment(true);
+      } else if (isEditMode) {
+        toast.success("Profile updated!");
+        navigate("/matchmaker/experts/dashboard");
       } else {
         toast.success("Registration successful!");
         navigate("/matchmaker/experts/dashboard");
       }
     } catch (e) {
-      toast.error(e.response?.data?.detail || "Registration failed");
+      toast.error(e.response?.data?.detail || (isEditMode ? "Update failed" : "Registration failed"));
     }
     setLoading(false);
   };
@@ -120,13 +152,17 @@ const ExpertRegister = ({ user, apiClient }) => {
           <Button variant="ghost" size="sm" onClick={() => navigate(-1)} data-testid="back-btn">
             <ArrowLeft className="w-4 h-4 mr-1" /> Back
           </Button>
-          <h1 className="text-xl font-bold text-black">Expert Registration</h1>
+          <h1 className="text-xl font-bold text-black">{isEditMode ? "Edit Your Expert Profile" : "Expert Registration"}</h1>
         </header>
 
         <div className="max-w-2xl mx-auto p-8">
           <Card className="border shadow-sm">
             <CardContent className="p-6 space-y-5">
-              <p className="text-sm text-gray-500">All fields marked * are required</p>
+              <p className="text-sm text-gray-500">
+                {isEditMode
+                  ? "Make any changes you need — your premium and verified status will be preserved."
+                  : "All fields marked * are required"}
+              </p>
 
               {/* Profile Picture */}
               <div>
@@ -239,11 +275,18 @@ const ExpertRegister = ({ user, apiClient }) => {
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t">
                 <Button onClick={() => handleSubmit(false)} disabled={loading} className="flex-1 h-11 bg-[#003366] hover:bg-[#002244]" data-testid="submit-free-btn">
-                  {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting...</> : <><CheckCircle2 className="w-4 h-4 mr-2" /> Submit (Free)</>}
+                  {loading
+                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {isEditMode ? "Saving..." : "Submitting..."}</>
+                    : isEditMode
+                      ? <><CheckCircle2 className="w-4 h-4 mr-2" /> Save Changes</>
+                      : <><CheckCircle2 className="w-4 h-4 mr-2" /> Submit (Free)</>
+                  }
                 </Button>
-                <Button onClick={() => handleSubmit(true)} disabled={loading} className="flex-1 h-11 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white" data-testid="submit-premium-btn">
-                  <Star className="w-4 h-4 mr-2" /> Premium Option
-                </Button>
+                {!isEditMode && (
+                  <Button onClick={() => handleSubmit(true)} disabled={loading} className="flex-1 h-11 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white" data-testid="submit-premium-btn">
+                    <Star className="w-4 h-4 mr-2" /> Premium Option
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>

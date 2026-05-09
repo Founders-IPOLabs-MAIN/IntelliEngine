@@ -306,6 +306,69 @@ async def register_expert(
     return {"message": "Expert registered successfully", "profile": profile}
 
 
+@router.post("/matchmaker/expert/update")
+async def update_expert(
+    full_name: str = Form(...),
+    mobile: str = Form(...),
+    email: str = Form(...),
+    city: str = Form(...),
+    state: str = Form(...),
+    address: str = Form(""),
+    pincode: str = Form(""),
+    ipo_experience: str = Form("no"),
+    years_of_experience: int = Form(0),
+    expertise_areas: str = Form("[]"),
+    profile_picture: Optional[UploadFile] = File(None),
+    user: User = Depends(get_current_user),
+):
+    """
+    Update an existing expert profile. Used when a registered expert clicks
+    'Make changes' from the dashboard profile-confirmation gate.
+    Lets them tweak name, contact, address, IPO experience, expertise areas
+    and replace their profile picture without losing premium / verified status.
+    """
+    existing = await db.expert_profiles.find_one({"user_id": user.user_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="No expert profile found. Please register first.")
+
+    areas = json.loads(expertise_areas) if expertise_areas else []
+    if len(areas) > 3:
+        raise HTTPException(status_code=400, detail="Maximum 3 areas of expertise allowed")
+
+    update_doc = {
+        "full_name": full_name.strip(),
+        "mobile": mobile.strip(),
+        "email": email.strip().lower(),
+        "city": city.strip(),
+        "state": state.strip(),
+        "address": address.strip(),
+        "pincode": pincode.strip(),
+        "ipo_experience": ipo_experience == "yes",
+        "years_of_experience": years_of_experience if ipo_experience == "yes" else 0,
+        "expertise_areas": areas,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    # Replace profile picture if a new one was sent
+    if profile_picture:
+        content = await profile_picture.read()
+        if len(content) > 2 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Profile picture must be under 2MB")
+        ext = os.path.splitext(profile_picture.filename)[1].lower()
+        if ext not in {".jpg", ".jpeg", ".png"}:
+            raise HTTPException(status_code=400, detail="Only JPG/PNG images allowed")
+        grid_id = await fs_bucket.upload_from_stream(
+            f"expert_pic_{user.user_id}{ext}",
+            io.BytesIO(content),
+            metadata={"content_type": profile_picture.content_type, "user_id": user.user_id},
+        )
+        update_doc["profile_picture_id"] = str(grid_id)
+
+    await db.expert_profiles.update_one({"user_id": user.user_id}, {"$set": update_doc})
+    refreshed = await db.expert_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
+    return {"message": "Profile updated successfully", "profile": refreshed}
+
+
 @router.post("/matchmaker/expert/premium-upgrade")
 async def premium_upgrade(user: User = Depends(get_current_user)):
     profile = await db.expert_profiles.find_one({"user_id": user.user_id}, {"_id": 0})
