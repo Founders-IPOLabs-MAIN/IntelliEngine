@@ -13,9 +13,14 @@ DOCREPO_ALLOWED_MIME = {
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    # Excel formats (added 2026-05-08)
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-excel.sheet.macroEnabled.12",
+    "text/csv",
 }
 DOCREPO_ALLOWED_IMAGE_PREFIX = "image/"
-DOCREPO_MAX_FILE_BYTES = 5 * 1024 * 1024  # 5 MB
+DOCREPO_MAX_FILE_BYTES = 20 * 1024 * 1024  # 20 MB
 
 
 async def _log_project_audit(
@@ -381,7 +386,7 @@ async def upload_repository_file(
     if not is_allowed:
         raise HTTPException(
             status_code=415,
-            detail="Only PDF, Word (.doc/.docx), or image files are allowed. Please re-upload in a supported format.",
+            detail="Only PDF, Word (.doc/.docx), Excel (.xls/.xlsx/.csv), or image files (PNG, JPEG) are allowed. Please re-upload in a supported format.",
         )
 
     data = await file.read()
@@ -389,7 +394,7 @@ async def upload_repository_file(
     if size > DOCREPO_MAX_FILE_BYTES:
         raise HTTPException(
             status_code=413,
-            detail=f"File exceeds the 5MB limit ({size / (1024*1024):.2f}MB). Please re-upload a smaller file.",
+            detail=f"File exceeds the 20MB limit ({size / (1024*1024):.2f}MB). Please re-upload a smaller file.",
         )
     if size == 0:
         raise HTTPException(status_code=400, detail="Empty file")

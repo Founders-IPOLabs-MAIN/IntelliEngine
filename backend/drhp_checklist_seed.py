@@ -195,4 +195,15 @@ DRHP_DOCUMENT_CHECKLIST = [
             {"title": "Government / Ministry Data Sources (if cited in DRHP)", "remarks": "Confirm source citations are accurate and hyperlinked in DRHP"},
         ],
     },
+    {
+        "category": "Images and Pictures",
+        "order": 15,
+        "items": [
+            {"title": "Promoter Pictures",                                 "remarks": "High-resolution head-shots of all promoters; required for the Promoters section of the DRHP"},
+            {"title": "Promoter Family Pictures",                          "remarks": "Family photographs of promoters (where applicable); used in 'Our Promoters' section"},
+            {"title": "KMP and Directors Pictures",                        "remarks": "Head-shots of all Key Managerial Personnel and Directors; used in 'Our Management' section"},
+            {"title": "Office Pictures (Internal and External)",           "remarks": "Both interior and exterior shots of registered & corporate offices; used to illustrate 'Our Operations'"},
+            {"title": "Manufacturing Facility Pictures",                   "remarks": "Wide and detail shots of plant, machinery, warehouses, R&D labs; used in 'Business Overview'"},
+        ],
+    },
 ]

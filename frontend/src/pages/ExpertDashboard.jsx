@@ -10,11 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import Sidebar from "@/components/Sidebar";
 import {
   Loader2, Edit3, Save, Mail, MailOpen, Send, Star, ShieldCheck,
   CreditCard, LifeBuoy, ArrowLeft, MapPin, Briefcase, Clock, ChevronRight,
-  CheckCircle2, X, User as UserIcon, MessageSquare, Building2
+  CheckCircle2, X, User as UserIcon, MessageSquare, Building2, TrendingUp,
+  Crown, Award, Search, Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -43,6 +45,11 @@ const ExpertDashboard = ({ user, apiClient }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("profile");
+
+  // Profile-confirmation gate — shown every time the expert opens this page.
+  // Until they click "This is correct — Continue", the rest of the dashboard
+  // is hidden. They can also click "Make changes" or "Upgrade to Premium".
+  const [profileGated, setProfileGated] = useState(true);
 
   // Profile edit
   const [editing, setEditing] = useState(false);
@@ -149,6 +156,148 @@ const ExpertDashboard = ({ user, apiClient }) => {
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar user={user} apiClient={apiClient} />
         <main className="flex-1 ml-64 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#1DA1F2]" /></main>
+      </div>
+    );
+  }
+
+  // ── Profile confirmation gate ─────────────────────────────────────
+  // Shown every time the expert opens their dashboard. They MUST review their
+  // saved profile (the form they filled at registration) and either confirm,
+  // edit, or click "Upgrade" before the rest of the dashboard becomes visible.
+  if (profileGated && profile) {
+    const goEdit = () => {
+      setEditing(true);
+      setActiveTab("profile");
+      setProfileGated(false);
+    };
+    const upgrade = () => {
+      setProfileGated(false);
+      navigate("/matchmaker/experts/verify");
+    };
+    return (
+      <div className="flex min-h-screen bg-white" data-testid="expert-profile-gate">
+        <Sidebar user={user} apiClient={apiClient} />
+        <main className="flex-1 ml-64 px-6 py-8 max-w-5xl mx-auto w-full">
+          <div className="mb-5">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-gray-500 font-semibold mb-1.5">Step 1 of 1 · Welcome back</div>
+            <h1 className="text-[24px] font-semibold text-gray-900 tracking-tight">
+              Hi {profile?.full_name?.split(" ")[0]}, please confirm your profile
+            </h1>
+            <p className="text-[13px] text-gray-500 mt-1">
+              This is the form you submitted during registration. Review it and choose to continue,
+              make changes, or upgrade to Premium for priority listing &amp; verified status.
+            </p>
+          </div>
+
+          <Card className="border-gray-200 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-blue-50 border border-[#1DA1F2]/30 flex items-center justify-center overflow-hidden">
+                    {profile?.profile_picture_id ? (
+                      <img src={`${API_URL}/api/matchmaker/expert/profile-picture/${profile.expert_id}`} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-base font-bold text-[#1DA1F2]">{profile?.full_name?.charAt(0)}</span>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-base font-semibold text-gray-900 flex items-center gap-1.5">
+                      {profile?.full_name}
+                      {profile?.is_premium && <Badge className="bg-amber-100 text-amber-700 text-[10px]"><Star className="w-3 h-3 mr-0.5" /> Premium</Badge>}
+                      {profile?.is_verified && <Badge className="bg-green-100 text-green-700 text-[10px]"><ShieldCheck className="w-3 h-3 mr-0.5" /> Verified</Badge>}
+                    </div>
+                    <div className="text-[12px] text-gray-500">{profile?.email}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 text-[13px]" data-testid="gate-profile-fields">
+                <Field label="Full Name"   value={profile?.full_name} />
+                <Field label="Email"       value={profile?.email} />
+                <Field label="Mobile"      value={profile?.mobile} />
+                <Field label="City"        value={profile?.city} />
+                <Field label="State"       value={profile?.state} />
+                <Field label="Pincode"     value={profile?.pincode || "—"} />
+                <Field label="Address"     value={profile?.address || "—"} colSpan />
+                <Field
+                  label="IPO Experience"
+                  value={profile?.ipo_experience ? `${profile.years_of_experience} years` : "No"}
+                />
+              </div>
+
+              {(profile?.expertise_areas || []).length > 0 && (
+                <div className="mt-5">
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-gray-500 font-semibold mb-2">Areas of Expertise</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(profile?.expertise_areas || []).map((a) => (
+                      <Badge key={a} variant="outline" className="text-[11px] bg-blue-50 text-[#1DA1F2] border-blue-200">{AREA_LABELS[a] || a}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Action row */}
+          <div className="mt-5 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+            <Button
+              variant="outline"
+              className="border-gray-200 text-gray-700 hover:bg-gray-50 gap-1.5"
+              onClick={goEdit}
+              data-testid="gate-edit-btn"
+            >
+              <Edit3 className="w-3.5 h-3.5" /> Make changes
+            </Button>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              {!profile?.is_premium && (
+                <HoverCard openDelay={120}>
+                  <HoverCardTrigger asChild>
+                    <Button
+                      onClick={upgrade}
+                      className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white gap-1.5 shadow-md"
+                      data-testid="gate-upgrade-btn"
+                    >
+                      <Crown className="w-3.5 h-3.5" /> Upgrade to Premium
+                    </Button>
+                  </HoverCardTrigger>
+                  <HoverCardContent side="top" align="end" className="w-80 p-0 border-amber-200 shadow-2xl" data-testid="upgrade-benefits-popover">
+                    <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 border-b border-amber-100">
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-5 h-5 text-amber-600" />
+                        <span className="text-sm font-bold text-amber-900">Premium benefits</span>
+                      </div>
+                      <p className="text-[11.5px] text-amber-800/80 mt-1">Unlock everything corporates need to find &amp; trust you.</p>
+                    </div>
+                    <ul className="p-4 space-y-2.5 bg-white rounded-b-md">
+                      {[
+                        { icon: TrendingUp, label: "Priority listing in search results" },
+                        { icon: Award,      label: "Top-ranked profile on category pages" },
+                        { icon: Sparkles,   label: "Featured as a Top Recommended profile" },
+                        { icon: ShieldCheck,label: "Verified-expert badge on every interaction" },
+                        { icon: Search,     label: "Higher visibility in IPO-lead matchmaking" },
+                        { icon: Mail,       label: "Direct messaging from corporates (no gatekeeping)" },
+                      ].map((b, i) => (
+                        <li key={i} className="flex items-start gap-2 text-[12px] text-gray-700">
+                          <b.icon className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" strokeWidth={2.2} />
+                          <span>{b.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </HoverCardContent>
+                </HoverCard>
+              )}
+
+              <Button
+                onClick={() => setProfileGated(false)}
+                className="bg-[#1DA1F2] hover:bg-[#0C7ABF] text-white gap-1.5 shadow-md"
+                data-testid="gate-continue-btn"
+              >
+                <CheckCircle2 className="w-4 h-4" /> Looks good — continue
+              </Button>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
@@ -420,5 +569,12 @@ const ExpertDashboard = ({ user, apiClient }) => {
     </div>
   );
 };
+
+const Field = ({ label, value, colSpan }) => (
+  <div className={colSpan ? "col-span-2 md:col-span-3" : ""}>
+    <div className="text-[10.5px] uppercase tracking-[0.1em] text-gray-400 font-semibold mb-0.5">{label}</div>
+    <div className="text-[13px] text-gray-900 font-medium break-words">{value || "—"}</div>
+  </div>
+);
 
 export default ExpertDashboard;

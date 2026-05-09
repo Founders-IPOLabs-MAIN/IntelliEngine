@@ -17,15 +17,21 @@ import {
   Loader2, FolderOpen, CheckCircle2, AlertTriangle, Clock, CornerDownRight, X,
 } from "lucide-react";
 
-const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_BYTES = 20 * 1024 * 1024;
 const ALLOWED_MIME = [
   "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  // Excel
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel.sheet.macroEnabled.12",
+  "text/csv",
 ];
+const ALLOWED_IMAGE_MIME = ["image/png", "image/jpeg", "image/jpg"];
 const isAllowed = (file) => {
   const ct = (file?.type || "").toLowerCase();
-  return ct.startsWith("image/") || ALLOWED_MIME.includes(ct);
+  return ALLOWED_IMAGE_MIME.includes(ct) || ALLOWED_MIME.includes(ct) || ct.startsWith("image/png") || ct.startsWith("image/jpeg");
 };
 const prettySize = (b) => !b && b !== 0 ? "—" : b < 1024 ? `${b} B` : b < 1024*1024 ? `${(b/1024).toFixed(1)} KB` : `${(b/(1024*1024)).toFixed(2)} MB`;
 const formatDT = (iso) => {
@@ -94,8 +100,8 @@ const DocumentRepository = ({ user, apiClient }) => {
 
   const handleFileSelected = async (item, e) => {
     const file = e.target.files?.[0]; if (!file) return;
-    if (!isAllowed(file)) { toast.error("Only PDF, Word, or image files are allowed. Please re-upload in a supported format."); return; }
-    if (file.size > MAX_BYTES) { toast.error(`File is ${(file.size/(1024*1024)).toFixed(2)}MB — exceeds 5MB limit.`); return; }
+    if (!isAllowed(file)) { toast.error("Only PDF, Word (.doc/.docx), Excel (.xls/.xlsx/.csv) or image (PNG/JPEG) files are allowed."); return; }
+    if (file.size > MAX_BYTES) { toast.error(`File is ${(file.size/(1024*1024)).toFixed(2)}MB — exceeds 20MB limit.`); return; }
     setBusyId(item.item_id);
     try {
       const form = new FormData(); form.append("file", file);
@@ -218,7 +224,7 @@ const DocumentRepository = ({ user, apiClient }) => {
           <input
             ref={(el) => (fileInputs.current[item.item_id] = el)}
             type="file"
-            accept=".pdf,.doc,.docx,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12,text/csv,image/png,image/jpeg"
             className="hidden"
             onChange={(e) => handleFileSelected(item, e)}
             data-testid={`docrepo-file-input-${item.item_id}`}
@@ -329,7 +335,7 @@ const DocumentRepository = ({ user, apiClient }) => {
           <div className="p-8 space-y-8">
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <span>Allowed formats: <b>PDF, Word (.doc/.docx), Images</b> only. Max file size: <b>5 MB</b>. Use <b>Add line</b> under any row to track additional uploads for the same document point (numbered 2.4.1, 2.4.2 etc.).</span>
+              <span>Allowed formats: <b>PDF, Word (.doc/.docx), Excel (.xls/.xlsx/.csv), Images (PNG, JPEG)</b>. Max file size: <b>20 MB</b>. Add extra lines for multiple copies.</span>
             </div>
 
             {groups.map((group) => (
