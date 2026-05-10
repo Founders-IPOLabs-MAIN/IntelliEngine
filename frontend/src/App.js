@@ -189,17 +189,14 @@ const ProtectedRoute = ({ children, showFooter = true }) => {
   );
 };
 
-// Module-gated Route - checks user.module_permissions before rendering
+// Module-gated Route — gating disabled. All authenticated users have full access
+// to every module (Assessment, DRHP Builder, Match-Making, Funding, Valuation, Oracle, etc.).
+// `requiredModule` is kept on the prop signature for backwards compatibility but is no longer enforced.
 const ModuleRoute = ({ children, requiredModule, showFooter = true }) => {
+  void requiredModule;
   return (
     <ProtectedRoute showFooter={showFooter}>
-      {({ user, apiClient }) => {
-        const perms = user?.module_permissions || {};
-        if (!perms[requiredModule]) {
-          return <AccessDenied />;
-        }
-        return children({ user, apiClient });
-      }}
+      {({ user, apiClient }) => children({ user, apiClient })}
     </ProtectedRoute>
   );
 };
