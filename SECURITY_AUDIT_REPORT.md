@@ -77,7 +77,7 @@ All responses now include:
 ### 5. CORS Locked Down
 
 ```python
-CORS_ORIGINS="https://drhp-editor-suite.preview.emergentagent.com"
+CORS_ORIGINS="https://drhp-syncfusion.preview.emergentagent.com"
 ```
 
 ### 6. Dependencies Updated

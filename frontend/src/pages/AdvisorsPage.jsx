@@ -29,13 +29,13 @@ const AdvisorsPage = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col" data-testid="advisors-page">
       {/* Nav (merged with header — no bottom border) */}
-      <nav className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm px-8 lg:px-16 py-3 flex items-center justify-between">
+      <nav className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm px-8 lg:px-16 py-0 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-8 w-8" data-testid="advisors-back-btn">
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex items-center justify-center -mt-3">
-            <img src="/setu-logo.svg" alt="SETU Labs" className="h-[190px] w-auto object-contain p-3" data-testid="advisors-logo" />
+            <img src="/setu-logo.svg" alt="SETU Labs" className="h-[190px] w-auto object-contain p-0" data-testid="advisors-logo" />
           </div>
           <span className="text-muted-foreground mx-1 text-sm">/</span>
           <span className="font-semibold text-base text-black">Advisors</span>
