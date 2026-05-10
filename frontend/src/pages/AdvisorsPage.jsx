@@ -28,8 +28,8 @@ const AdvisorsPage = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col" data-testid="advisors-page">
-      {/* Nav */}
-      <nav className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b px-8 lg:px-16 py-3 flex items-center justify-between">
+      {/* Nav (merged with header — no bottom border) */}
+      <nav className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm px-8 lg:px-16 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-8 w-8" data-testid="advisors-back-btn">
             <ArrowLeft className="w-4 h-4" />
@@ -50,7 +50,7 @@ const AdvisorsPage = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 px-8 lg:px-16 py-12 max-w-6xl mx-auto w-full">
+      <main className="flex-1 px-8 lg:px-16 py-2 max-w-6xl mx-auto w-full">
         {/* Header */}
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-2">
