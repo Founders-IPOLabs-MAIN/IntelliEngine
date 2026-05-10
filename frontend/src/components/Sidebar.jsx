@@ -149,9 +149,9 @@ const Sidebar = ({ user, apiClient }) => {
       id: "deep-tech",
       label: "Deep-Tech Modules (Coming Soon)",
       items: [
-        { id: "deep-market-research",  label: "Deep Market Research",     icon: BarChart3, path: "/deep-market-research" },
         { id: "drhp-intelligence",     label: "DRHP Intelligence",        icon: Brain,     path: "/drhp-intelligence" },
         { id: "fraud-risk-analytics",  label: "Fraud & Risk Analytics",   icon: ShieldAlert, path: "/fraud-risk-analytics" },
+        { id: "deep-market-research",  label: "Deep Market Research",     icon: BarChart3, path: "/deep-market-research" },
       ],
     },
     {
