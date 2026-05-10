@@ -254,6 +254,17 @@ const CommandCenter = ({ user, apiClient }) => {
         </header>
 
         <div className="p-4">
+          {/* Centralised Corporate Repository */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1DA1F2] to-blue-600 flex items-center justify-center">
+              <FileText className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-gray-900">Centralised Corporate Repository</h2>
+              <p className="text-[10px] text-gray-500">Upload and manage all corporate data. Data syncs across DRHP chapters.</p>
+            </div>
+          </div>
+
           {/* 3 Action Buttons - Single Row Compact */}
           <div className="flex gap-2 mb-3">
             {showMainBoard && (
