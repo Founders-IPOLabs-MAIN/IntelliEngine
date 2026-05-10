@@ -38,7 +38,7 @@ const AboutPage = () => {
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-8 w-8" data-testid="about-back-btn"><ArrowLeft className="w-4 h-4" /></Button>
           <div className="flex items-center justify-center gap-2 -mt-3">
-            <img src="/setu-logo.svg" alt="SETU Labs" className="h-[150px] w-auto object-contain p-3" />
+            <img src="/setu-logo.svg" alt="SETU Labs" className="h-[190px] w-auto object-contain p-3" />
           </div>
         </div>
         <Button onClick={() => navigate("/login")} className="bg-[#003366] hover:bg-[#002244] text-white rounded-full px-5 text-sm h-9" data-testid="about-get-started-btn">Get Started</Button>
