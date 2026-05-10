@@ -72,6 +72,8 @@ class DRHPOnboardingPayload(BaseModel):
     email: str
     website: Optional[str] = ""
     referral_source: Optional[str] = ""   # "Friends" | "Google" | "Event" | "Reference"
+    firm_address: Optional[str] = ""      # Firm registered office (merchant_banker / ca_firm)
+    firm_logo_url: Optional[str] = ""     # Public URL of uploaded logo
 
 
 @router.get("/account/drhp-onboarding")
@@ -109,6 +111,47 @@ async def save_drhp_onboarding(payload: DRHPOnboardingPayload, user: User = Depe
         await db.user_drhp_onboarding.insert_one(record)
 
     return {"message": "Onboarding saved", "user_login_type": payload.user_login_type}
+
+
+@router.post("/account/drhp-onboarding/logo")
+async def upload_firm_logo(file: UploadFile = File(...), user: User = Depends(get_current_user)):
+    """Upload a firm logo for DRHP onboarding (Merchant Banker / CA Firm)."""
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Logo must be 5 MB or smaller")
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in {".png", ".jpg", ".jpeg", ".webp", ".svg"}:
+        raise HTTPException(status_code=400, detail="Logo must be PNG, JPG, WEBP or SVG")
+    storage_filename = f"firmlogo_{user.user_id}_{uuid.uuid4().hex[:8]}{ext}"
+    grid_id = await fs_bucket.upload_from_stream(
+        storage_filename, io.BytesIO(content),
+        metadata={"user_id": user.user_id, "kind": "firm_logo",
+                  "original_filename": file.filename,
+                  "content_type": file.content_type,
+                  "uploaded_at": datetime.now(timezone.utc).isoformat()},
+    )
+    logo_url = f"/api/account/firm-logo/{grid_id}"
+    return {"logo_url": logo_url, "filename": file.filename}
+
+
+@router.get("/account/firm-logo/{file_id}")
+async def get_firm_logo(file_id: str, user: User = Depends(get_current_user)):
+    """Fetch a firm-logo from GridFS — authenticated; visible across firm members."""
+    try:
+        grid_out = await fs_bucket.open_download_stream(ObjectId(file_id))
+        metadata = grid_out.metadata or {}
+        if metadata.get("kind") != "firm_logo":
+            raise HTTPException(status_code=404, detail="Not a firm logo")
+        content = await grid_out.read()
+        return Response(
+            content=content,
+            media_type=metadata.get("content_type", "image/png"),
+            headers={"Cache-Control": "public, max-age=86400"},
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=404, detail="Logo not found")
 
 
 @router.get("/admin/users/{target_user_id}/drhp-onboarding")

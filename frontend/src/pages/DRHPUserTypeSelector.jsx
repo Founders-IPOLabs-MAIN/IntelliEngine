@@ -64,7 +64,11 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
     email: user?.email || "",
     website: "",
     referral_source: "",
+    firm_address: "",
+    firm_logo_url: "",
   });
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = useRef(null);
 
   const isAdmin = user?.is_admin === true;
 
@@ -95,6 +99,8 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
             email: r.data.email || f.email,
             website: r.data.website || "",
             referral_source: r.data.referral_source || "",
+            firm_address: r.data.firm_address || "",
+            firm_logo_url: r.data.firm_logo_url || "",
           }));
         }
       } catch {
@@ -124,10 +130,17 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
 
   const validateForm = () => {
     const errors = [];
-    if (!form.company_name.trim()) errors.push("Company name");
-    if (!form.full_name.trim()) errors.push("Full name");
-    if (!form.mobile.trim()) errors.push("Mobile");
-    if (!form.email.trim()) errors.push("Email");
+    const isFirmType = pendingType === "merchant_banker" || pendingType === "ca_firm";
+    if (isFirmType) {
+      // New firm onboarding: only Firm Name + Address required (Website + Logo are optional)
+      if (!form.company_name.trim()) errors.push("Firm Name");
+      if (!form.firm_address.trim()) errors.push("Address");
+    } else {
+      if (!form.company_name.trim()) errors.push("Company name");
+      if (!form.full_name.trim()) errors.push("Full name");
+      if (!form.mobile.trim()) errors.push("Mobile");
+      if (!form.email.trim()) errors.push("Email");
+    }
     if (errors.length) {
       toast.error(`${errors.join(", ")} — required`);
       return false;
@@ -135,14 +148,41 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
     return true;
   };
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("Logo must be 5 MB or smaller"); return; }
+    setLogoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await apiClient.post("/account/drhp-onboarding/logo", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setForm((f) => ({ ...f, firm_logo_url: res.data.logo_url }));
+      toast.success("Logo uploaded");
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "Logo upload failed");
+    }
+    setLogoUploading(false);
+    if (logoInputRef.current) logoInputRef.current.value = "";
+  };
+
+  const removeLogo = () => setForm((f) => ({ ...f, firm_logo_url: "" }));
+
   const handleSubmit = async () => {
     if (!validateForm() || !pendingType) return;
     setSubmitting(true);
     try {
-      await apiClient.post("/account/drhp-onboarding", {
+      // Default identity fields when the firm-onboarding flow doesn't ask for them
+      const payload = {
         user_login_type: pendingType,
         ...form,
-      });
+        full_name: form.full_name || user?.name || form.company_name || "Firm Admin",
+        mobile: form.mobile || user?.phone || "",
+        email: form.email || user?.email || "",
+      };
+      await apiClient.post("/account/drhp-onboarding", payload);
       toast.success("Profile saved — taking you in.");
       navigate(`/drhp/${pendingType}`);
     } catch (err) {
@@ -292,56 +332,129 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
             <DialogTitle className="flex items-center gap-2">
               {pendingCard?.icon && (
                 <span className={`w-8 h-8 rounded-lg bg-gradient-to-br ${pendingCard.iconGrad} flex items-center justify-center`}>
-                  <pendingCard.icon className="w-4 h-4 text-gray-900" />
+                  <pendingCard.icon className="w-4 h-4 text-white" />
                 </span>
               )}
-              Welcome — let&apos;s set up your {pendingCard?.title || "DRHP"} workspace
+              {pendingType === "merchant_banker" || pendingType === "ca_firm"
+                ? `Set up your ${pendingCard?.title} firm`
+                : <>Welcome — let&apos;s set up your {pendingCard?.title || "DRHP"} workspace</>}
             </DialogTitle>
             <DialogDescription>
-              We&apos;ll only ask once. Your details stay with us, encrypted and never shared.
+              {pendingType === "merchant_banker" || pendingType === "ca_firm"
+                ? "Tell us about your firm. We'll use this branding across your Corporate Admin Panel and DRHP outputs."
+                : "We'll only ask once. Your details stay with us, encrypted and never shared."}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 gap-3 py-2">
-            <FormField label="Company name" required value={form.company_name}
-              onChange={(v) => setForm((f) => ({ ...f, company_name: v }))}
-              placeholder="Acme Capital Pvt Ltd"
-              testid="onboard-company_name" />
-            <FormField label="Full name" required value={form.full_name}
-              onChange={(v) => setForm((f) => ({ ...f, full_name: v }))}
-              placeholder="Your full name"
-              testid="onboard-full_name" />
-            <FormField label="Mobile" required value={form.mobile} type="tel"
-              onChange={(v) => setForm((f) => ({ ...f, mobile: v }))}
-              placeholder="+91 XXXXX XXXXX"
-              testid="onboard-mobile" />
-            <FormField label="Email" required value={form.email} type="email"
-              onChange={(v) => setForm((f) => ({ ...f, email: v }))}
-              placeholder="you@company.com"
-              testid="onboard-email" />
-            <div className="col-span-2">
-              <FormField label="Website" value={form.website}
+          {(pendingType === "merchant_banker" || pendingType === "ca_firm") ? (
+            // ─── FIRM ONBOARDING (Merchant Banker / CA Firm) ───
+            <div className="space-y-3.5 py-2">
+              <FormField
+                label="Firm Name" required
+                value={form.company_name}
+                onChange={(v) => setForm((f) => ({ ...f, company_name: v }))}
+                placeholder={pendingType === "merchant_banker" ? "Acme Capital Pvt Ltd" : "Acme & Associates LLP"}
+                testid="onboard-firm-name"
+              />
+              <FormField
+                label="Website"
+                value={form.website}
                 onChange={(v) => setForm((f) => ({ ...f, website: v }))}
-                placeholder="https://yourcompany.com"
-                testid="onboard-website" />
+                placeholder="https://yourfirm.com"
+                testid="onboard-firm-website"
+              />
+              <div>
+                <label className="text-[11px] font-semibold text-gray-700 mb-1 block">
+                  Address <span className="text-red-500">*</span>
+                </label>
+                <Textarea
+                  value={form.firm_address}
+                  onChange={(e) => setForm((f) => ({ ...f, firm_address: e.target.value }))}
+                  placeholder="Registered office address — building, street, city, state, PIN"
+                  className="min-h-[72px] text-sm border-gray-300 focus-visible:ring-[#1DA1F2]"
+                  data-testid="onboard-firm-address"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-gray-700 mb-1 block">
+                  Upload Logo <span className="text-gray-400 font-normal">(PNG, JPG, WEBP, SVG · max 5 MB)</span>
+                </label>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.webp,.svg,image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                  data-testid="onboard-firm-logo-input"
+                />
+                {form.firm_logo_url ? (
+                  <div className="flex items-center gap-3 p-2.5 border border-blue-200 bg-blue-50/40 rounded-md" data-testid="onboard-firm-logo-preview">
+                    <img src={form.firm_logo_url} alt="Firm logo" className="w-12 h-12 object-contain rounded bg-white border" />
+                    <span className="text-[12px] text-gray-700 flex-1">Logo uploaded</span>
+                    <button onClick={() => logoInputRef.current?.click()} className="text-[11px] text-[#1DA1F2] hover:text-blue-700 font-semibold">Replace</button>
+                    <button onClick={removeLogo} className="text-gray-400 hover:text-red-500" title="Remove">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={logoUploading}
+                    className="w-full flex items-center justify-center gap-2 h-20 rounded-md border-2 border-dashed border-gray-300 bg-gray-50 hover:border-[#1DA1F2] hover:bg-blue-50/40 transition text-[12px] text-gray-600"
+                    data-testid="onboard-firm-logo-upload-btn"
+                  >
+                    {logoUploading
+                      ? <><Loader2 className="w-4 h-4 animate-spin text-[#1DA1F2]" /> Uploading…</>
+                      : <><ImageIcon className="w-4 h-4 text-[#1DA1F2]" /> <Upload className="w-3.5 h-3.5 text-gray-400" /> Click to upload your firm logo</>
+                    }
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="col-span-2">
-              <label className="text-[11px] font-semibold text-gray-700 mb-1 block">
-                How did you hear about us?
-              </label>
-              <select
-                value={form.referral_source}
-                onChange={(e) => setForm((f) => ({ ...f, referral_source: e.target.value }))}
-                className="w-full h-9 text-sm border border-gray-300 rounded-md px-3 bg-white"
-                data-testid="onboard-referral_source"
-              >
-                <option value="">Select an option…</option>
-                {REFERRAL_OPTIONS.map((o) => (
-                  <option key={o} value={o}>{o}</option>
-                ))}
-              </select>
+          ) : (
+            // ─── COMPANY ONBOARDING (existing flow) ───
+            <div className="grid grid-cols-2 gap-3 py-2">
+              <FormField label="Company name" required value={form.company_name}
+                onChange={(v) => setForm((f) => ({ ...f, company_name: v }))}
+                placeholder="Your company name"
+                testid="onboard-company_name" />
+              <FormField label="Full name" required value={form.full_name}
+                onChange={(v) => setForm((f) => ({ ...f, full_name: v }))}
+                placeholder="Your full name"
+                testid="onboard-full_name" />
+              <FormField label="Mobile" required value={form.mobile} type="tel"
+                onChange={(v) => setForm((f) => ({ ...f, mobile: v }))}
+                placeholder="+91 XXXXX XXXXX"
+                testid="onboard-mobile" />
+              <FormField label="Email" required value={form.email} type="email"
+                onChange={(v) => setForm((f) => ({ ...f, email: v }))}
+                placeholder="you@company.com"
+                testid="onboard-email" />
+              <div className="col-span-2">
+                <FormField label="Website" value={form.website}
+                  onChange={(v) => setForm((f) => ({ ...f, website: v }))}
+                  placeholder="https://yourcompany.com"
+                  testid="onboard-website" />
+              </div>
+              <div className="col-span-2">
+                <label className="text-[11px] font-semibold text-gray-700 mb-1 block">
+                  How did you hear about us?
+                </label>
+                <select
+                  value={form.referral_source}
+                  onChange={(e) => setForm((f) => ({ ...f, referral_source: e.target.value }))}
+                  className="w-full h-9 text-sm border border-gray-300 rounded-md px-3 bg-white"
+                  data-testid="onboard-referral_source"
+                >
+                  <option value="">Select an option…</option>
+                  {REFERRAL_OPTIONS.map((o) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
+          )}
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
@@ -353,13 +466,13 @@ const DRHPUserTypeSelector = ({ user, apiClient }) => {
               Not now
             </Button>
             <Button
-              className="bg-[#1DA1F2] hover:bg-[#1a8cd8] text-gray-900"
-              disabled={submitting}
+              className="bg-[#1DA1F2] hover:bg-[#0c7abf] text-white"
+              disabled={submitting || logoUploading}
               onClick={handleSubmit}
               data-testid="onboard-submit"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : null}
-              Save &amp; continue
+              Submit &amp; continue
             </Button>
           </DialogFooter>
         </DialogContent>

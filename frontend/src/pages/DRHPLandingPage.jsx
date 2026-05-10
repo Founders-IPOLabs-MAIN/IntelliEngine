@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
+import DealPipelineTracker from "@/components/DealPipelineTracker";
 import {
   FileText,
   Plus,
@@ -342,6 +343,11 @@ const DRHPLandingPage = ({ user, apiClient }) => {
                 </Card>
               ))}
             </div>
+          )}
+
+          {/* ─── Deal Pipeline tracker (Merchant Banker / CA Firm only) ─── */}
+          {(userLoginType === "merchant_banker" || userLoginType === "ca_firm") && (
+            <DealPipelineTracker apiClient={apiClient} />
           )}
 
           {/* ─── Recently Deleted (recoverable up to 60 days) ─── */}
