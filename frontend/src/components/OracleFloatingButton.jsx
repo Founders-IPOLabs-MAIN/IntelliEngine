@@ -14,7 +14,7 @@ const OracleFloatingButton = () => {
   return (
     <button
       onClick={() => navigate("/oracle")}
-      className="fixed top-5 right-6 z-40 group flex items-center gap-2.5 pl-3.5 pr-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-md hover:shadow-lg hover:border-blue-300 hover:bg-blue-50 transition-all"
+      className="fixed top-[100px] right-6 z-40 group flex items-center gap-2.5 pl-3.5 pr-5 py-2.5 rounded-full bg-white border border-gray-200 shadow-md hover:shadow-lg hover:border-blue-300 hover:bg-blue-50 transition-all"
       data-testid="oracle-floating-btn"
       title="Ask Oracle (IPO.GPT)"
     >
