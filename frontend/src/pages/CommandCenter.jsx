@@ -19,6 +19,10 @@ import {
   Trash2,
   Calendar,
   AlertTriangle,
+  Briefcase,
+  Users,
+  UserCircle2,
+  Filter,
   Save
 } from "lucide-react";
 
@@ -332,232 +336,160 @@ const CommandCenter = ({ user, apiClient }) => {
             </div>
           </div>
 
-          {/* ═══ PROJECT DASHBOARD ═══ */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4" data-testid="project-dashboard">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-gray-900">Project Dashboard</h3>
-              <Button size="sm" onClick={handleSaveDashboard} disabled={saving} className="h-7 text-xs gap-1.5 bg-[#1DA1F2] hover:bg-[#1a8cd8]">
+          {/* ═══ PROJECT WORKSPACE — Unified Dashboard + Key Personnel ═══ */}
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden" data-testid="project-dashboard">
+            {/* Twitter-blue header strip */}
+            <div className="bg-gradient-to-r from-[#1DA1F2] via-[#1a8cd8] to-[#0c7abf] px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-md bg-white/15 backdrop-blur flex items-center justify-center ring-1 ring-white/30">
+                  <Briefcase className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-[14px] font-bold text-white tracking-tight">Project Workspace</h3>
+                  <p className="text-[10.5px] text-blue-50/90">Project details, contacts, dates &amp; key personnel</p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                onClick={handleSaveDashboard}
+                disabled={saving}
+                className="h-8 text-xs gap-1.5 bg-white/15 hover:bg-white/25 text-white border border-white/30 backdrop-blur"
+                data-testid="save-dashboard-btn"
+              >
                 {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
                 Save
               </Button>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              {/* Column 1: Contacts */}
-              <div className="space-y-3">
-                {/* Project Head */}
-                <div className="border border-gray-100 rounded-md p-2.5">
-                  <p className="text-[10px] font-bold text-gray-500 uppercase mb-1.5">Project Head</p>
-                  <div className="space-y-1">
-                    <Input placeholder="Name" value={projectHead.name} onChange={e => setProjectHead({...projectHead, name: e.target.value})} className="h-6 text-xs" />
-                    <Input placeholder="Email" value={projectHead.email} onChange={e => setProjectHead({...projectHead, email: e.target.value})} className="h-6 text-xs" />
-                    <Input placeholder="Mobile" value={projectHead.mobile} onChange={e => setProjectHead({...projectHead, mobile: e.target.value})} className="h-6 text-xs" />
-                  </div>
-                </div>
+            {/* ─── Section 1: Project Details ─── */}
+            <div className="p-5">
+              <SectionHeader number="01" title="Project Details" subtitle="Contacts, issue tracking &amp; key dates" />
 
-                {/* Client POC */}
-                <div className="border border-gray-100 rounded-md p-2.5">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase">Client POC</p>
-                    <button onClick={addClientPoc} className="text-[#1DA1F2] hover:text-blue-700"><Plus className="w-3.5 h-3.5" /></button>
-                  </div>
-                  <div className="space-y-2 max-h-[160px] overflow-y-auto">
-                    {clientPocs.map((poc, i) => (
-                      <div key={i} className="flex gap-1 items-start">
-                        <div className="flex-1 space-y-0.5">
-                          <Input placeholder="Name" value={poc.name} onChange={e => { const u = [...clientPocs]; u[i].name = e.target.value; setClientPocs(u); }} className="h-6 text-xs" />
-                          <div className="flex gap-1">
-                            <Input placeholder="Email" value={poc.email} onChange={e => { const u = [...clientPocs]; u[i].email = e.target.value; setClientPocs(u); }} className="h-6 text-xs flex-1" />
-                            <Input placeholder="Mobile" value={poc.mobile} onChange={e => { const u = [...clientPocs]; u[i].mobile = e.target.value; setClientPocs(u); }} className="h-6 text-xs w-24" />
+              <div className="grid grid-cols-3 gap-4">
+                {/* Column 1: Contacts */}
+                <div className="space-y-3">
+                  {/* Project Head */}
+                  <FieldGroup icon={<UserCircle2 className="w-3.5 h-3.5" />} title="Project Head">
+                    <Input placeholder="Full name" value={projectHead.name} onChange={e => setProjectHead({...projectHead, name: e.target.value})} className="h-8 text-[12.5px] border-gray-200 focus-visible:ring-[#1DA1F2] focus-visible:border-[#1DA1F2]" />
+                    <Input placeholder="Email address" value={projectHead.email} onChange={e => setProjectHead({...projectHead, email: e.target.value})} className="h-8 text-[12.5px] border-gray-200 focus-visible:ring-[#1DA1F2] focus-visible:border-[#1DA1F2]" />
+                    <Input placeholder="Mobile" value={projectHead.mobile} onChange={e => setProjectHead({...projectHead, mobile: e.target.value})} className="h-8 text-[12.5px] border-gray-200 focus-visible:ring-[#1DA1F2] focus-visible:border-[#1DA1F2]" />
+                  </FieldGroup>
+
+                  {/* Client POC */}
+                  <FieldGroup
+                    icon={<Users className="w-3.5 h-3.5" />}
+                    title="Client POC"
+                    action={
+                      <button onClick={addClientPoc} className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-[#1DA1F2] hover:text-blue-700">
+                        <Plus className="w-3 h-3" /> Add
+                      </button>
+                    }
+                  >
+                    <div className="space-y-2.5 max-h-[200px] overflow-y-auto pr-1">
+                      {clientPocs.map((poc, i) => (
+                        <div key={i} className="space-y-1 rounded-md bg-blue-50/40 border border-blue-100 p-2">
+                          <div className="flex items-center gap-1">
+                            <Input placeholder="Name" value={poc.name} onChange={e => { const u = [...clientPocs]; u[i].name = e.target.value; setClientPocs(u); }} className="h-7 text-[12px] border-gray-200 bg-white focus-visible:ring-[#1DA1F2] flex-1" />
+                            {clientPocs.length > 1 && <button onClick={() => removeClientPoc(i)} className="text-gray-300 hover:text-red-500"><Trash2 className="w-3 h-3" /></button>}
                           </div>
-                          <select value={poc.title} onChange={e => { const u = [...clientPocs]; u[i].title = e.target.value; setClientPocs(u); }} className="w-full h-6 text-xs border rounded px-1.5">
-                            <option value="">Title</option>
+                          <div className="flex gap-1">
+                            <Input placeholder="Email" value={poc.email} onChange={e => { const u = [...clientPocs]; u[i].email = e.target.value; setClientPocs(u); }} className="h-7 text-[12px] border-gray-200 bg-white focus-visible:ring-[#1DA1F2] flex-1" />
+                            <Input placeholder="Mobile" value={poc.mobile} onChange={e => { const u = [...clientPocs]; u[i].mobile = e.target.value; setClientPocs(u); }} className="h-7 text-[12px] border-gray-200 bg-white focus-visible:ring-[#1DA1F2] w-24" />
+                          </div>
+                          <select value={poc.title} onChange={e => { const u = [...clientPocs]; u[i].title = e.target.value; setClientPocs(u); }} className="w-full h-7 text-[12px] border border-gray-200 bg-white rounded px-2 text-gray-700">
+                            <option value="">— Title —</option>
                             <option value="Owner">Owner</option>
                             <option value="Promoter">Promoter</option>
                           </select>
                         </div>
-                        {clientPocs.length > 1 && <button onClick={() => removeClientPoc(i)} className="text-red-400 hover:text-red-600 mt-1"><Trash2 className="w-3 h-3" /></button>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Column 2: Issue Trackers */}
-              <div className="border border-gray-100 rounded-md p-2.5 space-y-2" data-testid="issue-trackers">
-                <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">Issue Trackers</p>
-
-                <div>
-                  <label className="text-[10px] font-semibold text-gray-600 mb-0.5 block">Issue Type</label>
-                  <select
-                    value={issueType}
-                    onChange={e => setIssueType(e.target.value)}
-                    className="w-full h-7 text-xs border rounded px-2"
-                    data-testid="tracker-issue-type"
-                  >
-                    <option value="">Select…</option>
-                    {ISSUE_TYPE_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-semibold text-gray-600 mb-0.5 block">Pricing Method</label>
-                  <select
-                    value={pricingMethod}
-                    onChange={e => setPricingMethod(e.target.value)}
-                    className="w-full h-7 text-xs border rounded px-2"
-                    data-testid="tracker-pricing-method"
-                  >
-                    <option value="">Select…</option>
-                    {PRICING_METHOD_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-semibold text-gray-600 mb-0.5 block">Sales Type</label>
-                  <select
-                    value={salesType}
-                    onChange={e => setSalesType(e.target.value)}
-                    className="w-full h-7 text-xs border rounded px-2"
-                    data-testid="tracker-sales-type"
-                  >
-                    <option value="">Select…</option>
-                    {SALES_TYPE_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-semibold text-gray-600 mb-0.5 block">Registrar (RTA)</label>
-                  <select
-                    value={registrar}
-                    onChange={e => setRegistrar(e.target.value)}
-                    className="w-full h-7 text-xs border rounded px-2"
-                    data-testid="tracker-registrar"
-                  >
-                    <option value="">Select registrar…</option>
-                    {REGISTRAR_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {/* Column 3: Dates + Board + Pending */}
-              <div className="space-y-3">
-                {/* Dates & Board */}
-                <div className="border border-gray-100 rounded-md p-2.5 space-y-2">
-                  <div>
-                    <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">DRHP Submission Date</p>
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                      <input type="date" value={drhpSubmissionDate} onChange={e => setDrhpSubmissionDate(e.target.value)} className="flex-1 h-6 text-xs border rounded px-2" data-testid="drhp-submission-date" />
+                      ))}
                     </div>
-                  </div>
+                  </FieldGroup>
+                </div>
+
+                {/* Column 2: Issue Trackers */}
+                <FieldGroup icon={<Filter className="w-3.5 h-3.5" />} title="Issue Trackers">
+                  <FormSelect label="Issue Type" value={issueType} onChange={setIssueType} options={ISSUE_TYPE_OPTIONS} testid="tracker-issue-type" />
+                  <FormSelect label="Pricing Method" value={pricingMethod} onChange={setPricingMethod} options={PRICING_METHOD_OPTIONS} testid="tracker-pricing-method" />
+                  <FormSelect label="Sales Type" value={salesType} onChange={setSalesType} options={SALES_TYPE_OPTIONS} testid="tracker-sales-type" />
+                  <FormSelect label="Registrar (RTA)" value={registrar} onChange={setRegistrar} options={REGISTRAR_OPTIONS} placeholder="Select registrar…" testid="tracker-registrar" />
+                </FieldGroup>
+
+                {/* Column 3: Dates + Board */}
+                <FieldGroup icon={<Calendar className="w-3.5 h-3.5" />} title="Timeline &amp; Board">
+                  <FormDate label="DRHP Submission Date" value={drhpSubmissionDate} onChange={setDrhpSubmissionDate} testid="drhp-submission-date" />
+                  <FormDate label="First Draft Date" value={drhpFirstDraftDate} onChange={setDrhpFirstDraftDate} testid="drhp-first-draft-date" />
                   <div>
-                    <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">First Draft Date</p>
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                      <input type="date" value={drhpFirstDraftDate} onChange={e => setDrhpFirstDraftDate(e.target.value)} className="flex-1 h-6 text-xs border rounded px-2" data-testid="drhp-first-draft-date" />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">Board</p>
-                    <select value={boardSelection} onChange={e => setBoardSelection(e.target.value)} className="w-full h-7 text-xs border rounded px-2" data-testid="board-selection">
-                      <option value="">Select Board</option>
+                    <label className="text-[10.5px] font-semibold text-gray-500 mb-1 block uppercase tracking-wide">Board</label>
+                    <select value={boardSelection} onChange={e => setBoardSelection(e.target.value)} className="w-full h-8 text-[12.5px] border border-gray-200 rounded-md px-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1DA1F2] focus:border-[#1DA1F2]" data-testid="board-selection">
+                      <option value="">— Select Board —</option>
                       {BOARD_OPTIONS.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                   </div>
-                </div>
-
-                {/* (Important & Pending block moved above the Project Dashboard) */}
+                </FieldGroup>
               </div>
             </div>
 
-            {/* ═══ KEY PERSONNEL TABLE ═══ */}
-            <div className="mt-6 pt-5 border-t border-gray-200" data-testid="key-personnel-section">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900">Key Personnel</h4>
-                  <p className="text-[11px] text-gray-500">Core people driving this IPO mandate — advisors, officers and operational POCs.</p>
-                </div>
+            {/* ─── Soft divider ─── */}
+            <div className="relative px-5">
+              <div className="border-t border-dashed border-gray-200"></div>
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-white px-3 text-[9.5px] uppercase tracking-[0.18em] font-bold text-gray-400">Team</div>
+            </div>
+
+            {/* ─── Section 2: Key Personnel ─── */}
+            <div className="p-5" data-testid="key-personnel-section">
+              <div className="flex items-center justify-between mb-3.5">
+                <SectionHeader number="02" title="Key Personnel" subtitle="Core people driving this IPO mandate — advisors, officers and operational POCs." inline />
                 <Button
                   size="sm"
-                  variant="outline"
                   onClick={addKeyData}
-                  className="h-7 text-xs gap-1.5 border-[#1DA1F2]/30 text-[#1DA1F2] hover:bg-blue-50"
+                  className="h-8 text-xs gap-1.5 bg-[#1DA1F2] hover:bg-[#0c7abf] text-white shadow-sm"
                   data-testid="add-key-personnel-btn"
                 >
-                  <Plus className="w-3 h-3" /> Add Person
+                  <Plus className="w-3.5 h-3.5" /> Add Person
                 </Button>
               </div>
 
-              <div className="overflow-hidden rounded-lg border border-gray-200">
-                <table className="w-full text-xs" data-testid="key-personnel-table">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide w-[18%]">Role</th>
-                      <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide w-[26%]">Name</th>
-                      <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide w-[30%]">Email</th>
-                      <th className="text-left px-3 py-2 font-semibold text-gray-600 uppercase text-[10px] tracking-wide w-[20%]">Mobile</th>
-                      <th className="px-3 py-2 w-[6%]"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {clientKeyData.map((item, i) => (
-                      <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/60" data-testid={`key-personnel-row-${i}`}>
-                        <td className="px-3 py-1.5">
-                          <Input
-                            placeholder="Role"
-                            value={item.role}
-                            onChange={e => { const u = [...clientKeyData]; u[i].role = e.target.value; setClientKeyData(u); }}
-                            className="h-7 text-xs font-medium border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2"
-                          />
-                        </td>
-                        <td className="px-3 py-1.5">
-                          <Input
-                            placeholder="Full name"
-                            value={item.name}
-                            onChange={e => { const u = [...clientKeyData]; u[i].name = e.target.value; setClientKeyData(u); }}
-                            className="h-7 text-xs border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2"
-                          />
-                        </td>
-                        <td className="px-3 py-1.5">
-                          <Input
-                            placeholder="email@company.com"
-                            value={item.email}
-                            onChange={e => { const u = [...clientKeyData]; u[i].email = e.target.value; setClientKeyData(u); }}
-                            className="h-7 text-xs border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2"
-                          />
-                        </td>
-                        <td className="px-3 py-1.5">
-                          <Input
-                            placeholder="+91 XXXXX XXXXX"
-                            value={item.mobile}
-                            onChange={e => { const u = [...clientKeyData]; u[i].mobile = e.target.value; setClientKeyData(u); }}
-                            className="h-7 text-xs border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2"
-                          />
-                        </td>
-                        <td className="px-3 py-1.5 text-right">
-                          {clientKeyData.length > 1 && (
-                            <button
-                              onClick={() => removeKeyData(i)}
-                              className="text-gray-300 hover:text-red-500 transition-colors"
-                              data-testid={`remove-key-personnel-${i}`}
-                              title="Remove"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                    {clientKeyData.length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="text-center py-6 text-gray-400 text-xs">
-                          No key personnel added. Click "Add Person" to start.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+                <div className="grid grid-cols-[18%_28%_30%_18%_6%] bg-gradient-to-r from-blue-50/60 to-blue-50/30 border-b border-gray-200 px-3 py-2.5">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#1DA1F2]">Role</div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#1DA1F2]">Name</div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#1DA1F2]">Email</div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#1DA1F2]">Mobile</div>
+                  <div></div>
+                </div>
+                <div data-testid="key-personnel-table">
+                  {clientKeyData.map((item, i) => (
+                    <div key={i} className="grid grid-cols-[18%_28%_30%_18%_6%] items-center border-b border-gray-100 last:border-0 hover:bg-blue-50/30 transition-colors px-3 py-1" data-testid={`key-personnel-row-${i}`}>
+                      <div className="flex items-center gap-2 pr-2">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#1DA1F2] to-blue-600 text-white text-[10.5px] font-bold flex items-center justify-center shadow-sm flex-shrink-0">
+                          {(item.role || "?").slice(0, 2).toUpperCase()}
+                        </div>
+                        <Input
+                          placeholder="Role"
+                          value={item.role}
+                          onChange={e => { const u = [...clientKeyData]; u[i].role = e.target.value; setClientKeyData(u); }}
+                          className="h-7 text-[12.5px] font-semibold border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-1.5 text-gray-900"
+                        />
+                      </div>
+                      <Input placeholder="Full name" value={item.name} onChange={e => { const u = [...clientKeyData]; u[i].name = e.target.value; setClientKeyData(u); }} className="h-7 text-[12.5px] border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2" />
+                      <Input placeholder="email@company.com" value={item.email} onChange={e => { const u = [...clientKeyData]; u[i].email = e.target.value; setClientKeyData(u); }} className="h-7 text-[12.5px] border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2" />
+                      <Input placeholder="+91 XXXXX XXXXX" value={item.mobile} onChange={e => { const u = [...clientKeyData]; u[i].mobile = e.target.value; setClientKeyData(u); }} className="h-7 text-[12.5px] border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-[#1DA1F2] px-2" />
+                      <div className="text-right">
+                        {clientKeyData.length > 1 && (
+                          <button onClick={() => removeKeyData(i)} className="text-gray-300 hover:text-red-500 transition-colors p-1.5 rounded hover:bg-red-50" data-testid={`remove-key-personnel-${i}`} title="Remove">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {clientKeyData.length === 0 && (
+                    <div className="text-center py-8 text-gray-400 text-[12px]">
+                      No key personnel added. Click <span className="font-semibold text-[#1DA1F2]">"Add Person"</span> to start.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -566,5 +498,54 @@ const CommandCenter = ({ user, apiClient }) => {
     </div>
   );
 };
+
+// ─────────────────────── helper sub-components ───────────────────────
+const SectionHeader = ({ number, title, subtitle, inline = false }) => (
+  <div className={inline ? "flex-1" : "mb-4"}>
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] font-bold tracking-[0.18em] text-[#1DA1F2]">{number}</span>
+      <h4 className="text-[13.5px] font-bold text-gray-900">{title}</h4>
+    </div>
+    {subtitle && <p className="text-[11px] text-gray-500 mt-0.5">{subtitle}</p>}
+  </div>
+);
+
+const FieldGroup = ({ icon, title, action, children }) => (
+  <div className="rounded-lg border border-gray-200 bg-gradient-to-br from-white to-blue-50/20 p-3 space-y-2 hover:border-blue-200 hover:shadow-[0_0_15px_rgba(29,161,242,0.05)] transition-all">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-1.5">
+        <div className="w-5 h-5 rounded bg-[#1DA1F2]/10 text-[#1DA1F2] flex items-center justify-center">{icon}</div>
+        <p className="text-[10.5px] font-bold uppercase tracking-wide text-gray-700">{title}</p>
+      </div>
+      {action}
+    </div>
+    <div className="space-y-2">{children}</div>
+  </div>
+);
+
+const FormSelect = ({ label, value, onChange, options, placeholder = "Select…", testid }) => (
+  <div>
+    <label className="text-[10.5px] font-semibold text-gray-500 mb-1 block uppercase tracking-wide">{label}</label>
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className="w-full h-8 text-[12.5px] border border-gray-200 rounded-md px-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1DA1F2] focus:border-[#1DA1F2]"
+      data-testid={testid}
+    >
+      <option value="">{placeholder}</option>
+      {options.map(v => <option key={v} value={v}>{v}</option>)}
+    </select>
+  </div>
+);
+
+const FormDate = ({ label, value, onChange, testid }) => (
+  <div>
+    <label className="text-[10.5px] font-semibold text-gray-500 mb-1 block uppercase tracking-wide">{label}</label>
+    <div className="relative">
+      <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#1DA1F2]/70 pointer-events-none" />
+      <input type="date" value={value} onChange={e => onChange(e.target.value)} className="w-full h-8 text-[12.5px] border border-gray-200 rounded-md pl-8 pr-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1DA1F2] focus:border-[#1DA1F2]" data-testid={testid} />
+    </div>
+  </div>
+);
 
 export default CommandCenter;
