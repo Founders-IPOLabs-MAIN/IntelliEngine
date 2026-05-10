@@ -7,9 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import Sidebar from "@/components/Sidebar";
-import { ArrowLeft, Loader2, Upload, X, CreditCard, CheckCircle2, Star } from "lucide-react";
+import { ArrowLeft, Loader2, Upload, X, CheckCircle2, Crown, TrendingUp, Award, Sparkles, ShieldCheck, Search, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 const ExpertRegister = ({ user, apiClient }) => {
@@ -21,9 +21,8 @@ const ExpertRegister = ({ user, apiClient }) => {
   const [loading, setLoading] = useState(false);
   const [picFile, setPicFile] = useState(null);
   const [picPreview, setPicPreview] = useState(null);
-  const [showPayment, setShowPayment] = useState(false);
-  const [payLoading, setPayLoading] = useState(false);
   const [existingExpertId, setExistingExpertId] = useState(null);
+  const [alreadyPremium, setAlreadyPremium] = useState(false);
 
   const [form, setForm] = useState({
     full_name: user?.name || "",
@@ -47,6 +46,7 @@ const ExpertRegister = ({ user, apiClient }) => {
       if (isEditMode) {
         // Prefill form with the saved profile so the existing expert can edit
         setExistingExpertId(p.expert_id);
+        setAlreadyPremium(!!p.is_premium);
         setForm({
           full_name: p.full_name || "",
           mobile: p.mobile || "",
@@ -88,7 +88,7 @@ const ExpertRegister = ({ user, apiClient }) => {
     });
   };
 
-  const handleSubmit = async (isPremium = false) => {
+  const handleSubmit = async (goPremium = false) => {
     if (!form.full_name || !form.mobile || !form.email || !form.city || !form.state) {
       toast.error("Please fill all required fields"); return;
     }
@@ -113,8 +113,9 @@ const ExpertRegister = ({ user, apiClient }) => {
         : "/matchmaker/expert/register";
       await apiClient.post(endpoint, fd, { headers: { "Content-Type": "multipart/form-data" } });
 
-      if (isPremium) {
-        setShowPayment(true);
+      if (goPremium) {
+        toast.success(isEditMode ? "Profile saved — taking you to Premium upgrade…" : "Registration saved — taking you to Premium upgrade…");
+        navigate("/matchmaker/experts/premium");
       } else if (isEditMode) {
         toast.success("Profile updated!");
         navigate("/matchmaker/experts/dashboard");
@@ -126,19 +127,6 @@ const ExpertRegister = ({ user, apiClient }) => {
       toast.error(e.response?.data?.detail || (isEditMode ? "Update failed" : "Registration failed"));
     }
     setLoading(false);
-  };
-
-  const handlePayment = async () => {
-    setPayLoading(true);
-    try {
-      await apiClient.post("/matchmaker/expert/premium-upgrade");
-      toast.success("Premium activated! Proceeding to verification...");
-      setShowPayment(false);
-      navigate("/matchmaker/experts/verify");
-    } catch (e) {
-      toast.error(e.response?.data?.detail || "Payment failed");
-    }
-    setPayLoading(false);
   };
 
   const areaLabel = (id) => areas.find(a => a.id === id)?.label || id;
@@ -274,52 +262,71 @@ const ExpertRegister = ({ user, apiClient }) => {
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t">
-                <Button onClick={() => handleSubmit(false)} disabled={loading} className="flex-1 h-11 bg-[#003366] hover:bg-[#002244]" data-testid="submit-free-btn">
+                <Button
+                  onClick={() => handleSubmit(false)}
+                  disabled={loading}
+                  className="flex-1 h-11 bg-[#003366] hover:bg-[#002244]"
+                  data-testid="submit-free-btn"
+                >
                   {loading
                     ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {isEditMode ? "Saving..." : "Submitting..."}</>
                     : isEditMode
-                      ? <><CheckCircle2 className="w-4 h-4 mr-2" /> Save Changes</>
+                      ? <><CheckCircle2 className="w-4 h-4 mr-2" /> Save</>
                       : <><CheckCircle2 className="w-4 h-4 mr-2" /> Submit (Free)</>
                   }
                 </Button>
-                {!isEditMode && (
-                  <Button onClick={() => handleSubmit(true)} disabled={loading} className="flex-1 h-11 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white" data-testid="submit-premium-btn">
-                    <Star className="w-4 h-4 mr-2" /> Premium Option
-                  </Button>
-                )}
+
+                <HoverCard openDelay={120}>
+                  <HoverCardTrigger asChild>
+                    <Button
+                      onClick={() => alreadyPremium ? navigate("/matchmaker/experts/premium") : handleSubmit(true)}
+                      disabled={loading}
+                      className="flex-1 h-11 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md gap-1.5"
+                      data-testid="upgrade-premium-btn"
+                    >
+                      <Crown className="w-4 h-4" /> {alreadyPremium ? "Manage Premium Data" : "Upgrade to Premium"}
+                    </Button>
+                  </HoverCardTrigger>
+                  <HoverCardContent
+                    side="top"
+                    align="end"
+                    className="w-[340px] p-0 border-amber-200 shadow-2xl"
+                    data-testid="upgrade-benefits-popover"
+                  >
+                    <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 border-b border-amber-100">
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-5 h-5 text-amber-600" />
+                        <span className="text-sm font-bold text-amber-900">Premium benefits</span>
+                      </div>
+                      <p className="text-[11.5px] text-amber-800/80 mt-1">
+                        Unlock everything corporates need to find &amp; trust you.
+                      </p>
+                      <p className="text-[12px] font-semibold text-amber-900 mt-2">
+                        &#8377;1,999 + 18% GST = <span className="text-base">&#8377;2,358.82</span>
+                        <span className="font-normal text-amber-700"> /year</span>
+                      </p>
+                    </div>
+                    <ul className="p-4 space-y-2.5 bg-white rounded-b-md">
+                      {[
+                        { icon: TrendingUp, label: "Priority listing in search results" },
+                        { icon: Award,      label: "Top-ranked profile on category pages" },
+                        { icon: Sparkles,   label: "Featured as a Top Recommended profile" },
+                        { icon: ShieldCheck,label: "Verified-expert badge on every interaction" },
+                        { icon: Search,     label: "Higher visibility in IPO-lead matchmaking" },
+                        { icon: Mail,       label: "Direct messaging from corporates (no gatekeeping)" },
+                      ].map((b, i) => (
+                        <li key={i} className="flex items-start gap-2 text-[12px] text-gray-700">
+                          <b.icon className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" strokeWidth={2.2} />
+                          <span>{b.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </HoverCardContent>
+                </HoverCard>
               </div>
             </CardContent>
           </Card>
         </div>
-
-        {/* Payment Popup (Mocked Razorpay) */}
-        <Dialog open={showPayment} onOpenChange={setShowPayment}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-amber-500" /> Premium Membership — Payment
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                <p className="font-semibold text-amber-800">Premium Expert Plan</p>
-                <p className="text-2xl font-bold text-black mt-1">&#8377;4,999 <span className="text-sm text-gray-500 font-normal">/year</span></p>
-                <ul className="mt-3 space-y-1 text-sm text-gray-600">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> Priority listing in search results</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> Premium badge on your profile</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> Access to Advanced Verification</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> Direct contact requests from corporates</li>
-                </ul>
-              </div>
-              <div className="p-3 bg-gray-50 rounded-lg border text-center text-xs text-gray-500">
-                Powered by <span className="font-semibold">Razorpay</span> (MOCKED)
-              </div>
-              <Button onClick={handlePayment} disabled={payLoading} className="w-full h-11 bg-[#1DA1F2] hover:bg-[#1a8cd8]" data-testid="pay-btn">
-                {payLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</> : "Pay & Proceed to Verification"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
       </main>
     </div>
   );

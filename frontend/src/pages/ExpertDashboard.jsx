@@ -68,6 +68,10 @@ const ExpertDashboard = ({ user, apiClient }) => {
   // Payments
   const [payments, setPayments] = useState([]);
 
+  // Premium / advanced data
+  const [premiumData, setPremiumData] = useState(null);
+  const [premiumFiles, setPremiumFiles] = useState([]);
+
   // Support
   const [supportForm, setSupportForm] = useState({ subject: "", message: "" });
   const [tickets, setTickets] = useState([]);
@@ -78,12 +82,13 @@ const ExpertDashboard = ({ user, apiClient }) => {
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [profRes, inboxRes, sentRes, payRes, tktRes] = await Promise.all([
+      const [profRes, inboxRes, sentRes, payRes, tktRes, premRes] = await Promise.all([
         apiClient.get("/matchmaker/expert/my-profile"),
         apiClient.get("/matchmaker/expert/messages/inbox").catch(() => ({ data: { messages: [], unread_count: 0 } })),
         apiClient.get("/matchmaker/expert/messages/sent").catch(() => ({ data: { messages: [] } })),
         apiClient.get("/matchmaker/expert/payments").catch(() => ({ data: { payments: [] } })),
         apiClient.get("/matchmaker/expert/support/tickets").catch(() => ({ data: { tickets: [] } })),
+        apiClient.get("/matchmaker/expert/premium/my-data").catch(() => ({ data: {} })),
       ]);
       const p = profRes.data.profile;
       if (!p) { navigate("/matchmaker/experts/register"); return; }
@@ -94,6 +99,8 @@ const ExpertDashboard = ({ user, apiClient }) => {
       setSent(sentRes.data.messages);
       setPayments(payRes.data.payments);
       setTickets(tktRes.data.tickets);
+      setPremiumData(premRes.data?.premium_data || null);
+      setPremiumFiles(premRes.data?.files || []);
     } catch { toast.error("Failed to load dashboard"); }
     setLoading(false);
   };
@@ -172,7 +179,7 @@ const ExpertDashboard = ({ user, apiClient }) => {
     };
     const upgrade = () => {
       setProfileGated(false);
-      navigate("/matchmaker/experts/verify");
+      navigate("/matchmaker/experts/premium");
     };
     return (
       <div className="flex min-h-screen bg-white" data-testid="expert-profile-gate">
@@ -396,13 +403,70 @@ const ExpertDashboard = ({ user, apiClient }) => {
                           ))}
                         </div>
                       </div>
+                      {/* Premium Advanced Data Section */}
+                      {profile?.is_premium && premiumData && (
+                        <div className="border border-amber-200 bg-amber-50/40 rounded-lg p-4" data-testid="premium-data-section">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <Crown className="w-4 h-4 text-amber-600" />
+                              <span className="text-sm font-bold text-gray-900">Premium Profile Data</span>
+                              <Badge className="bg-green-100 text-green-700 border-green-200 text-[10px]"><ShieldCheck className="w-3 h-3 mr-0.5" /> Verified</Badge>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-[11px] border-amber-200 text-amber-700 hover:bg-amber-100"
+                              onClick={() => navigate("/matchmaker/experts/premium")}
+                              data-testid="manage-premium-btn"
+                            >
+                              <Edit3 className="w-3 h-3 mr-1" /> Manage
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-[12.5px]">
+                            <div>
+                              <span className="text-gray-400 text-[11px] block">Firm Name</span>
+                              <span className="font-medium text-gray-900">{premiumData.firm_name || "—"}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400 text-[11px] block">Primary Area</span>
+                              <span className="font-medium text-gray-900">{AREA_LABELS[premiumData.primary_area] || premiumData.primary_area}</span>
+                            </div>
+                          </div>
+                          {premiumData.primary_identifiers && Object.keys(premiumData.primary_identifiers).length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-amber-200">
+                              <span className="text-gray-400 text-[11px] block mb-1.5 uppercase tracking-wide font-semibold">Primary Identifiers</span>
+                              <div className="grid grid-cols-2 gap-2">
+                                {Object.entries(premiumData.primary_identifiers).filter(([_, v]) => v).map(([k, v]) => (
+                                  <div key={k} className="text-[11.5px]">
+                                    <span className="text-gray-500">{k.replace(/_/g, " ")}:</span>{" "}
+                                    <span className="font-medium text-gray-800 break-all">{v}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {premiumFiles.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-amber-200">
+                              <span className="text-gray-400 text-[11px] block mb-1.5 uppercase tracking-wide font-semibold">Uploaded Documents ({premiumFiles.length})</span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {premiumFiles.map(f => (
+                                  <Badge key={f.file_id} variant="outline" className="bg-white text-[10.5px] border-amber-200 text-gray-700">
+                                    {f.filename}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {!profile?.is_premium && (
                         <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
                           <div>
                             <p className="font-semibold text-sm text-amber-800">Upgrade to Premium</p>
                             <p className="text-xs text-amber-600">Get priority listing, verified badge, and more.</p>
                           </div>
-                          <Button size="sm" className="bg-amber-500 hover:bg-amber-600" onClick={() => navigate("/matchmaker/experts/verify")}>
+                          <Button size="sm" className="bg-amber-500 hover:bg-amber-600" onClick={() => navigate("/matchmaker/experts/premium")}>
                             <Star className="w-3.5 h-3.5 mr-1" /> Upgrade
                           </Button>
                         </div>
