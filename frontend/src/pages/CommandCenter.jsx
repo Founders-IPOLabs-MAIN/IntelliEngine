@@ -304,6 +304,34 @@ const CommandCenter = ({ user, apiClient }) => {
             </button>
           </div>
 
+          {/* Important & Pending — Full-width attention block */}
+          <div className="border-2 border-orange-300 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 mb-3" data-testid="pending-tracker">
+            <div className="flex items-center gap-1.5 mb-2">
+              <AlertTriangle className="w-4 h-4 text-orange-600" />
+              <p className="text-xs font-bold text-orange-800">Important &amp; Pending</p>
+              <span className="text-[10px] text-orange-600/80">Track key blockers and outstanding action items for this project</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {pendingItems.map((item, i) => (
+                <span key={i} className="inline-flex items-center gap-1 text-[11px] font-medium bg-red-100 text-red-700 border border-red-200 rounded-full px-2.5 py-0.5">
+                  {item.label}
+                  <button onClick={() => removePendingItem(i)} className="text-red-400 hover:text-red-700"><Trash2 className="w-2.5 h-2.5" /></button>
+                </span>
+              ))}
+              {pendingItems.length === 0 && (
+                <span className="text-[11px] text-orange-600/70 italic">No pending items — add one below.</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <select onChange={e => { if (e.target.value) { addPendingItem(e.target.value); e.target.value = ""; }}} className="h-7 text-[11px] border border-orange-200 rounded px-2 bg-white w-56">
+                <option value="">+ Add from list</option>
+                {PENDING_OPTIONS.filter(o => !pendingItems.find(p => p.label === o)).map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+              <input type="text" value={customPending} onChange={e => setCustomPending(e.target.value)} placeholder="Or add a custom item…" className="flex-1 h-7 text-[11px] border border-orange-200 rounded px-2" onKeyDown={e => { if (e.key === 'Enter' && customPending.trim()) { addPendingItem(customPending.trim()); setCustomPending(""); }}} />
+              <button onClick={() => { if (customPending.trim()) { addPendingItem(customPending.trim()); setCustomPending(""); }}} className="h-7 px-3 text-[11px] bg-orange-500 text-white rounded hover:bg-orange-600 font-semibold">Add</button>
+            </div>
+          </div>
+
           {/* ═══ PROJECT DASHBOARD ═══ */}
           <div className="bg-white border border-gray-200 rounded-lg p-4" data-testid="project-dashboard">
             <div className="flex items-center justify-between mb-3">
@@ -439,31 +467,7 @@ const CommandCenter = ({ user, apiClient }) => {
                   </div>
                 </div>
 
-                {/* Important & Pending — High Visual */}
-                <div className="border-2 border-orange-300 bg-gradient-to-br from-orange-50 to-amber-50 rounded-md p-2.5" data-testid="pending-tracker">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-orange-600" />
-                    <p className="text-xs font-bold text-orange-800">Important & Pending</p>
-                  </div>
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {pendingItems.map((item, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 text-[10px] font-medium bg-red-100 text-red-700 border border-red-200 rounded-full px-2 py-0.5">
-                        {item.label}
-                        <button onClick={() => removePendingItem(i)} className="text-red-400 hover:text-red-700"><Trash2 className="w-2.5 h-2.5" /></button>
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex gap-1">
-                    <select onChange={e => { if (e.target.value) { addPendingItem(e.target.value); e.target.value = ""; }}} className="flex-1 h-6 text-[10px] border border-orange-200 rounded px-1.5 bg-white">
-                      <option value="">+ Add from list</option>
-                      {PENDING_OPTIONS.filter(o => !pendingItems.find(p => p.label === o)).map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  </div>
-                  <div className="flex gap-1 mt-1">
-                    <input type="text" value={customPending} onChange={e => setCustomPending(e.target.value)} placeholder="Custom item..." className="flex-1 h-6 text-[10px] border border-orange-200 rounded px-1.5" onKeyDown={e => { if (e.key === 'Enter' && customPending.trim()) { addPendingItem(customPending.trim()); setCustomPending(""); }}} />
-                    <button onClick={() => { if (customPending.trim()) { addPendingItem(customPending.trim()); setCustomPending(""); }}} className="h-6 px-2 text-[10px] bg-orange-500 text-white rounded hover:bg-orange-600">Add</button>
-                  </div>
-                </div>
+                {/* (Important & Pending block moved above the Project Dashboard) */}
               </div>
             </div>
 
