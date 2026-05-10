@@ -52,6 +52,8 @@ import BVEngine from "@/pages/BVEngine";
 import BVProjectsLanding from "@/pages/BVProjectsLanding";
 import BVProjectInputs from "@/pages/BVProjectInputs";
 import AdminCenter from "@/pages/AdminCenter";
+import OraclePage from "@/pages/OraclePage";
+import OracleFloatingButton from "@/components/OracleFloatingButton";
 import AdminLogin from "@/pages/AdminLogin";
 import AccessDenied from "@/pages/AccessDenied";
 import AccountDetails from "@/pages/AccountDetails";
@@ -675,6 +677,15 @@ const AppRouter = () => {
           <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <DRHPOutput user={user} apiClient={apiClient} />}
           </ModuleRoute>
+        }
+      />
+
+      <Route
+        path="/oracle"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <OraclePage user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
         }
       />
 

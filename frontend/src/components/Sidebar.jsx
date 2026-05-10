@@ -15,6 +15,7 @@ import {
   Scale,
   CreditCard,
   BarChart3,
+  Bot,
   Save,
   AlertTriangle,
 } from "lucide-react";
@@ -106,6 +107,7 @@ const Sidebar = ({ user, apiClient }) => {
       case "matchmaker": return path.startsWith("/matchmaker");
       case "valuation":
         return path === "/valuation" || path.startsWith("/valuation/");
+      case "oracle": return path.startsWith("/oracle");
       case "admin": return path.startsWith("/admin");
       case "account": return path.startsWith("/account");
       case "payments": return path.startsWith("/payments");
@@ -125,6 +127,7 @@ const Sidebar = ({ user, apiClient }) => {
       label: null,
       items: [
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+        { id: "oracle", label: "Oracle {IPO.GPT}", icon: Bot, path: "/oracle" },
       ],
     },
     {

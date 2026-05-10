@@ -111,6 +111,7 @@ Pygments==2.19.2
 PyJWT==2.12.1
 pymongo==4.9.2
 pyparsing==3.3.2
+pypdf==6.11.0
 pypdfium2==5.7.1
 pyphen==0.17.2
 pytest==9.0.2

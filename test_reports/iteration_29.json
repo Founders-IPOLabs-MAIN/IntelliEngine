@@ -1,0 +1,55 @@
+{
+  "summary": "Comprehensive backend + frontend testing of the new Oracle (IPO.GPT) module. Backend: 14/14 pytest cases pass — auth enforcement (401 without cookies), general chat with Gemini 3 Flash returns full markdown answer + graded references + follow-ups, multi-turn same-thread context, empty-query 400, threads bucketing (pinned/today/yesterday/last_7/last_30/older), GET single thread + messages, PATCH rename + pin, bookmark CRUD, DRHP upload (reportlab-generated PDF) → chunks indexed → DRHP-mode chat answers from chunks, DRHP chat without prior upload returns 400, source grading tier mapping (sebi.gov.in→1, moneycontrol→3, zerodha→4, random→6), thread DELETE cascades. Frontend: /oracle page renders all expected elements (sidebar, 3 tabs, empty-state, sample queries, source filter, send btn, disclaimer), tab switching swaps source-filter for DRHP upload button, sidebar collapse/expand works, sample-query click fills input, chat E2E sends and renders assistant bubble with references + follow-ups + Copy/Download/Bookmark actions, follow-up pill fills input without auto-send, history search filters threads. TWO ISSUES FOUND: (1) CRITICAL — OracleFloatingButton component is imported in App.js but NEVER rendered, so the floating 'Ask Oracle' button does NOT appear on /dashboard or any other authenticated page. (2) MINOR — Copy-to-clipboard fails inside the iframe preview with NotAllowedError: 'Write permission denied'; needs a try/catch + execCommand fallback.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "OracleFloatingButton (App.js)",
+        "issue": "Component is imported (line 56 of App.js) but never rendered in JSX. The floating 'Ask Oracle' bot button is therefore MISSING on /dashboard, /assessment, /matchmaker, etc. Test confirmed count=0 on /dashboard. Must be added inside ProtectedRoute layout (e.g. before <CookieConsent /> on line 186) so it renders on every authenticated page.",
+        "selector": "[data-testid='oracle-floating-btn']",
+        "priority": "HIGH"
+      },
+      {
+        "component": "AssistantBubble.copyMarkdown (OraclePage.jsx)",
+        "issue": "navigator.clipboard.writeText throws 'NotAllowedError: Write permission denied' inside the preview iframe, causing an Uncaught runtime error overlay. Wrap in try/catch and fall back to a hidden textarea + document.execCommand('copy'), and show toast.error on failure instead of crashing.",
+        "selector": "[data-testid='action-copy']",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_oracle.py",
+    "/app/test_reports/pytest/oracle_results.xml"
+  ],
+  "action_items": [
+    "Mount <OracleFloatingButton /> inside ProtectedRoute in /app/frontend/src/App.js (around line 186, before <CookieConsent />), so the floating button renders on every authenticated page except /oracle (the component already self-hides on /oracle).",
+    "Wrap navigator.clipboard.writeText in try/catch in OraclePage.jsx copyMarkdown(); add document.execCommand('copy') fallback or at minimum a graceful toast.error so the runtime-error overlay does not appear."
+  ],
+  "critical_code_review_comments": [
+    "oracle.py is 600 lines and well-structured; could split into oracle_search.py / oracle_llm.py / oracle_drhp.py if it grows further.",
+    "ddg_search uses regex on HTML (fragile if DDG redesigns) — acceptable for MVP but consider duckduckgo-search package for resilience.",
+    "extract_memory_facts is fire-and-forget asyncio.create_task; failure is silently logged (good). However task is not awaited at app shutdown — small risk of dropped writes on supervisor restart.",
+    "PDF parsing uses pypdf only — image-only PDFs return 400 (good UX), but consider OCR fallback for production.",
+    "_safe_json fallback returns answer_markdown=raw text when JSON parsing fails — references will be empty in that case but no crash; correct defensive design.",
+    "Source tier 6 fallback domain stripping uses .lstrip('www.') which strips ALL leading w/./- chars (e.g. 'www.x.com'→'x.com' but also 'wwww.x.com'→'x.com'). Use re.sub(r'^www\\.', '', host) instead for correctness.",
+    "OraclePage.jsx (657 lines) is at the upper limit; consider extracting EmptyState/AssistantBubble/UserBubble into separate files."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_oracle.py"
+  ],
+  "success_rate": {
+    "backend": "100% (14/14)",
+    "frontend": "≈90% — all Oracle page interactions work; floating button missing on other pages and clipboard copy throws in iframe"
+  },
+  "test_credentials": "admin@ipolabs.com / admin@123 (Platform Admin) — used for all backend pytest cases and Playwright UI run.",
+  "seed_data_creation": "Backend pytest creates 2 transient threads (one general chat, one DRHP). The general thread is renamed and pinned then deleted at end. The DRHP thread + its chunks are created but NOT cleaned (test_zz_delete_thread only deletes the general thread). Memory collection may have ≤3 facts auto-extracted from the chat. Bookmarks created and deleted. UI run created 1 additional general thread with 'What is an IPO?' content + 1 bookmark on its assistant message.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Pytest at /app/backend/tests/test_oracle.py covers full Oracle API surface (auth, chat general/multi-turn, threads CRUD, bookmarks, memory, DRHP upload+chat, source grading). Allow ~30s runtime due to real Gemini calls. Frontend remaining gap: after the main agent mounts <OracleFloatingButton /> in ProtectedRoute, retest navigation from /dashboard → click floating btn → /oracle. After the clipboard fix, retest action-copy click does not throw runtime error. Sidebar entry 'Oracle {IPO.GPT}' under workspace section is already present (verified via Playwright text count).",
+  "rca_of_the_issue": "Issue 1 RCA: In /app/frontend/src/App.js, OracleFloatingButton is imported on line 56 but the JSX never references it. The component itself is correct (self-hides on /oracle, navigates onClick) — only the mount point is missing. Reproduction: log in → /dashboard → query [data-testid='oracle-floating-btn'] returns 0 nodes. Mitigation: insert <OracleFloatingButton /> inside the ProtectedRoute return block (after the children call, alongside CookieConsent). Issue 2 RCA: copyMarkdown calls navigator.clipboard.writeText which requires the page to be focused AND served from a secure context with clipboard-write permissions. Inside the preview iframe the permission is denied, and because no try/catch is present, the unhandled promise rejection bubbles to the React error overlay. Mitigation: wrap in try { await navigator.clipboard.writeText(...) } catch (e) { /* fallback */ }."
+}
