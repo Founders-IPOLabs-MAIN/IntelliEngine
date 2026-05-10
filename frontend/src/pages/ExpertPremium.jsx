@@ -176,7 +176,8 @@ const ExpertPremium = ({ user, apiClient }) => {
       });
       toast.success("Advanced data saved! Welcome to Premium.");
       setShowConfirm(false);
-      navigate("/matchmaker/experts/dashboard");
+      // Skip the welcome-gate so the user lands directly on their new premium profile data.
+      navigate("/matchmaker/experts/dashboard?premium=just-activated");
     } catch (e) {
       toast.error(e.response?.data?.detail || "Submit failed");
     }

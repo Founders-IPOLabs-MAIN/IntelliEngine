@@ -6,7 +6,22 @@
 **Platform Type:** Cloud-hosted & secure IPO-readiness platform  
 **Target Market:** Indian market  
 **Date Started:** Feb 17, 2026
-**Last Updated:** Feb 5, 2026
+**Last Updated:** Feb 6, 2026
+
+### Changelog — Feb 6, 2026
+- **MatchMaker Premium Upgrade Flow** (Razorpay-mocked):
+  - New "Upgrade to Premium" button on `/matchmaker/experts/register?edit=1` (replaces old "Premium Option") with hover popover showing benefits + pricing breakdown ₹1,999 + 18% GST = **₹2,358.82/year**
+  - New combined page `/matchmaker/experts/premium` (file `/app/frontend/src/pages/ExpertPremium.jsx`) — 2-step flow: Payment → Advanced Data form
+  - Mock Razorpay flow: `POST /api/matchmaker/expert/premium/initiate-order` → 1.2s mock processing → `POST /api/matchmaker/expert/premium/verify-payment` → marks `is_premium=true` for 365 days
+  - **Advanced Data form**: Firm Name (optional), Primary Area dropdown (15 areas from full SETU expertise catalog), dynamic Primary Identifiers card (mandatory) + Secondary Identifiers card (optional)
+  - Each identifier supports per-file Upload + Delete (PDF/JPG/PNG/DOC/DOCX, **max 5MB**) — files persist to a dedicated **GridFS bucket `matchmaker_uploads`** with strict per-user metadata header (user_id, expert_id, identifier_key, identifier_type, primary_area)
+  - **Confidentiality dialog** before submit (checkbox required) — covers data-storage, sharing terms, audit log, 30-day soft-delete retention, privacy-export contact
+  - **Soft-delete**: deleted files live in `matchmaker_deleted_archive` for 30 days; `scheduled_purge_at` recorded for future automated purge job
+  - **Audit log**: every change (order init, payment verify, advanced data save, file upload, file delete) recorded in `matchmaker_audit_log` with user_id, IP, timestamp
+  - **New collections**: `matchmaker_premium_profiles`, `matchmaker_audit_log`, `matchmaker_payment_orders`, `matchmaker_identifier_files`, `matchmaker_deleted_archive`, `matchmaker_uploads.files`, `matchmaker_uploads.chunks` (clean separation from core expert profile)
+  - On successful submit, dashboard auto-skips the welcome gate and lands user directly on the new "Premium Profile Data" card in the Profile tab
+  - Backend file: `/app/backend/routes/matchmaker_premium.py` (new, 11 endpoints under `/api/matchmaker/expert/premium/*`)
+  - **Tested**: 22/22 backend pytest cases pass; full frontend E2E flow verified (Upgrade → Pay → Advanced Data → Submit → Dashboard)
 
 ### Changelog — Feb 5, 2026
 - **Market Analytics: SME IPO Historical Ingestion (7-year coverage)**

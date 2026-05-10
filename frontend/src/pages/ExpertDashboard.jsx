@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,8 @@ const AREA_LABELS = {
 
 const ExpertDashboard = ({ user, apiClient }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const justActivatedPremium = new URLSearchParams(location.search).get("premium") === "just-activated";
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("profile");
@@ -49,7 +51,8 @@ const ExpertDashboard = ({ user, apiClient }) => {
   // Profile-confirmation gate — shown every time the expert opens this page.
   // Until they click "This is correct — Continue", the rest of the dashboard
   // is hidden. They can also click "Make changes" or "Upgrade to Premium".
-  const [profileGated, setProfileGated] = useState(true);
+  // Auto-skip the gate when the user just finished premium activation.
+  const [profileGated, setProfileGated] = useState(!justActivatedPremium);
 
   // Profile edit
   const [editing, setEditing] = useState(false);
