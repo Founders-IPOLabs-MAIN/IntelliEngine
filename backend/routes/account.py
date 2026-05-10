@@ -28,8 +28,7 @@ DEFAULT_MODULE_PERMISSIONS = {
     "assessment": True,
     "matchmaker": True,
     "drhp": True,
-    "funding": True,
-    "valuation": True
+    "funding": True
 }
 
 ADMIN_EMAIL = "admin@ipolabs.com"

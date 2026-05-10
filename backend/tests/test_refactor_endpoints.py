@@ -233,17 +233,6 @@ class TestMarket:
         assert len(items) > 0
 
 
-# ------------ valuation ------------
-class TestValuation:
-    def test_projects_authenticated(self, session, user_token):
-        r = session.get(f"{API}/valuation/projects", headers=_auth(user_token), timeout=15)
-        assert r.status_code == 200
-
-    def test_projects_requires_auth(self, session):
-        r = _fresh().get(f"{API}/valuation/projects", timeout=15)
-        assert r.status_code in (401, 403)
-
-
 # ------------ careers ------------
 class TestCareers:
     def test_positions(self, session):

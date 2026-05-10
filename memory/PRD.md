@@ -8,6 +8,18 @@
 **Date Started:** Feb 17, 2026
 **Last Updated:** Feb 6, 2026
 
+### Changelog — Feb 6, 2026 (later)
+- **Valuation Module — DELETED entirely** (per user request):
+  - Removed pages: `ValuationModule.jsx`, `ValuationWizard.jsx`, `ValuationResults.jsx`, `BVEngine.jsx`, `BVProjectsLanding.jsx`, `BVProjectInputs.jsx`
+  - Removed libs: `lib/bv_engine.js`, `lib/bv_input_schema.js`, `data/sector_peer_multiples.js`
+  - Removed backend: `routes/valuation.py`, `routes/bv_projects.py`, `valuation_engine.py`, `tests/test_valuation_module.py`, `tests/test_valuation_upload_extract.py`
+  - Removed routes: `/valuation`, `/valuation/:valuationId/wizard`, `/valuation/:valuationId/results`, `/valuation-2`, `/valuation-2/:projectId/inputs`, `/valuation-2/:projectId`, `/valuation1` (Coming-Soon)
+  - Removed Sidebar entries (Valuation, Valuations 2), Dashboard module card, Landing-page module card + footer link + flashing-strip phrase, Pricing-page `valuation_pro` plan, Admin Center module filter & access-source label
+  - Removed `valuation: True` from `DEFAULT_MODULE_PERMISSIONS` (shared.py, account.py), `valid_modules` (admin.py), default perms in auth.py & matchmaker.py
+  - Removed `valuation_pro` plan from payments.py
+  - Cleaned valuation references in `tests/test_rbac_admin_module.py` (5 places) and `tests/test_refactor_endpoints.py` (TestValuation class)
+  - **Kept** (legitimate non-module references): assessment module's PE/DCF valuation calculators, "Registered Valuation Expert (RV)" expertise category in matchmaker, all general-text mentions of valuation in body copy, governance questions, DRHP chapters, Disclaimer, Resources
+
 ### Changelog — Feb 6, 2026
 - **MatchMaker Premium Upgrade Flow** (Razorpay-mocked):
   - New "Upgrade to Premium" button on `/matchmaker/experts/register?edit=1` (replaces old "Premium Option") with hover popover showing benefits + pricing breakdown ₹1,999 + 18% GST = **₹2,358.82/year**

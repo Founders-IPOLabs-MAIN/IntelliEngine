@@ -123,8 +123,8 @@ class TestRegularUserLogin:
         assert "module_permissions" in data, "Response should contain 'module_permissions'"
         perms = data["module_permissions"]
         
-        # Verify all 5 modules are present
-        expected_modules = ["assessment", "matchmaker", "drhp", "funding", "valuation"]
+        # Verify all 4 modules are present
+        expected_modules = ["assessment", "matchmaker", "drhp", "funding"]
         for mod in expected_modules:
             assert mod in perms, f"module_permissions should contain '{mod}'"
             assert isinstance(perms[mod], bool), f"{mod} permission should be boolean"
@@ -226,8 +226,7 @@ class TestAdminUserManagement:
             "assessment": True,
             "matchmaker": True,
             "drhp": new_drhp_value,
-            "funding": False,
-            "valuation": False
+            "funding": False
         }
         
         response = admin_session.put(
@@ -286,10 +285,10 @@ class TestModuleAccessEnforcement:
         
         perms = data.get("module_permissions", {})
         
-        # Default permissions: assessment=true, matchmaker=true, drhp=false, funding=false, valuation=false
+        # Default permissions: assessment=true, matchmaker=true, drhp=false, funding=false
         assert perms.get("assessment") == True, "assessment should be True by default"
         assert perms.get("matchmaker") == True, "matchmaker should be True by default"
-        # Note: drhp, funding, valuation may be false by default unless admin changed them
+        # Note: drhp, funding may be false by default unless admin changed them
         
         print(f"✓ Regular user permissions: {perms}")
         
@@ -307,7 +306,6 @@ class TestModuleAccessEnforcement:
         assert perms.get("matchmaker") == True, "Admin should have matchmaker=True"
         assert perms.get("drhp") == True, "Admin should have drhp=True"
         assert perms.get("funding") == True, "Admin should have funding=True"
-        assert perms.get("valuation") == True, "Admin should have valuation=True"
         
         print(f"✓ Admin user has all permissions: {perms}")
 

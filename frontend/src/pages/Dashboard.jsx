@@ -88,22 +88,6 @@ const MODULES = [
     path: "/matchmaker",
     testid: "module-matchmaker",
   },
-  {
-    id: "valuation",
-    title: "Business Valuation",
-    short: "Valuation engine",
-    desc: "AI-powered DCF, NAV & comparable analysis for accurate, board-ready business valuations.",
-    longIntro:
-      "Run rigorous DCF, NAV and Comparable Company analyses on the same dataset, with reversed FY columns matching your CFO's working file. Tweak peer sets, WACC and terminal growth on the fly, and export boardroom-ready PDF valuation reports SEBI-compliant down to the assumptions footnote.",
-    icon: Scale,
-    accent: "#D97706",
-    accentSoft: "bg-amber-50",
-    accentText: "text-amber-700",
-    accentBorder: "border-amber-200",
-    snap: "/module-snaps/valuation.png",
-    path: "/valuation",
-    testid: "module-valuation",
-  },
 ];
 
 // ─── "Things to do" tasks (welcome / onboarding strip) ───────────────────
@@ -173,7 +157,7 @@ const Dashboard = ({ user, apiClient }) => {
 
   const handleTour = () => {
     if (typeof window !== "undefined") {
-      ["assessment", "drhp", "funding", "matchmaker", "valuation"].forEach((id) =>
+      ["assessment", "drhp", "funding", "matchmaker"].forEach((id) =>
         localStorage.removeItem(`setu_intro_seen_${id}`)
       );
     }

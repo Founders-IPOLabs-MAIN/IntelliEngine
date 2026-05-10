@@ -30,19 +30,6 @@ const MODULE_CONFIG = {
       "Bridge funding facilitation",
       "Curated investor-company matching"
     ]
-  },
-  "/valuation1": {
-    title: "Business Valuation",
-    subtitle: "AI-Powered DCF, NAV & Comparable Analysis",
-    description: "Our automated valuation module with multi-method analysis, AI risk assessment, and regulatory compliance is being refined.",
-    icon: Sparkles,
-    color: "#d97706",
-    features: [
-      "DCF, NAV, Comparable & DDM methods",
-      "GPT-5.2 powered regulatory & risk analysis",
-      "Sensitivity analysis & confidence scoring",
-      "Document upload with AI data extraction"
-    ]
   }
 };
 

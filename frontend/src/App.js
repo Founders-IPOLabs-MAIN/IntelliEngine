@@ -48,17 +48,11 @@ import Assessment from "@/pages/Assessment";
 import AssessmentWizard from "@/pages/AssessmentWizard";
 import AssessmentResults from "@/pages/AssessmentResults";
 import SMESelfAssessment from "@/pages/SMESelfAssessment";
-import BVEngine from "@/pages/BVEngine";
-import BVProjectsLanding from "@/pages/BVProjectsLanding";
-import BVProjectInputs from "@/pages/BVProjectInputs";
 import AdminCenter from "@/pages/AdminCenter";
 import AdminLogin from "@/pages/AdminLogin";
 import AccessDenied from "@/pages/AccessDenied";
 import AccountDetails from "@/pages/AccountDetails";
 import DRHPOutput from "@/pages/DRHPOutput";
-import ValuationModule from "@/pages/ValuationModule";
-import ValuationWizard from "@/pages/ValuationWizard";
-import ValuationResults from "@/pages/ValuationResults";
 import ResourcesPage from "@/pages/ResourcesPage";
 import AdvisorsPage from "@/pages/AdvisorsPage";
 import PricingPage from "@/pages/PricingPage";
@@ -617,30 +611,6 @@ const AppRouter = () => {
         }
       />
       <Route
-        path="/valuation-2"
-        element={
-          <ModuleRoute requiredModule="valuation">
-            {({ user, apiClient }) => <BVProjectsLanding user={user} apiClient={apiClient} />}
-          </ModuleRoute>
-        }
-      />
-      <Route
-        path="/valuation-2/:projectId/inputs"
-        element={
-          <ModuleRoute requiredModule="valuation">
-            {({ user, apiClient }) => <BVProjectInputs user={user} apiClient={apiClient} />}
-          </ModuleRoute>
-        }
-      />
-      <Route
-        path="/valuation-2/:projectId"
-        element={
-          <ModuleRoute requiredModule="valuation">
-            {({ user, apiClient }) => <BVEngine user={user} apiClient={apiClient} />}
-          </ModuleRoute>
-        }
-      />
-      <Route
         path="/assessment/results/:assessmentId"
         element={
           <ModuleRoute requiredModule="assessment">
@@ -677,32 +647,6 @@ const AppRouter = () => {
         element={
           <ModuleRoute requiredModule="drhp" showFooter={false}>
             {({ user, apiClient }) => <DRHPOutput user={user} apiClient={apiClient} />}
-          </ModuleRoute>
-        }
-      />
-
-      {/* Valuation Module */}
-      <Route
-        path="/valuation"
-        element={
-          <ModuleRoute requiredModule="valuation">
-            {({ user, apiClient }) => <ValuationModule user={user} apiClient={apiClient} />}
-          </ModuleRoute>
-        }
-      />
-      <Route
-        path="/valuation/:valuationId/wizard"
-        element={
-          <ModuleRoute requiredModule="valuation" showFooter={false}>
-            {({ user, apiClient }) => <ValuationWizard user={user} apiClient={apiClient} />}
-          </ModuleRoute>
-        }
-      />
-      <Route
-        path="/valuation/:valuationId/results"
-        element={
-          <ModuleRoute requiredModule="valuation" showFooter={false}>
-            {({ user, apiClient }) => <ValuationResults user={user} apiClient={apiClient} />}
           </ModuleRoute>
         }
       />

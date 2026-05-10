@@ -467,7 +467,7 @@ const AdminCenter = ({ user, apiClient }) => {
   );
 
   const getRegModuleLabel = (mod) => {
-    const map = { google_oauth: "Google Sign-in", email_signup: "Email Sign-up", matchmaker: "The Match-Making Platform", assessment: "Assessment", drhp: "DRHP Builder", funding: "Funding", valuation: "Valuation", invited: "Invited" };
+    const map = { google_oauth: "Google Sign-in", email_signup: "Email Sign-up", matchmaker: "The Match-Making Platform", assessment: "Assessment", drhp: "DRHP Builder", funding: "Funding", invited: "Invited" };
     return map[mod] || mod || "—";
   };
 
@@ -475,8 +475,7 @@ const AdminCenter = ({ user, apiClient }) => {
     { key: "matchmaker", label: "The Match-Making Platform", color: "blue" },
     { key: "assessment", label: "Assessment", color: "green" },
     { key: "drhp", label: "DRHP Builder", color: "purple" },
-    { key: "funding", label: "Funding", color: "orange" },
-    { key: "valuation", label: "Valuation", color: "amber" }
+    { key: "funding", label: "Funding", color: "orange" }
   ];
 
   const filteredLogs = auditLogs.filter(log => {

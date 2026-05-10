@@ -32,7 +32,7 @@ def is_master_admin(user_email: str) -> bool:
 
 async def ensure_master_admin_exists():
     """Ensure all central admin users exist in database with correct role"""
-    all_perms = {"assessment": True, "matchmaker": True, "drhp": True, "funding": True, "valuation": True}
+    all_perms = {"assessment": True, "matchmaker": True, "drhp": True, "funding": True}
     for email in CENTRAL_ADMIN_EMAILS:
         existing = await db.users.find_one({"email": email})
         if existing:
