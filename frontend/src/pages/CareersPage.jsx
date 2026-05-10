@@ -159,20 +159,6 @@ const CareersPage = () => {
         )}
       </nav>
 
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-[#003366] via-[#002244] to-[#001a33] text-white py-20 px-8 lg:px-16 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)" }} />
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <Badge className="bg-white/10 text-white/90 border-white/20 mb-6 px-4 py-1.5 text-sm">Join the team building India's IPO Operating System</Badge>
-          <h1 className="text-3xl lg:text-5xl font-bold mb-4 tracking-tight">Build the Future of<br />Indian Capital Markets</h1>
-          <p className="text-white/70 text-lg max-w-2xl mx-auto mb-8">We're a small, high-impact team transforming how companies go public in India. If you're driven by ambition and want to make a real dent in the $100B+ IPO ecosystem, we want to talk.</p>
-          <Button onClick={() => document.getElementById("positions")?.scrollIntoView({ behavior: "smooth" })}
-            className="bg-white text-[#003366] hover:bg-gray-100 rounded-full px-8 py-3 font-semibold text-sm gap-2">
-            View Open Positions <ArrowRight className="w-4 h-4" />
-          </Button>
-        </div>
-      </section>
-
       {/* Values */}
       <section className="py-16 px-8 lg:px-16 bg-gray-50">
         <div className="max-w-5xl mx-auto">
@@ -323,6 +309,20 @@ const CareersPage = () => {
         <a href="mailto:founders.ipolabs@gmail.com?subject=Speculative Application — IPO Labs" className="inline-block">
           <Button className="bg-white text-[#003366] hover:bg-gray-100 rounded-full px-8 font-semibold">Send Resume</Button>
         </a>
+      </section>
+
+      {/* Hero (moved below CTA) */}
+      <section className="bg-gradient-to-br from-[#003366] via-[#002244] to-[#001a33] text-white py-20 px-8 lg:px-16 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%)" }} />
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <Badge className="bg-white/10 text-white/90 border-white/20 mb-6 px-4 py-1.5 text-sm">Join the team building India's IPO Operating System</Badge>
+          <h1 className="text-3xl lg:text-5xl font-bold mb-4 tracking-tight">Build the Future of<br />Indian Capital Markets</h1>
+          <p className="text-white/70 text-lg max-w-2xl mx-auto mb-8">We're a small, high-impact team transforming how companies go public in India. If you're driven by ambition and want to make a real dent in the $100B+ IPO ecosystem, we want to talk.</p>
+          <Button onClick={() => document.getElementById("positions")?.scrollIntoView({ behavior: "smooth" })}
+            className="bg-white text-[#003366] hover:bg-gray-100 rounded-full px-8 py-3 font-semibold text-sm gap-2">
+            View Open Positions <ArrowRight className="w-4 h-4" />
+          </Button>
+        </div>
       </section>
 
       {/* Footer */}
