@@ -54,7 +54,8 @@ def grade_source(url: str) -> dict:
         return {"tier": 6, "label": "Web & Community", "emoji": "⚪", "color": "gray"}
     try:
         m = re.search(r"https?://([^/]+)", url)
-        host = (m.group(1) if m else url).lower().lstrip("www.")
+        host = (m.group(1) if m else url).lower()
+        host = re.sub(r"^www\.", "", host)
     except Exception:
         return {"tier": 6, "label": "Web & Community", "emoji": "⚪", "color": "gray"}
     for domains, meta in SOURCE_TIERS:

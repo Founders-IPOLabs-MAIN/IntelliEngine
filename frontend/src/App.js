@@ -183,6 +183,7 @@ const ProtectedRoute = ({ children, showFooter = true }) => {
       <div className="flex-1">
         {children({ user, apiClient })}
       </div>
+      <OracleFloatingButton />
       <CookieConsent user={user} />
     </div>
   );

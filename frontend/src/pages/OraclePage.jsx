@@ -222,9 +222,27 @@ const OraclePage = ({ user, apiClient }) => {
   };
 
   // ─────────── Export ───────────
-  const copyMarkdown = (m) => {
-    navigator.clipboard.writeText(m.content || "");
-    toast.success("Copied as markdown");
+  const copyMarkdown = async (m) => {
+    const text = m.content || "";
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Copied as markdown");
+    } catch {
+      // Fallback for restricted iframe / older browsers
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        toast.success("Copied as markdown");
+      } catch {
+        toast.error("Copy unavailable in this browser");
+      }
+    }
   };
   const downloadPdf = (m) => {
     // Lightweight: open a print-friendly window — user prints to PDF
