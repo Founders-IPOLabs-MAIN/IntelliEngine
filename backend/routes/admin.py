@@ -461,7 +461,7 @@ async def update_user_permissions(user_id: str, data: dict = Body(...), user: Us
         raise HTTPException(status_code=404, detail="User not found")
 
     permissions = data.get("permissions", {})
-    valid_modules = ["assessment", "matchmaker", "drhp", "funding"]
+    valid_modules = ["assessment", "matchmaker", "drhp", "funding", "valuation"]
     clean_perms = {}
     for mod in valid_modules:
         clean_perms[mod] = bool(permissions.get(mod, DEFAULT_MODULE_PERMISSIONS.get(mod, False)))

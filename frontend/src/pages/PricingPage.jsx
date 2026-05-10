@@ -29,6 +29,12 @@ const PLAN_VISUALS = {
     accent: "from-cyan-50 to-white",
     iconBg: "bg-cyan-100", iconColor: "text-[#00D1FF]",
   },
+  valuation_pro: {
+    group: "Business Valuation",
+    icon: Scale,
+    accent: "from-amber-50 to-white",
+    iconBg: "bg-amber-100", iconColor: "text-amber-600",
+  },
   matchmaker_premium: {
     group: "Match-Making",
     icon: Users,

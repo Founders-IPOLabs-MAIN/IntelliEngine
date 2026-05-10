@@ -50,6 +50,7 @@ from routes.doceditor_proxy import router as doceditor_proxy_router
 from routes.payments import router as payments_router
 from routes.consent import router as consent_router
 from routes.market_analytics import router as market_analytics_router
+from routes.bv_projects import router as bv_projects_router
 
 # ============ INCLUDE ALL ROUTERS ============
 
@@ -74,6 +75,7 @@ api_router.include_router(doceditor_proxy_router)
 api_router.include_router(payments_router)
 api_router.include_router(consent_router)
 api_router.include_router(market_analytics_router)
+api_router.include_router(bv_projects_router)
 
 # ============ ROOT & HEALTH ENDPOINTS ============
 

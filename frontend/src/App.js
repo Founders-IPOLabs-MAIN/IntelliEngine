@@ -48,6 +48,9 @@ import Assessment from "@/pages/Assessment";
 import AssessmentWizard from "@/pages/AssessmentWizard";
 import AssessmentResults from "@/pages/AssessmentResults";
 import SMESelfAssessment from "@/pages/SMESelfAssessment";
+import BVEngine from "@/pages/BVEngine";
+import BVProjectsLanding from "@/pages/BVProjectsLanding";
+import BVProjectInputs from "@/pages/BVProjectInputs";
 import AdminCenter from "@/pages/AdminCenter";
 import AdminLogin from "@/pages/AdminLogin";
 import AccessDenied from "@/pages/AccessDenied";
@@ -607,6 +610,30 @@ const AppRouter = () => {
         element={
           <ModuleRoute requiredModule="assessment">
             {({ user, apiClient }) => <SMESelfAssessment user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/valuation"
+        element={
+          <ModuleRoute requiredModule="valuation">
+            {({ user, apiClient }) => <BVProjectsLanding user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/valuation/:projectId/inputs"
+        element={
+          <ModuleRoute requiredModule="valuation">
+            {({ user, apiClient }) => <BVProjectInputs user={user} apiClient={apiClient} />}
+          </ModuleRoute>
+        }
+      />
+      <Route
+        path="/valuation/:projectId"
+        element={
+          <ModuleRoute requiredModule="valuation">
+            {({ user, apiClient }) => <BVEngine user={user} apiClient={apiClient} />}
           </ModuleRoute>
         }
       />

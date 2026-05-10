@@ -47,6 +47,15 @@ const ALL_MODULES = [
     iconBg: "from-fuchsia-500 to-pink-500",
   },
   {
+    id: "valuation",
+    title: "Business Valuation",
+    tagline: "DCF, NAV & Comparables.",
+    icon: Scale,
+    path: "/login?module=valuation",
+    accent: "from-amber-500/30 to-orange-500/10",
+    iconBg: "from-amber-500 to-orange-500",
+  },
+  {
     id: "funding",
     title: "IPO Funding",
     tagline: "Pre-IPO, Post-IPO & Bridge.",
@@ -79,6 +88,7 @@ const LandingPage = () => {
     "Consult with IPO Experts — in our Match-Making Module",
     "Hire CA's, CFO's, Independent Directors to help fulfil your IPO Dreams!!",
     "TALK to EXPERTS — Start your DRHP",
+    "Run Business Valuations — for FREE!!",
   ];
   const [flashIdx, setFlashIdx] = useState(() => Math.floor(Math.random() * FLASH_MESSAGES.length));
   const [flashKey, setFlashKey] = useState(0);
@@ -556,7 +566,7 @@ const LandingPage = () => {
                 <li><button onClick={() => navigate("/login?module=assessment")} className="hover:text-white transition-colors">IPO Readiness Test</button></li>
                 <li><button onClick={() => navigate("/login?module=matchmaker")} className="hover:text-white transition-colors">Expert Marketplace</button></li>
                 <li><button onClick={() => navigate("/login?module=funding")} className="hover:text-white transition-colors">IPO Funding</button></li>
-                <li><button onClick={() => navigate("/login?module=funding")} className="hover:text-white transition-colors">IPO Funding</button></li>
+                <li><button onClick={() => navigate("/login?module=valuation")} className="hover:text-white transition-colors">Business Valuation</button></li>
               </ul>
             </div>
             <div>

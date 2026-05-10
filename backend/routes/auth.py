@@ -60,7 +60,7 @@ async def process_session(request: Request, session_request: SessionRequest, res
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         if is_admin_user:
-            user_doc["module_permissions"] = {"assessment": True, "matchmaker": True, "drhp": True, "funding": True}
+            user_doc["module_permissions"] = {"assessment": True, "matchmaker": True, "drhp": True, "funding": True, "valuation": True}
             user_doc["is_master_admin"] = True
         await db.users.insert_one(user_doc)
     

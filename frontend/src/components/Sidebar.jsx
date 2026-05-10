@@ -104,6 +104,8 @@ const Sidebar = ({ user, apiClient }) => {
         );
       case "funding": return path.startsWith("/funding");
       case "matchmaker": return path.startsWith("/matchmaker");
+      case "valuation":
+        return path === "/valuation" || path.startsWith("/valuation/");
       case "admin": return path.startsWith("/admin");
       case "account": return path.startsWith("/account");
       case "payments": return path.startsWith("/payments");
@@ -133,6 +135,7 @@ const Sidebar = ({ user, apiClient }) => {
         { id: "drhp", label: "DRHP Builder", icon: FileText, path: null, onClick: handleDRHPClick },
         { id: "funding", label: "IPO Funding", icon: TrendingUp, path: null, onClick: handleFundingClick },
         { id: "matchmaker", label: "Match-Making", icon: Users, path: "/matchmaker" },
+        { id: "valuation", label: "Business Valuation", icon: Scale, path: "/valuation" },
         { id: "market-analytics", label: "Market Analytics", icon: BarChart3, path: "/market-analytics" },
       ],
     },

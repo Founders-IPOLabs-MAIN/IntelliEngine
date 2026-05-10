@@ -73,6 +73,18 @@ PLANS = [
         ],
     },
     {
+        "plan_id": "valuation_pro",
+        "name": "Business Valuation — Pro",
+        "description": "AI-driven DCF, NAV & comparable company valuation reports.",
+        "price": 24999,
+        "highlight": False,
+        "features": [
+            "DCF, NAV, Comparable analysis",
+            "Downloadable boardroom-ready report",
+            "12-month industry benchmark access",
+        ],
+    },
+    {
         "plan_id": "matchmaker_premium",
         "name": "Match-Making Premium",
         "description": "Get featured & directly contact verified IPO experts.",

@@ -74,7 +74,8 @@ DEFAULT_MODULE_PERMISSIONS = {
     "assessment": True,
     "matchmaker": True,
     "drhp": True,
-    "funding": True
+    "funding": True,
+    "valuation": True
 }
 
 # ============ FILE UPLOAD SECURITY ============
@@ -427,7 +428,7 @@ async def audit_admin_cross_access(
 
 
 async def ensure_master_admin_exists():
-    all_perms = {"assessment": True, "matchmaker": True, "drhp": True, "funding": True}
+    all_perms = {"assessment": True, "matchmaker": True, "drhp": True, "funding": True, "valuation": True}
     for email in CENTRAL_ADMIN_EMAILS:
         existing = await db.users.find_one({"email": email})
         if existing:
