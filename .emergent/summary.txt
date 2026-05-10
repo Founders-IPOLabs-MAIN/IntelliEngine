@@ -1,22 +1,21 @@
-<analysis>**original_problem_statement**: The user is building SETU, an IPO-readiness platform. The platform requires unrestricted Central Admin access across all user data/projects. Additionally, the user requested the creation of a SME IPO Self Assessment module with PDF generation, and a massive new BV Engine (Business Valuation) module (under Valuations 2) with Project CRUD, complex financial input tables (P&L, BS, Assumptions), and parallel calculation of DCF, NAV, and Comparable Company valuations. Finally, the DRHP Builder SME board needs to automatically load a predefined default DOCX template upon entry, rendering it via Syncfusion with native high-quality parsing.
-PRODUCT REQUIREMENTS: Maintain dark Nurix.ai aesthetics. Implement rigorous mathematical formulas for the BV engine matching user-provided Excel sheets. Ensure the Syncfusion auto-load executes *every time* a user enters the SME board page without requiring manual file uploads.
+<analysis>**original_problem_statement**: The user is building SETU, an IPO-readiness platform. Previously, the system required unrestricted Central Admin access and the creation of a SME IPO Self Assessment module, a BV Engine, and DRHP Builder auto-loading for DOCX. During this session, the user shifted focus entirely to a massive global UI/UX redesign. PRODUCT REQUIREMENTS: Harmonize the entire app to a pristine white theme with blue hovers, resembling Remote.com, SaaSFrame, and Overflow UI patterns. Introduce a corporate film video player, a strict IP-logged legal/cookie consent system, update the DRHP Document repository constraints (20MB, Excel/Image support, new Section 15), add a gated verification check on the Expert Dashboard, and implement a global Sidebar logout button with a save work confirmation modal.
 
 **User's preferred language**: English (INSTRUCT next agent to respond in English only)
 
-**what currently exists?**: A full-stack React/FastAPI/MongoDB IPO-readiness platform. Features include Market Analytics, DRHP Builder with Syncfusion integration, Assessment Module (including new SME Self-Assessment), and a newly built BV Engine (Business Valuations) with input workflows and parallel evaluation models. Comprehensive cross-user visibility is enabled for Central Admins.
+**what currently exists?**: A fully redesigned full-stack React/FastAPI/MongoDB IPO-readiness platform. The UI has undergone a major transformation to a unified white/light-blue theme ( font,  borders). Features include a new Maze-inspired Payments page, SaaSFrame-inspired Admin/Account pages, Overflow-inspired Login page, global SVG logo deployment, cross-browser MP4/WebM corporate film playback, an IP-tracked cookie/legal consent ledger (), and a gated profile-review flow for Experts.
 
 **Last working item**:
-    - Last item agent was working: Fixing the DRHP Builder default DOCX auto-load rendering quality. The agent previously implemented auto-load using the local python  converter, but the user noted inferior rendering quality compared to manual uploads. The agent just rewrote  to fetch the default DOCX as a blob from the backend and send it through Syncfusion's native  service to ensure perfect rendering quality.
-    - Status: IN PROGRESS
-    - Agent Testing Done: N
+    - Last item agent was working: Implementing a Log Out button on the global Sidebar. Clicking it shows a Save your work confirmation dialog before executing the logout. 
+    - Status: IN PROGRESS (Functionality was completed and smoke-tested, but the pod hit a memory limit and terminated immediately after).
+    - Agent Testing Done: Y
     - Which testing method agent to use? Screenshot tool
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
   Issue 1: DRHP Syncfusion Auto-load high-quality rendering (Priority: P0)
-     - Attempted fixes: Agent rewrote  to fetch  as a blob and POST it to the Syncfusion DocumentEditor  URL.
-     - Next debug checklist: Check . Verify that when navigating to the SME Board DRHP, the default DOCX successfully fetches, processes through Syncfusion, and renders beautifully. Ensure this triggers *every time* the user visits the page, as requested by the user.
-     - Why fix this issue and what will be achieved with the fix? Provides the user with a ready-to-edit, high-fidelity DRHP template without forcing them to manually upload a DOCX.
+     - Attempted fixes: An earlier agent rewrote  to fetch  as a blob and POST it to the Syncfusion DocumentEditor  URL. *The current agent was completely side-tracked by a massive wave of UI requests from the user and never tested this.*
+     - Next debug checklist: Check . Verify that when navigating to the SME Board DRHP, the default DOCX successfully fetches, processes through Syncfusion, and renders beautifully. Ensure this triggers *every time* the user visits the page.
+     - Why fix this issue and what will be achieved with the fix? Provides the user with a ready-to-edit, high-fidelity DRHP template. 
      - Status: TESTING PENDING
      - Is recurring issue? N
      - Should Test frontend/backend/both after fix? Frontend (Screenshot)
@@ -27,17 +26,17 @@ PRODUCT REQUIREMENTS: Maintain dark Nurix.ai aesthetics. Implement rigorous math
      - Next debug checklist: N/A - Paused by user previously.
      - Why fix this issue and what will be achieved with the fix? Unblocks RTA expert registration.
      - Status: BLOCKED (User explicitly asked to stop this session on RTA for now).
-     - Is recurring issue? Y (Recurred 7 times)
+     - Is recurring issue? Y
      - Should Test frontend/backend/both after fix? Frontend
      - Blocked on other issue: Paused by User.
 
-**In progress Task List**: None active other than Issue 1.
+**In progress Task List**: None active (Logout was just finished before pod restart).
 
 **Upcoming and Future Tasks**:
     Upcoming Tasks:
     - P0: DRHP Data Synchronization: Backend logic to automatically sync data from Centralised Corporate Repository to Main DRHP Chapters.
     - P1: Map Imported Word Document to Structured Chapter Modules in the DRHP section.
-    - P1: Wire the Contact Me button on the Experts browse page to the newly built messaging system.
+    - P1: Wire the Contact Me button on the Experts browse page to the messaging system.
     - P1: Add click-through routing to the Landing Page Flashing Strip phrases to their respective modules.
     - P2: Technical SEO Foundational Setup (, JSON-LD, ).
     - P2: Market Analytics Empirical Ingestion: Replace heuristic anchor investor matching with real scraped data.
@@ -45,16 +44,18 @@ PRODUCT REQUIREMENTS: Maintain dark Nurix.ai aesthetics. Implement rigorous math
     - Populate full Advisors pages.
 
 **Completed work in this session**
-- Reverted flawed SFDT fetch logic in  and  (DONE).
-- Central Admin Unrestricted Access: Updated , , , , etc., allowing cross-user visibility for admins (DONE).
-- Landing Page: Reduced top hero padding (gap above text) by 6 Tailwind counts (DONE).
-- SME IPO Self-Assessment (): Created board toggle, yes/no checklists, inline score, and PDF export with company branding via jsPDF (DONE).
-- BV Engine (, , ): Built full project CRUD, 3-tab financial inputs (PL/BS/Assumptions), and parallel DCF/NAV/Comparable Company valuation outputs (DONE).
-- BV Engine Tweaks: Adjusted peer multiples logic (3 Large, 1 Mid, 1 Median), reversed FY column rendering (FY26 on left), replaced Lakhs with Lacs (DONE).
-- DRHP Default DOCX: Uploaded user's  to backend assets and fixed float parsing bugs in python  (DONE).
+- Global UI redesign: Removed dark themes, applied pristine white backgrounds,  fonts, and unified blue hover effects across , 5 main module landing pages, , and  (DONE).
+- Redesigned  using Maze pricing inspiration (DONE).
+- Redesigned  using Overflow inspiration, including a custom SVG cartoon illustration and Remember Me (DONE).
+- Integrated new  globally and tweaked padding/spacing extensively on the landing page (DONE).
+- Added 90-sec Corporate Film to landing page with H.264 (2.8MB) and WebM (4.9MB) transcoded fallbacks for cross-browser autoplay (DONE).
+- Built IP-tracked Cookie & Legal Consent engine () handling Indemnification, Liability, and As-Is clauses (DONE).
+- Updated DRHP Document Repository: Raised limit to 20MB, allowed Excel/Images, rewrote helper copy, and added Section 15 - Images and Pictures to  (DONE).
+- Gated the  so returning experts must review/edit their profile () before accessing the dashboard (DONE).
+- Added Sidebar Log out button with Save before logout confirmation dialog (DONE).
 
 **Earlier issues found/mentioned but not fixed**
-   - None explicitly discovered during this session.
+   - Issue 1: DRHP Syncfusion Auto-load logic remains untested from two sessions ago. The user flooded the agent with UI changes, skipping verification.
 
 **Known issue recurrence from previous fork**
   - Issue recurrence in previous fork: Professional Registration Next button bug (RTA category).
@@ -65,18 +66,21 @@ PRODUCT REQUIREMENTS: Maintain dark Nurix.ai aesthetics. Implement rigorous math
 
 
 **Key Technical Concepts**
-- **Frontend:** React, Tailwind CSS, Syncfusion EJ2 React DocumentEditor, jsPDF/html2canvas for client-side PDF generation.
+- **Frontend:** React, Tailwind CSS, Syncfusion EJ2. Massive UI harmonization completed using consistent Tailwind classes.
 - **Backend:** Python, FastAPI, Motor (Async MongoDB).
-- **Valuation Math:** Highly structured DCF (Sum PV FCFFs, Terminal Value), NAV (asset adjustments), and Comparable multiples derived from local static maps.
+- **Consent Ledger:** New  tracks user IP and ID for GDPR/legal tracking.
 
 **key DB schema**
   - : 
+  - : 
 
 **changes in tech stack**
-  - Added  and  for frontend PDF generation.
+  - Added FFmpeg to pod environment to compress/transcode user-provided MP4 files to WebM for cross-browser fallback.
 
 **All files of reference** 
-  -  (CURRENT CRITICAL FOCUS)
+  -  (PENDING P0 VERIFICATION)
+  -  (Logout flow)
+  -  
   - 
   - 
   - 
@@ -84,44 +88,41 @@ PRODUCT REQUIREMENTS: Maintain dark Nurix.ai aesthetics. Implement rigorous math
   - 
 
 **Areas that need refactoring**: 
-  - Syncfusion Editor implementation is getting heavy with auto-hydration logic nested within component mount lifecycles. Ensure race conditions are managed gracefully.
+  - The agent was interrupted by a memory limit crash just as the Logout modal was finished. Verify it works smoothly.
+  - DRHP Syncfusion Auto-load (P0) is completely untested.
 
 **key api endpoints**
-  -  (Returns raw DOCX blob for Syncfusion Import)
-  -  (Legacy python parser route)
-  -  and 
+  -  (Logs legal agreements)
+  -  (Updates existing expert profiles)
+  -  
 
 **Critical Info for New Agent** 
-- **Syncfusion Auto-Load:** The user was extremely specific: the SME Board DRHP page must execute the auto-load *every time* the user enters the page. The previous agent switched from a Python SFDT converter to downloading the DOCX blob and sending it directly to Syncfusion's native   API to guarantee perfect rendering quality. **You must test this immediately to ensure it doesn't infinite loop and renders correctly.**
-- **Central Admin Checking:**  is now the standard for allowing users to see cross-user data across the platform (projects, document repo, BV engine).
-- **FY Order Reversal:** In the BV engine, internal arrays store data chronologically (FY24, FY25, FY26), but the frontend forces display in reverse (FY26 on the left). Maintain this visual separation of concerns.
+- **User Distraction:** The previous agent failed to test the P0 issue (Syncfusion Auto-Load) because the user immediately commanded them to completely redesign the UI. **You MUST prioritize verifying the  auto-load logic before taking on new UI requests.**
+- **UI Design Language:** The app is now strictly styled. Do not use dark modes for cards. Use pristine white backgrounds ( or ),  borders,  font, and a specific unified blue hover effect for interactive elements ().
+- **Memory Limit:** The previous pod crashed due to an Out of Memory error during the very last step. You are on a larger machine now.
 
 **documents and test reports created in this job**
-  -  (Updated)
-  -  (Updated)
+  - None modified directly (relying on code changes).
 
 **Last 10 User Messages and any pending HUMAN messages** 
- - 10. **Request**: Make Valuations 2 sidebar active highlighting work.
- - 9. **Request**: Give Admins complete access to view other BV projects.
- - 8. **Request**: Change BV landing page to match the Assessment landing page design.
- - 7. **Request**: Modify BV peer set, add sector dropdown, modify Lakhs to Lacs, reverse FY display order.
- - 6. **Request**: If I give you a figma will you change the entire page flow accordingly (Agent replied with instructions).
- - 5. **Request**: Make DRHP Builder -> SME Board automatically load a predefined DOCX and render via Syncfusion every time a user enters the page.
- - 4. **Request**: continue (allowing agent to proceed with DRHP implementation).
- - 3. **Request**: continue (allowing agent to proceed).
- - 2. **Request**: User noted rendering/parsing quality of the automatic load is lower than manual upload. Instructed system to reuse the exact same upload->parse->render process (Syncfusion native Import API) automatically.
- - 1. **PENDING**: Test and verify the rewritten  successfully fetches the DOCX blob and renders via the Syncfusion  API.
+ - 10. **Request**: Change login page to match Overflow reference, add cartoon, remember me, specific roles, footer tabs.
+ - 9. **Request**: Adjust sizes, paddings, margins of login logo and cartoon illustration (Multiple iterations).
+ - 8. **Request**: In  Document Repository, update file limits to 20MB, add Excel/Images support, rewrite helper text, and add Section 15 - Images and Pictures.
+ - 7. **Request**: In , gate the dashboard so existing users must review/edit their profile first. Add hover state with premium benefits to an upgrade button.
+ - 6. **Request**: When clicking Make changes on the expert gate, redirect to the registration form in edit mode to allow updating specific fields.
+ - 5. **Request**: Add a Log out button on the dashboard sidebar that prompts a Save your works pop-up before logging out.
+ - 4. **PENDING/SYSTEM**: Memory limit exceeded, pod restarted. Agent needs to confirm the Logout modal works and finally tackle the neglected P0 DRHP issue.
 
 **Project Health Check:**
 - Broken: RTA Professional Registration Next button bug (P2 - Paused).
-- Unverified: Syncfusion native  auto-load logic.
+- Unverified: Syncfusion native  auto-load logic (P0).
 
 **3rd Party Integrations**
-	 •	Emergent LLM Key (AI Document Extraction / Claude Sonnet / GPT-5.2) — *Applicable for SEO/Rationale tasks*
+	 •	Emergent LLM Key (AI Document Extraction / Claude Sonnet / GPT-5.2)
 	 •	Emergent-managed Google Auth
-	 •	Syncfusion EJ2 Document Editor (Licensed Public Cloud) — *Extensively used for current P0 issue*
+	 •	Syncfusion EJ2 Document Editor (Licensed Public Cloud) — *Critical P0 issue pending here*
      •  Razorpay (Payments) — *Requires User API Key*
-     •  Resend (Email) — *Mocked currently*
+     •  Resend (Email) 
 
 **Testing status**
   - Testing agent used after significant changes: NO (relied on curl and screenshot validation).
@@ -132,18 +133,16 @@ PRODUCT REQUIREMENTS: Maintain dark Nurix.ai aesthetics. Implement rigorous math
 **Credentials to test flow:**
 - Admin:  / 
 - Master Admin:  / 
-- Neeraj Admin: 
 
 **What agent forgot to execute**
-- The agent was in the middle of saving the newly edited  to use the  Syncfusion import API but did not execute a screenshot test to verify it successfully renders the . The next agent *must* verify this flow immediately upon startup.
-- The user requested the auto-load to run every time the user enters this page. The agent previously implemented a safety check to only auto-load if the project has *no* saved SFDT. The next agent should clarify or ensure this behavior meets the user's literal request.
+- The agent **STILL did not test the DRHP Syncfusion Auto-load high-quality rendering (P0)** from the previous session due to the user's immediate pivot to UI redesigns. The next agent must verify it.
 
 **Debugging checklist for current issue**
     Issue: DRHP Syncfusion Auto-load high-quality rendering (P0)
 
     Frontend files to check: 
-    -  (Look at the  handling initialization and the  to the  service).
-    -  (Look at how it mounts the editor component).
+    -  
+    -  
   
     Backend files to check:
-    -  (Ensure  returns the correct FileResponse blob).</analysis>
+    -  (Ensure  works natively with the Syncfusion  API without infinite loops).</analysis>
