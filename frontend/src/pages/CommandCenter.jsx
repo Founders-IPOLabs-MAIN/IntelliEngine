@@ -19,6 +19,7 @@ import {
   Trash2,
   Calendar,
   AlertTriangle,
+  CheckCircle2,
   Briefcase,
   Users,
   UserCircle2,
@@ -26,10 +27,62 @@ import {
   Save
 } from "lucide-react";
 
-const PENDING_OPTIONS = [
-  "Shares Demat", "Private to Public", "KMP Appointments",
-  "Indp. Directors Appointment", "RTA Process", "Funding",
-  "Audit Reports", "Website", "Payments"
+// Categorised pre-IPO checklist — used by the "Important & Pending" tracker.
+// Each header in this map gets its own column-1 dropdown option.
+// Column-2 dropdown is populated dynamically from the selected header's items.
+const PENDING_CHECKLIST = {
+  "Corporate Structure": [
+    "Private to Public conversion completed and fresh COI obtained",
+    "MoA and AoA updated and filed with ROC",
+    "Share capital restated and all historical allotments documented",
+    "All shares dematerialised (ISIN obtained, tripartite agreement signed)",
+    "Promoter shares dematerialised at least 6 months before DRHP filing",
+  ],
+  "Board & Governance": [
+    "Board composition meets Companies Act and SEBI LODR requirements",
+    "All director DINs obtained and DIR-3 KYC up to date",
+    "At least 1 female Director appointed",
+    "Independent Directors registered on IICA databank",
+    "All 4 mandatory committees constituted with proper composition",
+    "Committee charters / terms of reference documented",
+  ],
+  "Regulatory & Administrative": [
+    "All bank accounts KYC-updated and dormant accounts closed",
+    "IPO-related bank accounts opened (Issue Account, Escrow, Refund Account)",
+    "All office premises geotagged and addresses consistent across all registrations",
+    "All pending IT returns filed and demand notices resolved",
+    "GST returns up to date and no outstanding demands",
+    "All FEMA / RBI filings (FC-GPR, APR, FLA) submitted and acknowledged",
+    "All trademarks and IP assets registered in company's name",
+    "All required sector-specific licenses obtained and current",
+  ],
+  "Financial": [
+    "Restated Financial Statements prepared and Accountant's Report obtained",
+    "ESOP plans in compliance with SEBI regulations",
+    "Objects of the Issue and use of proceeds certified by CA",
+    "KPI disclosure framework prepared (at least 5 operational KPIs)",
+  ],
+  "IPO Process": [
+    "BRLM appointed and engagement letter signed",
+    "RTA appointed and SEBI registration confirmed",
+    "Legal counsels appointed (company's and BRLM's)",
+    "DRHP drafted, reviewed, and filed with SEBI",
+    "SEBI queries responded to and observations received",
+    "Price band determined and RHP filed with ROC and exchanges",
+    "Statutory advertisements published in English and regional language newspapers",
+    "Anchor investor allocation completed (if applicable)",
+    "Subscription opened and monitored for 3 days",
+    "Basis of Allotment finalised and approved",
+    "Shares credited to allottees and listing day trading commenced",
+  ],
+};
+const PENDING_CATEGORIES = Object.keys(PENDING_CHECKLIST);
+
+const PENDING_STATUSES = [
+  { value: "completed",           label: "Completed",                                tone: "green"  },
+  { value: "completed_uploaded",  label: "Completed & Uploaded to the Repository",   tone: "green"  },
+  { value: "pending",             label: "Pending",                                  tone: "lightred" },
+  { value: "pending_urgent",      label: "Pending & Urgent",                         tone: "deepred"  },
 ];
 
 const BOARD_OPTIONS = ["BSE SME", "NSE Emerge", "NSE Main", "BSE Main"];
@@ -94,6 +147,9 @@ const CommandCenter = ({ user, apiClient }) => {
   const [boardSelection, setBoardSelection] = useState("");
   const [pendingItems, setPendingItems] = useState([]);
   const [customPending, setCustomPending] = useState("");
+  const [pendingCategory, setPendingCategory] = useState("");
+  const [pendingItemSel, setPendingItemSel] = useState("");
+  const [pendingStatus, setPendingStatus]   = useState("");
   const [issueType, setIssueType] = useState("");
   const [pricingMethod, setPricingMethod] = useState("");
   const [salesType, setSalesType] = useState("");
@@ -161,10 +217,13 @@ const CommandCenter = ({ user, apiClient }) => {
   const addKeyData = () => setClientKeyData([...clientKeyData, { role: "", name: "", email: "", mobile: "" }]);
   const removeKeyData = (i) => setClientKeyData(clientKeyData.filter((_, idx) => idx !== i));
 
-  const addPendingItem = (item) => {
-    if (item && !pendingItems.find(p => p.label === item)) {
-      setPendingItems([...pendingItems, { label: item, status: "pending" }]);
-    }
+  const addPendingItem = (category, item, status) => {
+    if (!category || !item || !status) return;
+    // dedupe on (category + item) — re-adding the same item with a new status updates its status
+    setPendingItems((prev) => {
+      const filtered = prev.filter((p) => !(p.category === category && p.label === item));
+      return [...filtered, { category, label: item, status }];
+    });
   };
   const removePendingItem = (i) => setPendingItems(pendingItems.filter((_, idx) => idx !== i));
 
@@ -308,32 +367,169 @@ const CommandCenter = ({ user, apiClient }) => {
             </button>
           </div>
 
-          {/* Important & Pending — Full-width attention block */}
+          {/* Important & Pending — Full-width attention block (3 cascading dropdowns) */}
           <div className="border-2 border-orange-300 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 mb-3" data-testid="pending-tracker">
-            <div className="flex items-center gap-1.5 mb-2">
+            <div className="flex items-center gap-1.5 mb-2.5">
               <AlertTriangle className="w-4 h-4 text-orange-600" />
               <p className="text-xs font-bold text-orange-800">Important &amp; Pending</p>
-              <span className="text-[10px] text-orange-600/80">Track key blockers and outstanding action items for this project</span>
+              <span className="text-[10px] text-orange-600/80">Track every pre-IPO action item — by category, then by checklist line, then by status.</span>
             </div>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {pendingItems.map((item, i) => (
-                <span key={i} className="inline-flex items-center gap-1 text-[11px] font-medium bg-red-100 text-red-700 border border-red-200 rounded-full px-2.5 py-0.5">
-                  {item.label}
-                  <button onClick={() => removePendingItem(i)} className="text-red-400 hover:text-red-700"><Trash2 className="w-2.5 h-2.5" /></button>
-                </span>
-              ))}
-              {pendingItems.length === 0 && (
-                <span className="text-[11px] text-orange-600/70 italic">No pending items — add one below.</span>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <select onChange={e => { if (e.target.value) { addPendingItem(e.target.value); e.target.value = ""; }}} className="h-7 text-[11px] border border-orange-200 rounded px-2 bg-white w-56">
-                <option value="">+ Add from list</option>
-                {PENDING_OPTIONS.filter(o => !pendingItems.find(p => p.label === o)).map(o => <option key={o} value={o}>{o}</option>)}
+
+            {/* 3 cascading dropdowns + Add */}
+            <div className="flex flex-wrap gap-2 mb-2">
+              <select
+                value={pendingCategory}
+                onChange={(e) => { setPendingCategory(e.target.value); setPendingItemSel(""); }}
+                className="h-8 text-[12px] border border-orange-200 rounded-md px-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300 min-w-[180px]"
+                data-testid="pending-category-select"
+              >
+                <option value="">1. Category…</option>
+                {PENDING_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
-              <input type="text" value={customPending} onChange={e => setCustomPending(e.target.value)} placeholder="Or add a custom item…" className="flex-1 h-7 text-[11px] border border-orange-200 rounded px-2" onKeyDown={e => { if (e.key === 'Enter' && customPending.trim()) { addPendingItem(customPending.trim()); setCustomPending(""); }}} />
-              <button onClick={() => { if (customPending.trim()) { addPendingItem(customPending.trim()); setCustomPending(""); }}} className="h-7 px-3 text-[11px] bg-orange-500 text-white rounded hover:bg-orange-600 font-semibold">Add</button>
+
+              <select
+                value={pendingItemSel}
+                onChange={(e) => setPendingItemSel(e.target.value)}
+                disabled={!pendingCategory}
+                className="h-8 text-[12px] border border-orange-200 rounded-md px-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300 flex-1 min-w-[260px] disabled:bg-gray-50 disabled:text-gray-400"
+                data-testid="pending-item-select"
+              >
+                <option value="">2. Checklist item…</option>
+                {(PENDING_CHECKLIST[pendingCategory] || []).map((it) => (
+                  <option key={it} value={it}>{it}</option>
+                ))}
+              </select>
+
+              <select
+                value={pendingStatus}
+                onChange={(e) => setPendingStatus(e.target.value)}
+                disabled={!pendingItemSel}
+                className="h-8 text-[12px] border border-orange-200 rounded-md px-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300 min-w-[230px] disabled:bg-gray-50 disabled:text-gray-400"
+                data-testid="pending-status-select"
+              >
+                <option value="">3. Status…</option>
+                {PENDING_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+
+              <button
+                onClick={() => {
+                  if (pendingCategory && pendingItemSel && pendingStatus) {
+                    addPendingItem(pendingCategory, pendingItemSel, pendingStatus);
+                    setPendingItemSel(""); setPendingStatus("");
+                  }
+                }}
+                disabled={!(pendingCategory && pendingItemSel && pendingStatus)}
+                className="h-8 px-3.5 text-[11.5px] bg-orange-500 text-white rounded-md hover:bg-orange-600 font-semibold disabled:bg-gray-300 disabled:cursor-not-allowed"
+                data-testid="pending-add-btn"
+              >
+                + Add
+              </button>
             </div>
+
+            {/* Optional custom-item row */}
+            <div className="flex gap-2 mb-3 items-center">
+              <input
+                type="text"
+                value={customPending}
+                onChange={(e) => setCustomPending(e.target.value)}
+                placeholder="Or add a custom item under the selected category…"
+                disabled={!pendingCategory}
+                className="flex-1 h-7 text-[11.5px] border border-orange-200 rounded-md px-2.5 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && customPending.trim() && pendingCategory && pendingStatus) {
+                    addPendingItem(pendingCategory, customPending.trim(), pendingStatus);
+                    setCustomPending("");
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (customPending.trim() && pendingCategory && pendingStatus) {
+                    addPendingItem(pendingCategory, customPending.trim(), pendingStatus);
+                    setCustomPending("");
+                  }
+                }}
+                disabled={!(customPending.trim() && pendingCategory && pendingStatus)}
+                className="h-7 px-3 text-[11px] bg-white border border-orange-300 text-orange-700 rounded-md hover:bg-orange-50 font-semibold disabled:opacity-50"
+              >
+                Add Custom
+              </button>
+            </div>
+
+            {/* Status-grouped trackers */}
+            {(() => {
+              const groups = {
+                pending_urgent:     pendingItems.filter((p) => p.status === "pending_urgent"),
+                pending:            pendingItems.filter((p) => p.status === "pending"),
+                completed_uploaded: pendingItems.filter((p) => p.status === "completed_uploaded"),
+                completed:          pendingItems.filter((p) => p.status === "completed"),
+              };
+              const renderGroup = (key, title, palette) => groups[key].length > 0 && (
+                <div key={key} className={`rounded-md border ${palette.box} p-2.5`}>
+                  <div className={`flex items-center gap-1.5 mb-1.5 text-[10.5px] font-bold uppercase tracking-wide ${palette.title}`}>
+                    {palette.icon}
+                    {title}
+                    <span className={`text-[10px] font-semibold ${palette.count} rounded-full px-1.5`}>{groups[key].length}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {groups[key].map((p, i) => {
+                      const idx = pendingItems.findIndex((x) => x === p);
+                      return (
+                        <span
+                          key={`${p.category}-${p.label}-${i}`}
+                          className={`inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2.5 py-0.5 border ${palette.chip}`}
+                          title={p.category}
+                        >
+                          <span className="opacity-60 text-[9.5px] uppercase tracking-wide font-bold">{(p.category || "").slice(0, 3)}</span>
+                          <span>{p.label}</span>
+                          <button onClick={() => removePendingItem(idx)} className={palette.x}><Trash2 className="w-2.5 h-2.5" /></button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+              const anyItems = pendingItems.length > 0;
+              return (
+                <div className="space-y-2">
+                  {renderGroup("pending_urgent", "Pending & Urgent", {
+                    box:   "border-red-300 bg-red-50",
+                    title: "text-red-800",
+                    count: "bg-red-200 text-red-900",
+                    chip:  "bg-red-600 text-white border-red-700",
+                    x:     "text-red-100 hover:text-white",
+                    icon:  <AlertTriangle className="w-3.5 h-3.5 text-red-700" />,
+                  })}
+                  {renderGroup("pending", "Pending", {
+                    box:   "border-rose-200 bg-rose-50",
+                    title: "text-rose-700",
+                    count: "bg-rose-200 text-rose-800",
+                    chip:  "bg-rose-100 text-rose-700 border-rose-200",
+                    x:     "text-rose-400 hover:text-rose-700",
+                    icon:  <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />,
+                  })}
+                  {renderGroup("completed_uploaded", "Completed & Uploaded", {
+                    box:   "border-emerald-200 bg-emerald-50",
+                    title: "text-emerald-800",
+                    count: "bg-emerald-200 text-emerald-900",
+                    chip:  "bg-emerald-100 text-emerald-700 border-emerald-200",
+                    x:     "text-emerald-400 hover:text-emerald-700",
+                    icon:  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />,
+                  })}
+                  {renderGroup("completed", "Completed", {
+                    box:   "border-gray-200 bg-white",
+                    title: "text-gray-700",
+                    count: "bg-gray-200 text-gray-700",
+                    chip:  "bg-gray-100 text-gray-700 border-gray-200",
+                    x:     "text-gray-400 hover:text-gray-700",
+                    icon:  <CheckCircle2 className="w-3.5 h-3.5 text-gray-500" />,
+                  })}
+                  {!anyItems && (
+                    <p className="text-[11.5px] text-orange-600/70 italic px-1">No items yet — pick a category, a checklist line and a status, then click <span className="font-semibold">Add</span>.</p>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* ═══ PROJECT WORKSPACE — Unified Dashboard + Key Personnel ═══ */}
