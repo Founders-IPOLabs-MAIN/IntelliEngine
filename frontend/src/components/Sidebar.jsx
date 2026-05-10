@@ -16,6 +16,8 @@ import {
   CreditCard,
   BarChart3,
   Bot,
+  Brain,
+  ShieldAlert,
   Save,
   AlertTriangle,
 } from "lucide-react";
@@ -111,7 +113,9 @@ const Sidebar = ({ user, apiClient }) => {
       case "admin": return path.startsWith("/admin");
       case "account": return path.startsWith("/account");
       case "payments": return path.startsWith("/payments");
-      case "market-analytics": return path.startsWith("/market-analytics");
+      case "deep-market-research": return path.startsWith("/deep-market-research") || path.startsWith("/market-analytics");
+      case "drhp-intelligence":     return path.startsWith("/drhp-intelligence");
+      case "fraud-risk-analytics":  return path.startsWith("/fraud-risk-analytics");
       default: return false;
     }
   };
@@ -139,7 +143,15 @@ const Sidebar = ({ user, apiClient }) => {
         { id: "funding", label: "IPO Funding", icon: TrendingUp, path: null, onClick: handleFundingClick },
         { id: "matchmaker", label: "Match-Making", icon: Users, path: "/matchmaker" },
         { id: "valuation", label: "Business Valuation", icon: Scale, path: "/valuation" },
-        { id: "market-analytics", label: "Market Analytics", icon: BarChart3, path: "/market-analytics" },
+      ],
+    },
+    {
+      id: "deep-tech",
+      label: "Deep-Tech Modules (Coming Soon)",
+      items: [
+        { id: "deep-market-research",  label: "Deep Market Research",     icon: BarChart3, path: "/deep-market-research" },
+        { id: "drhp-intelligence",     label: "DRHP Intelligence",        icon: Brain,     path: "/drhp-intelligence" },
+        { id: "fraud-risk-analytics",  label: "Fraud & Risk Analytics",   icon: ShieldAlert, path: "/fraud-risk-analytics" },
       ],
     },
     {
@@ -234,7 +246,7 @@ const Sidebar = ({ user, apiClient }) => {
         {sections.map((sec, idx) => (
           <div key={sec.id} className={`space-y-0.5 ${idx === 0 ? "" : "mt-6"}`}>
             {sec.label && (
-              <div className="px-2.5 pb-2 text-[12px] font-semibold tracking-[0.12em] uppercase text-gray-500">
+              <div className="px-2.5 pb-2 text-[12px] font-bold tracking-[0.12em] uppercase text-[#1DA1F2]">
                 {sec.label}
               </div>
             )}

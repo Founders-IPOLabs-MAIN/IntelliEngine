@@ -54,6 +54,7 @@ import BVProjectInputs from "@/pages/BVProjectInputs";
 import AdminCenter from "@/pages/AdminCenter";
 import OraclePage from "@/pages/OraclePage";
 import OracleFloatingButton from "@/components/OracleFloatingButton";
+import DeepTechComingSoon from "@/pages/DeepTechComingSoon";
 import AdminLogin from "@/pages/AdminLogin";
 import AccessDenied from "@/pages/AccessDenied";
 import AccountDetails from "@/pages/AccountDetails";
@@ -683,6 +684,30 @@ const AppRouter = () => {
         element={
           <ProtectedRoute>
             {({ user, apiClient }) => <OraclePage user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/deep-market-research"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <MarketAnalytics user={user} apiClient={apiClient} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/drhp-intelligence"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <DeepTechComingSoon user={user} apiClient={apiClient} variant="drhp" />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/fraud-risk-analytics"
+        element={
+          <ProtectedRoute>
+            {({ user, apiClient }) => <DeepTechComingSoon user={user} apiClient={apiClient} variant="fraud" />}
           </ProtectedRoute>
         }
       />
