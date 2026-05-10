@@ -37,11 +37,11 @@ const AskOracleButton = ({
       <button
         onClick={open}
         type="button"
-        className={`inline-flex items-center gap-1 text-[11px] text-[#1DA1F2] hover:text-blue-700 hover:underline transition ${className}`}
+        className={`inline-flex items-center gap-1.5 text-[14px] font-medium text-[#1DA1F2] hover:text-blue-700 hover:underline transition ${className}`}
         data-testid={testid}
         title={`Ask Oracle: ${question}`}
       >
-        <Sparkles className="w-3 h-3" /> 💡 {label}
+        <Sparkles className="w-4 h-4" /> 💡 {label}
       </button>
     );
   }
@@ -51,30 +51,30 @@ const AskOracleButton = ({
       <button
         onClick={open}
         type="button"
-        className={`group flex items-start gap-2 text-left p-2.5 rounded-lg border border-blue-100 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-300 hover:shadow-[0_0_15px_rgba(29,161,242,0.1)] transition ${className}`}
+        className={`group flex items-start gap-3 text-left p-4 rounded-xl border border-blue-100 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-300 hover:shadow-[0_0_15px_rgba(29,161,242,0.1)] transition ${className}`}
         data-testid={testid}
       >
-        <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#1DA1F2] to-blue-600 flex items-center justify-center flex-shrink-0">
-          <Sparkles className="w-3 h-3 text-white" />
+        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#1DA1F2] to-blue-600 flex items-center justify-center flex-shrink-0">
+          <Sparkles className="w-4 h-4 text-white" />
         </div>
         <div className="min-w-0">
-          <div className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide">💡 {label}</div>
-          <div className="text-[12px] text-gray-700 truncate group-hover:text-blue-800">{question}</div>
+          <div className="text-[14px] font-semibold text-blue-700 uppercase tracking-wide">💡 {label}</div>
+          <div className="text-[15px] text-gray-700 truncate group-hover:text-blue-800">{question}</div>
         </div>
       </button>
     );
   }
 
-  // Default — small pill button
+  // Default — pill button
   return (
     <button
       onClick={open}
       type="button"
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-blue-200 bg-white text-[11px] font-semibold text-[#1DA1F2] hover:bg-blue-50 hover:border-blue-300 hover:shadow-[0_0_12px_rgba(29,161,242,0.15)] transition ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-200 bg-white text-[14px] font-semibold text-[#1DA1F2] hover:bg-blue-50 hover:border-blue-300 hover:shadow-[0_0_12px_rgba(29,161,242,0.15)] transition ${className}`}
       data-testid={testid}
       title={`Ask Oracle: ${question}`}
     >
-      <Sparkles className="w-3 h-3" /> 💡 {label}
+      <Sparkles className="w-4 h-4" /> 💡 {label}
     </button>
   );
 };
