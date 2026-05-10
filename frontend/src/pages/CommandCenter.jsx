@@ -178,14 +178,6 @@ const CommandCenter = ({ user, apiClient }) => {
   if (!data) return null;
   const { project, section_stats } = data;
 
-  const checklistModules = [
-    { id: "company-data", title: "Company Data", subtitle: "Corporate & Business Info", path: `/project/${projectId}/company-data`, pending: data.checklists?.company_data?.pending || 0 },
-    { id: "promoter-checklist", title: "Promoter Checklist", subtitle: "Promoter Details & KYC", path: `/project/${projectId}/promoter-checklist`, pending: data.checklists?.promoter?.pending || 0 },
-    { id: "kmp-checklist", title: "KMP Checklist", subtitle: "Key Managerial Personnel", path: `/project/${projectId}/kmp-checklist`, pending: data.checklists?.kmp?.pending || 0 },
-    { id: "pre-ipo-tracker", title: "Pre-IPO Tracker", subtitle: "IPO Readiness", path: `/project/${projectId}/pre-ipo-tracker`, pending: data.checklists?.pre_ipo?.pending || 0 },
-    { id: "non-drhp-tracker", title: "Non-DRHP Tracker", subtitle: "Compliance Items", path: `/project/${projectId}/non-drhp-tracker`, pending: data.checklists?.non_drhp?.pending || 0 }
-  ];
-
   const boardRaw = (project?.board_type || "").toLowerCase();
   const showMainBoard = !boardRaw || boardRaw === "main board" || boardRaw === "mainboard";
   const showSME = !boardRaw || boardRaw === "sme";
@@ -262,37 +254,6 @@ const CommandCenter = ({ user, apiClient }) => {
         </header>
 
         <div className="p-4">
-          {/* Centralised Corporate Repository */}
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1DA1F2] to-blue-600 flex items-center justify-center">
-              <FileText className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-gray-900">Centralised Corporate Repository</h2>
-              <p className="text-[10px] text-gray-500">Upload and manage all corporate data. Data syncs across DRHP chapters.</p>
-            </div>
-          </div>
-
-          {/* 5 Checklist Buttons - Compact */}
-          <div className="grid grid-cols-5 gap-2 mb-3">
-            {checklistModules.map((module) => (
-              <button
-                key={module.id}
-                onClick={() => navigate(module.path)}
-                className="flex flex-col justify-between p-2.5 rounded-md border border-blue-100 bg-blue-50/50 hover:border-[#1DA1F2] hover:bg-blue-50 transition-all h-[72px]"
-                data-testid={`${module.id}-btn`}
-              >
-                <div className="text-left">
-                  <p className="text-xs font-bold text-gray-900">{module.title}</p>
-                  <p className="text-[9px] text-gray-500">{module.subtitle}</p>
-                </div>
-                <Badge className={`text-[9px] px-1.5 py-0 ${module.pending > 0 ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-green-100 text-green-700 border-green-200'}`}>
-                  {module.pending > 0 ? `${module.pending} Pending` : 'Done'}
-                </Badge>
-              </button>
-            ))}
-          </div>
-
           {/* 3 Action Buttons - Single Row Compact */}
           <div className="flex gap-2 mb-3">
             {showMainBoard && (
