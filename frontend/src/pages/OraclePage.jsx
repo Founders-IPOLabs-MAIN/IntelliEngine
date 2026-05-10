@@ -82,8 +82,21 @@ const OraclePage = ({ user, apiClient }) => {
   // ─────────── Initial load + URL-thread support ───────────
   useEffect(() => { loadThreads(); loadBookmarks(); }, []);
   useEffect(() => {
-    const tid = new URLSearchParams(location.search).get("thread");
+    const params = new URLSearchParams(location.search);
+    const tid = params.get("thread");
+    const preQ = params.get("q");
+    const preMode = params.get("mode");
     if (tid && tid !== activeThread?.thread_id) openThread(tid);
+    if (preMode && ["general", "drhp", "application"].includes(preMode)) setTab(preMode);
+    if (preQ) {
+      setQuery(preQ);
+      setTimeout(() => inputRef.current?.focus(), 100);
+      // Strip the q param from URL so refresh doesn't re-prefill
+      const cleaned = new URLSearchParams(location.search);
+      cleaned.delete("q");
+      cleaned.delete("mode");
+      navigate(`/oracle${cleaned.toString() ? "?" + cleaned.toString() : ""}`, { replace: true });
+    }
     // eslint-disable-next-line
   }, [location.search]);
 

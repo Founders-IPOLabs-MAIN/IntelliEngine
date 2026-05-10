@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
+import AskOracleButton from "@/components/AskOracleButton";
 import {
   Search,
   MapPin,
@@ -309,6 +310,16 @@ const MatchMakerSearch = ({ user, apiClient }) => {
                   {prof.ipo_track_record.length} IPOs managed
                 </span>
               )}
+            </div>
+
+            <div className="mt-2.5">
+              <AskOracleButton
+                question={`Tell me about ${prof.name}${prof.agency_name ? ` at ${prof.agency_name}` : ""}${prof.expertise_tags?.length ? ` — a ${prof.expertise_tags.slice(0,2).join(" / ")} expert` : ""}. What is their typical IPO advisory profile, fee range and any notable deals on public record?`}
+                mode="general"
+                label="Ask Oracle about this expert"
+                variant="ghost"
+                testid={`ask-oracle-expert-${prof.professional_id}`}
+              />
             </div>
           </div>
 

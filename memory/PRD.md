@@ -8,6 +8,15 @@
 **Date Started:** Feb 17, 2026
 **Last Updated:** Feb 6, 2026
 
+### Changelog — Feb 6, 2026 (later — Oracle contextual wiring)
+- **Oracle now contextually wired into existing modules** — "💡 Ask Oracle about this" CTAs added in 3 places:
+  - **DRHP Builder**: chapter pages (`DRHPSection.jsx`) + sub-module content pages (`DRHPContent.jsx`) — pill button pre-fills a SEBI ICDR / DRHP-clause query about the current chapter or sub-section
+  - **IPO Assessment Wizard**: every governance/compliance question row gets an inline ghost link that opens Oracle with a contextual SEBI/Companies-Act explanation request
+  - **Match-Making search results**: each professional card gets a ghost link that asks Oracle for a profile/fee-range summary of that expert
+- **Reusable component**: `/app/frontend/src/components/AskOracleButton.jsx` with 3 variants (`pill`, `ghost`, `card`)
+- **OraclePage**: now reads `?q=` and `?mode=` URL params, pre-fills the chat input, switches the tab, then strips the params so refresh doesn't re-prefill
+- **Verified live**: `/oracle?q=Explain+SEBI+ICDR+for+SME+IPOs&mode=general` correctly pre-fills the input with "Explain SEBI ICDR for SME IPOs", URL cleans to `/oracle`, sample queries still render as fallback
+
 ### Changelog — Feb 6, 2026 (later — Oracle module)
 - **Oracle (IPO.GPT) — NEW MODULE — Phase 1 shipped**:
   - Backend: `/app/backend/routes/oracle.py` (16 endpoints under `/api/oracle/*`)

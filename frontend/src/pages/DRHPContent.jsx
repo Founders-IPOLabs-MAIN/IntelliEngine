@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import DocumentUploader from "@/components/DocumentUploader";
+import AskOracleButton from "@/components/AskOracleButton";
 import { DRHP_CHAPTERS, SUBMODULE_FIELDS } from "@/config/drhpChapters";
 import {
   ChevronRight,
@@ -316,6 +317,12 @@ const DRHPContent = ({ user, apiClient }) => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <AskOracleButton
+                question={`What does SEBI's ICDR Regulations require to be disclosed in the "${subModule?.title || chapter?.fullTitle || chapter?.title}" sub-section of an Indian DRHP? Cite the specific clause/schedule, list the typical sub-points expected, and provide 2 illustrative excerpts from recent Mainboard DRHPs.`}
+                mode="general"
+                label="Ask Oracle"
+                testid={`ask-oracle-submodule-${subModuleId || chapter?.id}`}
+              />
               <Button variant="outline" className="gap-2" onClick={handleReview}>
                 <Eye className="w-4 h-4" />
                 Review

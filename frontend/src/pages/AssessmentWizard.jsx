@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
 import IndustryIndexSelector from "@/components/IndustryIndexSelector";
+import AskOracleButton from "@/components/AskOracleButton";
 import {
   ArrowLeft,
   ArrowRight,
@@ -919,6 +920,15 @@ const AssessmentWizard = ({ user, apiClient }) => {
                                       <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
                                       {q.tooltip}
                                     </p>
+                                    <div className="mt-1.5">
+                                      <AskOracleButton
+                                        question={`In the context of SEBI ICDR / Indian IPO governance norms, explain: "${q.question}". What does SEBI/Companies Act expect, what are common red flags auditors look for, and how should an SME-IPO bound company evidence compliance?`}
+                                        mode="general"
+                                        label="Ask Oracle about this question"
+                                        variant="ghost"
+                                        testid={`ask-oracle-q-${q.id}`}
+                                      />
+                                    </div>
                                   </td>
                                   <td className="px-4 py-3 align-top">
                                     <div className="flex items-center justify-center gap-2">

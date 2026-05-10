@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import Sidebar from "@/components/Sidebar";
+import AskOracleButton from "@/components/AskOracleButton";
 import { DRHP_CHAPTERS } from "@/config/drhpChapters";
 import {
   ChevronRight,
